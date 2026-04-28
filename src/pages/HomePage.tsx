@@ -25,9 +25,10 @@ interface NicheCategory {
 // Resolve image URL — prepend API base for relative /static/ paths
 const _API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 function resolveImg(url: string | null | undefined): string {
-  if (!url) return "";
-  if (url.startsWith("http")) return url;          // already absolute
-  return _API + url;                               // prepend backend base
+  if (!url || url.trim() === "") return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("/")) return _API + url;
+  return _API + "/" + url;
 }
 
 const NICHE_CATS: NicheCategory[] = [
