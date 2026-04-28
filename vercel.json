@@ -1,1 +1,1 @@
-{"rewrites":[{"source":"/((?!assets|favicon|greengo-logo|morocco|apple-touch|favicon-32|favicon-16).*)", "destination":"/index.html"}]}
+{\n  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]\n}
