@@ -160,7 +160,7 @@ function PublicShell() {
 
 // ── App root ──────────────────────────────────────────────────────────────────
 export default function App() {
-  useAntiScraping();
+  // useAntiScraping(); // temporarily disabled for debugging
 
   return (
     <BrowserRouter>
