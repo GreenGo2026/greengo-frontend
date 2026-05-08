@@ -10,7 +10,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 // ── Contact constants ─────────────────────────────────────────────────────────
 const WA_SUPPORT  = "https://wa.me/212664397031";
 const WA_ORDERS   = "https://wa.me/212664500789";
-const EMAIL       = "CONTACT@MYGRENGO.COM";
+const EMAIL       = "team@mygreengoo.com";
 const PHONE_LABEL = "+212 664-500-789";
 const PHONE_HREF  = "tel:+212664500789";
 const REL         = "noopener noreferrer";
