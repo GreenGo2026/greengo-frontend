@@ -20,6 +20,7 @@ import AboutPage                  from "./pages/AboutPage";
 import ContactPage                from "./pages/ContactPage";
 import PaymentGateway             from "./pages/Payment/PaymentGateway";
 import UserDashboard              from "./pages/Profile/UserDashboard";
+import CGUPage from "./pages/legal/CGUPage";
 import RecrutementPage from "./pages/RecrutementPage";
 import LegalTemplate, { LEGAL_PAGES } from "./pages/Legal/LegalTemplate";
 
@@ -114,7 +115,7 @@ function PublicShell() {
           <Route path="/addresses"    element={<UserDashboard />}   />
 
           {/* ── Legal pages ── */}
-          <Route path="/legal/cgu"     element={<LegalTemplate {...LEGAL_PAGES.cgu}         />} />
+          <Route path="/legal/cgu"     element={<CGUPage />} />
           <Route path="/legal/privacy" element={<LegalTemplate {...LEGAL_PAGES.privacy}     />} />
           <Route path="/legal/terms"   element={<LegalTemplate {...LEGAL_PAGES.terms}       />} />
           <Route path="/legal/info"    element={<LegalTemplate {...LEGAL_PAGES.info}        />} />
