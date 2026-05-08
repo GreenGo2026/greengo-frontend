@@ -20,6 +20,7 @@ import AboutPage                  from "./pages/AboutPage";
 import ContactPage                from "./pages/ContactPage";
 import PaymentGateway             from "./pages/Payment/PaymentGateway";
 import UserDashboard              from "./pages/Profile/UserDashboard";
+import RecrutementPage from "./pages/RecrutementPage";
 import LegalTemplate, { LEGAL_PAGES } from "./pages/Legal/LegalTemplate";
 
 // ── Anti-scraping / anti-inspect protection ──────────────────────────────────
@@ -118,7 +119,7 @@ function PublicShell() {
           <Route path="/legal/terms"   element={<LegalTemplate {...LEGAL_PAGES.terms}       />} />
           <Route path="/legal/info"    element={<LegalTemplate {...LEGAL_PAGES.info}        />} />
           <Route path="/legal/cookies" element={<LegalTemplate {...LEGAL_PAGES.privacy}     />} />
-          <Route path="/recrutement"   element={<LegalTemplate {...LEGAL_PAGES.recrutement} />} />
+          <Route path="/recrutement"   element={<RecrutementPage />} />
 
           {/* ── Misc ── */}
           <Route path="/fidelite" element={<LegalTemplate
