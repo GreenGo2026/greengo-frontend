@@ -3,49 +3,48 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 
-interface JobOffer { id:string; title:string; department:string; location:string; type:string; emoji:string; description:string; skills:string[]; }
-interface Benefit { emoji:string; title:string; desc:string; }
-
-const JOBS: JobOffer[] = [
-  { id:"livreur", title:"Livreur Express", department:"Logistique", location:"Sale / Rabat", type:"Temps plein", emoji:"🛵", description:"Rejoignez notre equipe de livraison. Vous assurez la livraison rapide et soignee de nos produits frais dans les meilleurs delais.", skills:["Permis de conduire","Sens du service","Ponctualite","Connaissance de Sale/Rabat"] },
-  { id:"stock", title:"Responsable Stock & Qualite", department:"Operations", location:"Sale", type:"Temps plein", emoji:"📦", description:"Gerez notre entrepot : reception des marchandises, controle qualite des produits frais, gestion des stocks et coordination fournisseurs.", skills:["Organisation","Rigueur","Gestion de stock","Produits frais"] },
-  { id:"support", title:"Agent Service Client", department:"Support", location:"Teletravail / Sale", type:"Mi-temps ou temps plein", emoji:"💬", description:"Traitez les demandes clients via WhatsApp avec professionnalisme et rapidite. Vous garantissez une experience premium.", skills:["Francais et darija","WhatsApp Business","Empathie","Reactivite"] },
-  { id:"dev", title:"Developpeur Full-Stack", department:"Tech", location:"Teletravail", type:"Stage ou CDI", emoji:"💻", description:"Developpez notre plateforme e-commerce (React, FastAPI, MongoDB). Des fonctionnalites a fort impact pour nos clients.", skills:["React / TypeScript","Python / FastAPI","MongoDB","Git"] },
+const JOBS = [
+  { id:"livreur", title:"Livreur Express", dept:"Logistique", loc:"Sale / Rabat", type:"Temps plein", emoji:"🛵", desc:"Assurez la livraison rapide de nos produits frais chez nos clients a Sale et Rabat.", skills:["Permis conduire","Sens du service","Ponctualite","Connaissance Sale/Rabat"] },
+  { id:"stock", title:"Responsable Stock", dept:"Operations", loc:"Sale", type:"Temps plein", emoji:"📦", desc:"Gerez reception, controle qualite et stocks de produits frais. Coordination avec fournisseurs.", skills:["Organisation","Rigueur","Gestion stock","Produits frais"] },
+  { id:"support", title:"Agent Service Client", dept:"Support", loc:"Teletravail/Sale", type:"Mi-temps", emoji:"💬", desc:"Traitez les demandes clients via WhatsApp avec professionnalisme et rapidite.", skills:["Francais & darija","WhatsApp Business","Empathie","Reactivite"] },
+  { id:"dev", title:"Developpeur Full-Stack", dept:"Tech", loc:"Teletravail", type:"Stage ou CDI", emoji:"💻", desc:"Developpez notre plateforme React/FastAPI/MongoDB a fort impact client.", skills:["React/TypeScript","Python/FastAPI","MongoDB","Git"] },
 ];
 
-const BENEFITS: Benefit[] = [
-  { emoji:"🌿", title:"Mission avec du sens", desc:"Contribuez a rendre l alimentation saine accessible a tous les Marocains." },
-  { emoji:"🚀", title:"Startup en croissance", desc:"Evoluez dans une entreprise agile ou chaque idee peut devenir realite rapidement." },
-  { emoji:"💚", title:"Produits frais offerts", desc:"Beneficiez d une selection hebdomadaire de fruits et legumes frais." },
-  { emoji:"📈", title:"Evolution rapide", desc:"Des responsabilites reelles des le premier jour et un plan de carriere clair." },
-  { emoji:"🤝", title:"Equipe soudee", desc:"Une ambiance familiale, bienveillante et un management de proximite." },
-  { emoji:"🎯", title:"Impact direct", desc:"Vos actions ont un effet immediat sur la satisfaction de nos clients." },
+const BENEFITS = [
+  { e:"🌿", t:"Mission avec du sens", d:"Rendez l alimentation saine accessible a tous les Marocains." },
+  { e:"🚀", t:"Startup en croissance", d:"Evoluez dans une entreprise agile ou chaque idee compte." },
+  { e:"💚", t:"Produits frais offerts", d:"Selection hebdomadaire de fruits et legumes offerte." },
+  { e:"📈", t:"Evolution rapide", d:"Responsabilites reelles et plan de carriere clair." },
+  { e:"🤝", t:"Equipe soudee", d:"Ambiance familiale et management de proximite." },
+  { e:"🎯", t:"Impact direct", d:"Vos actions ont un effet immediat sur nos clients." },
 ];
 
-function Tag({ label, color }: { label:string; color:"emerald"|"gold"|"neutral" }) {
-  const styles = { emerald:{bg:"rgba(46,139,87,0.18)",border:"rgba(46,139,87,0.35)",text:"#4ade80"}, gold:{bg:"rgba(201,169,110,0.15)",border:"rgba(201,169,110,0.3)",text:"#e8c98a"}, neutral:{bg:"rgba(255,255,255,0.08)",border:"rgba(255,255,255,0.15)",text:"rgba(255,255,255,0.6)"} };
-  const s = styles[color];
-  return <span style={{background:s.bg,border:"1px solid "+s.border,borderRadius:6,padding:"2px 10px",fontSize:11,fontWeight:600,color:s.text}}>{label}</span>;
-}
-
-function JobCard({ job }: { job:JobOffer }) {
+function JobCard({ job }: { job: typeof JOBS[0] }) {
   const [open, setOpen] = useState(false);
   return (
-    <article style={{background:open?"linear-gradient(135deg,rgba(46,139,87,0.12),rgba(255,255,255,0.06))":"rgba(255,255,255,0.04)",border:"1px solid "+(open?"rgba(46,139,87,0.4)":"rgba(201,169,110,0.15)"),borderRadius:16,overflow:"hidden",transition:"all 0.3s ease"}}>
-      <button onClick={()=>setOpen(!open)} style={{width:"100%",padding:"20px 24px",display:"flex",alignItems:"center",gap:16,background:"none",border:"none",cursor:"pointer",textAlign:"left"}}>
-        <span style={{fontSize:36,flexShrink:0}}>{job.emoji}</span>
-        <div style={{flex:1}}>
-          <h3 style={{fontSize:17,fontWeight:700,color:"#fff",margin:"0 0 6px"}}>{job.title}</h3>
-          <div style={{display:"flex",flexWrap:"wrap",gap:8}}><Tag label={job.department} color="emerald"/><Tag label={job.location} color="gold"/><Tag label={job.type} color="neutral"/></div>
+    <article className={`rounded-2xl border transition-all duration-300 overflow-hidden ${open ? "border-green-500/40 bg-green-900/10" : "border-amber-800/20 bg-white/[0.03]"}`}>
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-4 p-5 text-left">
+        <span className="text-4xl shrink-0">{job.emoji}</span>
+        <div className="flex-1">
+          <h3 className="text-white font-bold text-base mb-1.5">{job.title}</h3>
+          <div className="flex flex-wrap gap-2">
+            {[{l:job.dept,c:"text-green-400 bg-green-900/30 border-green-700/40"},{l:job.loc,c:"text-amber-300 bg-amber-900/20 border-amber-700/30"},{l:job.type,c:"text-white/50 bg-white/5 border-white/10"}].map(({l,c})=>(
+              <span key={l} className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md border ${c}`}>{l}</span>
+            ))}
+          </div>
         </div>
-        <span style={{color:open?"#4ade80":"rgba(255,255,255,0.4)",fontSize:18,transform:open?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.3s",flexShrink:0}}>v</span>
+        <span className={`text-lg shrink-0 transition-transform duration-300 ${open ? "rotate-180 text-green-400" : "text-white/30"}`}>▾</span>
       </button>
       {open && (
-        <div style={{padding:"0 24px 24px",borderTop:"1px solid rgba(255,255,255,0.08)"}}>
-          <p style={{color:"rgba(255,255,255,0.65)",lineHeight:1.7,margin:"16px 0",fontSize:14}}>{job.description}</p>
-          <p style={{fontSize:11,fontWeight:700,color:"#C9A96E",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Competences requises</p>
-          <ul style={{margin:0,padding:0,listStyle:"none",display:"flex",flexWrap:"wrap",gap:8}}>{job.skills.map(s=><li key={s} style={{background:"rgba(46,139,87,0.15)",border:"1px solid rgba(46,139,87,0.3)",borderRadius:8,padding:"4px 12px",fontSize:12,fontWeight:600,color:"#4ade80"}}>+ {s}</li>)}</ul>
-          <a href={"mailto:team@mygreengoo.com?subject=Candidature - "+job.title} style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:20,padding:"10px 24px",background:"linear-gradient(135deg,#2E8B57,#1a5c38)",border:"1px solid rgba(46,139,87,0.5)",borderRadius:10,color:"#fff",fontWeight:700,fontSize:14,textDecoration:"none"}}>Postuler maintenant</a>
+        <div className="px-5 pb-5 border-t border-white/8">
+          <p className="text-white/60 text-sm leading-relaxed mt-4 mb-4">{job.desc}</p>
+          <p className="text-[11px] font-bold text-amber-400 uppercase tracking-widest mb-2">Competences</p>
+          <div className="flex flex-wrap gap-2 mb-5">
+            {job.skills.map(s => <span key={s} className="text-xs font-semibold px-3 py-1 rounded-lg bg-green-900/20 border border-green-700/30 text-green-400">+ {s}</span>)}
+          </div>
+          <a href={`mailto:team@mygreengoo.com?subject=Candidature - ${job.title}`} className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-700 to-green-900 border border-green-600/50 rounded-xl text-white font-bold text-sm hover:opacity-90 transition-opacity">
+            📩 Postuler maintenant
+          </a>
         </div>
       )}
     </article>
@@ -54,57 +53,67 @@ function JobCard({ job }: { job:JobOffer }) {
 
 export default function RecrutementPage() {
   const { language } = useLanguage();
-  const font = language === "ar" ? "font-arabic" : "font-latin";
   return (
-    <div className={font} style={{minHeight:"100vh",background:"linear-gradient(160deg,#031409 0%,#061a12 40%,#0a2318 100%)",fontFamily:"DM Sans,Poppins,sans-serif"}}>
+    <div className={language === "ar" ? "font-arabic" : "font-latin"} style={{ minHeight:"100vh", background:"linear-gradient(160deg,#031409 0%,#061a12 40%,#0a2318 100%)" }}>
       <main>
-        <section aria-label="Rejoindre GreenGo" style={{position:"relative",padding:"80px 24px 64px",textAlign:"center"}}>
-          <div style={{position:"relative",maxWidth:720,margin:"0 auto"}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.28)",borderRadius:9999,padding:"6px 18px",marginBottom:24}}>
-              <span>🇲🇦</span><span style={{fontSize:11,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"#e8c98a"}}>Carrieres - GreenGo Market - Sale, Maroc</span>
+
+        {/* Hero */}
+        <section aria-label="Rejoindre GreenGo Market" className="relative overflow-hidden px-6 py-20 text-center">
+          <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage:"url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23C9A96E' stroke-width='0.5'%3E%3Cpolygon points='40,5 47,18 62,18 51,27 55,42 40,34 25,42 29,27 18,18 33,18'/%3E%3C/g%3E%3C/svg%3E")", backgroundSize:"80px 80px" }} />
+          <div className="relative max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-amber-900/20 border border-amber-700/30 rounded-full px-4 py-1.5 mb-6">
+              <span>🇲🇦</span>
+              <span className="text-[11px] font-bold tracking-widest uppercase text-amber-300">Carrieres · GreenGo Market · Sale, Maroc</span>
             </div>
-            <h1 style={{fontSize:"clamp(2.2rem,6vw,3.8rem)",fontWeight:900,color:"#fff",lineHeight:1.1,letterSpacing:"-0.03em",margin:"0 0 16px"}}>
+            <h1 className="text-4xl md:text-6xl font-black text-white leading-tight tracking-tight mb-4">
               Construisons l avenir<br/>
-              <span style={{background:"linear-gradient(90deg,#4ade80,#2E8B57)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>de l epicerie marocaine</span>
+              <span className="bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">de l epicerie marocaine</span>
             </h1>
-            <div style={{height:2,width:120,margin:"20px auto",background:"linear-gradient(90deg,#C9A96E,#2E8B57)"}}/>
-            <p style={{fontSize:"clamp(1rem,2vw,1.1rem)",color:"rgba(255,255,255,0.55)",lineHeight:1.75,maxWidth:560,margin:"0 auto",fontWeight:300}}>GreenGo Market est une startup marocaine qui revolutionne la livraison de produits frais. Rejoignez une equipe passionnee et ayez un impact reel des le premier jour.</p>
+            <div className="h-0.5 w-28 mx-auto my-5 bg-gradient-to-r from-amber-500 to-green-600" />
+            <p className="text-white/50 text-lg leading-relaxed max-w-md mx-auto font-light">
+              Startup marocaine en pleine croissance. Rejoignez une equipe passionnee et ayez un impact reel des le premier jour.
+            </p>
           </div>
         </section>
 
-        <section aria-label="Avantages" style={{padding:"48px 24px",maxWidth:1100,margin:"0 auto"}}>
-          <h2 style={{fontSize:"clamp(1.4rem,3vw,2rem)",fontWeight:800,color:"#C9A96E",textAlign:"center",marginBottom:8}}>Pourquoi rejoindre GreenGo ?</h2>
-          <p style={{textAlign:"center",color:"rgba(255,255,255,0.4)",marginBottom:40,fontSize:14}}>Ce que nous offrons a chaque membre de l equipe</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:16}}>
-            {BENEFITS.map(b=>(
-              <div key={b.title} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(201,169,110,0.12)",borderRadius:16,padding:24}}>
-                <span style={{fontSize:32,display:"block",marginBottom:12}}>{b.emoji}</span>
-                <h3 style={{fontSize:15,fontWeight:700,color:"#fff",margin:"0 0 8px"}}>{b.title}</h3>
-                <p style={{fontSize:13,color:"rgba(255,255,255,0.5)",lineHeight:1.6,margin:0}}>{b.desc}</p>
+        {/* Benefits */}
+        <section aria-label="Avantages employes GreenGo" className="px-6 py-12 max-w-5xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-black text-amber-400 text-center mb-2 tracking-tight">Pourquoi rejoindre GreenGo ?</h2>
+          <p className="text-center text-white/40 text-sm mb-10">Ce que nous offrons a chaque membre de l equipe</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {BENEFITS.map(b => (
+              <div key={b.t} className="bg-white/[0.03] border border-amber-800/15 rounded-2xl p-6 hover:border-green-700/30 transition-colors">
+                <span className="text-3xl block mb-3">{b.e}</span>
+                <h3 className="text-white font-bold text-sm mb-2">{b.t}</h3>
+                <p className="text-white/45 text-xs leading-relaxed">{b.d}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section aria-label="Offres emploi" style={{padding:"48px 24px",maxWidth:860,margin:"0 auto"}}>
-          <h2 style={{fontSize:"clamp(1.4rem,3vw,2rem)",fontWeight:800,color:"#fff",textAlign:"center",marginBottom:8}}>Nos offres d emploi</h2>
-          <p style={{textAlign:"center",color:"rgba(255,255,255,0.4)",marginBottom:32,fontSize:14}}>Cliquez sur une offre pour voir les details et postuler</p>
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>{JOBS.map(job=><JobCard key={job.id} job={job}/>)}</div>
+        {/* Jobs */}
+        <section aria-label="Offres emploi GreenGo Market" className="px-6 py-12 max-w-3xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-black text-white text-center mb-2 tracking-tight">Nos offres d emploi</h2>
+          <p className="text-center text-white/40 text-sm mb-8">Cliquez sur une offre pour postuler</p>
+          <div className="flex flex-col gap-3">{JOBS.map(job => <JobCard key={job.id} job={job} />)}</div>
         </section>
 
-        <section aria-label="Candidature spontanee" style={{padding:"48px 24px 100px",maxWidth:700,margin:"0 auto",textAlign:"center"}}>
-          <div style={{background:"linear-gradient(135deg,rgba(255,255,255,0.06),rgba(46,139,87,0.08))",backdropFilter:"blur(20px)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:24,padding:"48px 36px"}}>
-            <span style={{fontSize:48,display:"block",marginBottom:16}}>📩</span>
-            <h2 style={{fontSize:"1.5rem",fontWeight:800,color:"#fff",margin:"0 0 12px"}}>Vous ne trouvez pas votre poste ?</h2>
-            <p style={{color:"rgba(255,255,255,0.5)",lineHeight:1.7,marginBottom:24,fontSize:14}}>Envoyez une candidature spontanee. Nous vous contacterons des qu une opportunite se presente.</p>
-            <a href="mailto:team@mygreengoo.com?subject=Candidature spontanee - GreenGo Market" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"14px 32px",background:"linear-gradient(135deg,#2E8B57,#1a5c38)",border:"1px solid rgba(46,139,87,0.5)",borderRadius:12,color:"#fff",fontWeight:700,fontSize:15,textDecoration:"none"}}>team@mygreengoo.com</a>
+        {/* Spontaneous */}
+        <section aria-label="Candidature spontanee" className="px-6 py-12 pb-24 max-w-xl mx-auto text-center">
+          <div className="bg-gradient-to-br from-white/5 to-green-900/10 backdrop-blur-xl border border-amber-700/20 rounded-3xl p-10">
+            <span className="text-5xl block mb-4">📩</span>
+            <h2 className="text-xl font-black text-white mb-3">Vous ne trouvez pas votre poste ?</h2>
+            <p className="text-white/45 text-sm leading-relaxed mb-6">Envoyez une candidature spontanee. Nous vous contacterons des qu une opportunite se presente.</p>
+            <a href="mailto:team@mygreengoo.com?subject=Candidature spontanee - GreenGo Market" className="inline-flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-green-700 to-green-900 border border-green-600/50 rounded-xl text-white font-bold hover:opacity-90 transition-opacity shadow-lg shadow-green-900/40">
+              team@mygreengoo.com
+            </a>
           </div>
         </section>
       </main>
-      <nav aria-label="Fil d ariane" style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",background:"rgba(6,26,18,0.85)",backdropFilter:"blur(12px)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:9999,padding:"8px 20px",display:"flex",alignItems:"center",gap:8,fontSize:12,color:"rgba(255,255,255,0.45)",zIndex:40}}>
-        <Link to="/" style={{color:"#4ade80",textDecoration:"none",fontWeight:600}}>GreenGo</Link>
-        <span>/</span>
-        <span style={{color:"#C9A96E",fontWeight:600}}>Recrutement</span>
+      <nav aria-label="Fil ariane" className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-5 py-2 rounded-full text-xs border border-amber-800/20" style={{background:"rgba(6,26,18,0.88)",backdropFilter:"blur(12px)"}}>
+        <Link to="/" className="text-green-400 font-semibold hover:text-green-300 transition-colors">GreenGo</Link>
+        <span className="text-white/25">/</span>
+        <span className="text-amber-400 font-semibold">Recrutement</span>
       </nav>
     </div>
   );
