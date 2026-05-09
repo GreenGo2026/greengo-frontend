@@ -81,6 +81,14 @@ const NICHE_CATS: NicheCategory[] = [
     db_match: ["Natural Juices", "Juices", "juices"],
   },
   {
+    key: "Olives & Epices",
+    emoji: "🫒",
+    label_fr: "Olives & Epices",
+    label_ar: "زيتون وتوابل",
+    label_en: "Olives & Spices",
+    db_match: ["Olives & Epices", "Olives", "Spices", "Epices"],
+  },
+  {
     key: "Mixed Packs",
     emoji: "🛒",
     label_fr: "Paniers mixtes",
@@ -106,6 +114,7 @@ const CAT_META: Record<string, { emoji: string; bg: string; text: string; border
   "Chicken Cuts":      { emoji: "🥩", bg: "bg-red-50",     text: "text-red-600",     border: "border-red-100"    },
   Eggs:                { emoji: "🥚", bg: "bg-yellow-50",  text: "text-yellow-700",  border: "border-yellow-100" },
   "Natural Juices":    { emoji: "🧃", bg: "bg-cyan-50",    text: "text-cyan-700",    border: "border-cyan-100"   },
+  "Olives & Epices":   { emoji: "🫒", bg: "bg-lime-50",    text: "text-lime-700",   border: "border-lime-100"   },
   "Mixed Packs":       { emoji: "🛒", bg: "bg-purple-50",  text: "text-purple-700",  border: "border-purple-100" },
   Other:               { emoji: "🛒", bg: "bg-gray-50",    text: "text-gray-600",    border: "border-gray-100"   },
 };

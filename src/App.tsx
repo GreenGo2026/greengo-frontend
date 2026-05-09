@@ -23,6 +23,9 @@ import UserDashboard              from "./pages/Profile/UserDashboard";
 import PrivacyPage from "./pages/legal/PrivacyPage";
 import CGUPage from "./pages/legal/CGUPage";
 import RecrutementPage from "./pages/RecrutementPage";
+import TermsPage    from "./pages/legal/TermsPage";
+import InfoPage     from "./pages/legal/InfoPage";
+import FidelitePage from "./pages/FidelitePage";
 import LegalTemplate, { LEGAL_PAGES } from "./pages/Legal/LegalTemplate";
 
 // ── Anti-scraping / anti-inspect protection ──────────────────────────────────
@@ -118,21 +121,13 @@ function PublicShell() {
           {/* ── Legal pages ── */}
           <Route path="/legal/cgu"     element={<CGUPage />} />
           <Route path="/legal/privacy" element={<PrivacyPage />} />
-          <Route path="/legal/terms"   element={<LegalTemplate {...LEGAL_PAGES.terms}       />} />
-          <Route path="/legal/info"    element={<LegalTemplate {...LEGAL_PAGES.info}        />} />
+          <Route path="/legal/terms"   element={<TermsPage />} />
+          <Route path="/legal/info"    element={<InfoPage />} />
           <Route path="/legal/cookies" element={<LegalTemplate {...LEGAL_PAGES.privacy}     />} />
           <Route path="/recrutement"   element={<RecrutementPage />} />
 
           {/* ── Misc ── */}
-          <Route path="/fidelite" element={<LegalTemplate
-            title="Programme Fidélité"
-            subtitle="Récompenses GreenGo - Commandez et gagnez des points"
-            sections={[
-              { heading: "Comment ça marche ?",   body: "Chaque commande vous rapporte des points GreenGo. 10 MAD dépensés = 1 point. 100 points = 10 MAD de réduction sur votre prochaine commande." },
-              { heading: "Avantages exclusifs",   body: "Accès prioritaire aux produits de saison · Livraison gratuite illimitée · Offres spéciales réservées aux membres fidèles." },
-              { heading: "Rejoindre le programme", body: "L'inscription est automatique dès votre première commande. Contactez-nous sur WhatsApp pour consulter votre solde de points." },
-            ]} />}
-          />
+          <Route path="/fidelite"   element={<FidelitePage />} />
           <Route path="/faq" element={<LegalTemplate
             title="Questions Fréquentes"
             subtitle="FAQ - GreenGo Market"
