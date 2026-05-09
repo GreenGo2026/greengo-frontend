@@ -60,8 +60,10 @@ function useAntiScraping() {
 
     // 3. Detect devtools open via size heuristic — blur content if opened
     const devtoolsCheck = setInterval(() => {
-      const widthThreshold  = window.outerWidth  - window.innerWidth  > 160;
-      const heightThreshold = window.outerHeight - window.innerHeight > 160;
+      // Use 300px threshold to avoid false positives on Android/iOS browsers
+      // which have large native UI chrome (address bar, bottom nav, etc.)
+      const widthThreshold  = window.outerWidth  - window.innerWidth  > 300;
+      const heightThreshold = window.outerHeight - window.innerHeight > 300;
       if (widthThreshold || heightThreshold) {
         document.body.style.filter = "blur(8px)";
       } else {
@@ -113,7 +115,7 @@ function PublicShell() {
 
   return (
     <div
-      className="flex min-h-screen flex-col pb-16 md:pb-0"
+      className="flex min-h-screen flex-col pb-16 md:pb-0" style={{ overflowX: "hidden" }}
       style={{
         background: "#FAF7F2",
         // Disable text selection on content container

@@ -716,7 +716,7 @@ export default function HomePage() {
       {/* ── Page hero strip ── */}
       <div className="gg-hero relative overflow-hidden">
         <div className="absolute inset-0 zellige-bg-light opacity-12 pointer-events-none" />
-        <div className="mx-auto max-w-7xl px-5 py-8 md:py-10" dir={dir}>
+        <div className="mx-auto max-w-7xl px-5 pt-4 pb-8 md:py-10" dir={dir}>
           <div className={language === "ar" ? "text-right" : "text-left"}>
             <div className={"inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 mb-3 " + (isRTL ? "flex-row-reverse" : "")}>
               <Flame size={12} className="text-[#FF9800]" />
