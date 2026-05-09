@@ -59,7 +59,7 @@ export default function RecrutementPage() {
 
         {/* Hero */}
         <section aria-label="Rejoindre GreenGo Market" className="relative overflow-hidden px-6 py-20 text-center">
-          <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage:"url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23C9A96E' stroke-width='0.5'%3E%3Cpolygon points='40,5 47,18 62,18 51,27 55,42 40,34 25,42 29,27 18,18 33,18'/%3E%3C/g%3E%3C/svg%3E")", backgroundSize:"80px 80px" }} />
+          <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{backgroundImage:"url(%22data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2280%22%20height%3D%2280%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23C9A96E%22%20stroke-width%3D%220.5%22%3E%3Cpolygon%20points%3D%2240%2C5%2047%2C18%2062%2C18%2051%2C27%2055%2C42%2040%2C34%2025%2C42%2029%2C27%2018%2C18%2033%2C18%22/%3E%3C/g%3E%3C/svg%3E%22)",backgroundSize:"80px 80px"}} />
           <div className="relative max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-amber-900/20 border border-amber-700/30 rounded-full px-4 py-1.5 mb-6">
               <span>🇲🇦</span>
