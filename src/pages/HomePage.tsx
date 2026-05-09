@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { getProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
+import { Link } from "react-router-dom";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import { useLanguage } from "../contexts/LanguageContext";
 
@@ -551,9 +552,11 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
         </div>
         <div className="flex flex-1 flex-col gap-2.5 p-3.5">
           <div>
-            <h3 dir="rtl" className={"line-clamp-2 text-sm font-extrabold leading-snug text-gray-900 font-arabic " + (language === "ar" ? "text-right" : "text-left")}>
-              {name}
-            </h3>
+            <Link to={`/produit/${product.id}`} className="group-hover:underline decoration-[#2E8B57]/40">
+              <h3 dir="rtl" className={"line-clamp-2 text-sm font-extrabold leading-snug text-gray-900 font-arabic hover:text-[#2E8B57] transition-colors " + (language === "ar" ? "text-right" : "text-left")}>
+                {name}
+              </h3>
+            </Link>
             {product.name_fr && product.name_fr !== product.name_ar && (
               <p className={"mt-0.5 text-[11px] text-gray-400 font-latin truncate " + (language === "ar" ? "text-right" : "text-left")}>
                 {product.name_fr}

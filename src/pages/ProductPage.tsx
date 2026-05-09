@@ -19,7 +19,7 @@ function resolveImg(url: string | null | undefined): string {
 // ── Dynamic SEO head ──────────────────────────────────────────────────────────
 function SeoHead({ product, lang }: { product: DBProduct; lang: string }) {
   const l = lang as L;
-  const name = product.name_fr || product.name_ar || "Produit";
+  const name = (product.name_fr && product.name_fr !== 'null') ? product.name_fr : (product.name_ar || "Produit");
   const title = `${name} — GreenGo Market | Livraison fraîche à Salé & Rabat`;
   const desc  = l === "ar"
     ? `اشتري ${product.name_ar} طازجة بسعر ${product.price_mad} درهم/${product.unit}. توصيل سريع في سلا والرباط.`
