@@ -26,6 +26,7 @@ const CGUPage          = lazy(() => import("./pages/legal/CGUPage"));
 const RecrutementPage  = lazy(() => import("./pages/RecrutementPage"));
 const TermsPage        = lazy(() => import("./pages/legal/TermsPage"));
 const InfoPage         = lazy(() => import("./pages/legal/InfoPage"));
+const OffresPage      = lazy(() => import("./pages/OffresPage"));
 const TrackOrderPage  = lazy(() => import("./pages/TrackOrderPage"));
 const FidelitePage     = lazy(() => import("./pages/FidelitePage"));
 import LegalTemplate, { LEGAL_PAGES } from "./pages/Legal/LegalTemplate";
@@ -152,6 +153,7 @@ function PublicShell() {
           <Route path="/recrutement"   element={<RecrutementPage />} />
 
           {/* ── Misc ── */}
+          <Route path="/offres"         element={<OffresPage />} />
           <Route path="/track/:orderId?" element={<TrackOrderPage />} />
           <Route path="/fidelite"   element={<FidelitePage />} />
           <Route path="/faq" element={<LegalTemplate
