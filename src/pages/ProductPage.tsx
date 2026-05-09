@@ -264,7 +264,7 @@ export default function ProductPage() {
                 </div>
                 {discount > 0 && (
                   <p className="text-orange-400/70 text-xs mt-1">
-                    🏷️ {l==="ar"`خصم ${discount}%`:l==="fr"`-${discount}% ce mois`:`-${discount}% this month`}
+                    {"🏷️ " + (l==="ar" ? "خصم " + discount + "%" : l==="fr" ? "-" + discount + "% ce mois" : "-" + discount + "% this month")}
                   </p>
                 )}
               </div>
