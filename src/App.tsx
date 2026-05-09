@@ -1,5 +1,6 @@
 ﻿// src/App.tsx
 import "./index.css";
+import { Suspense, lazy } from "react";
 import { useEffect }              from "react";
 import CookieBanner               from "./components/ui/CookieBanner";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -9,23 +10,23 @@ import Header                     from "./components/layout/Header";
 import Footer                     from "./components/layout/Footer";
 import MobileBottomNav            from "./components/layout/MobileBottomNav";
 import NewsletterModal            from "./components/ui/NewsletterModal";
-import HeroLandingPage            from "./pages/HeroLandingPage";
-import HomePage                   from "./pages/HomePage";
-import CartPage                   from "./pages/CartPage";
-import AdminPage                  from "./pages/AdminPage";
-import AdminOrders                from "./pages/Admin/AdminOrders";
-import POSPage                    from "./pages/Admin/POSPage";
-import SuperAdminPage             from "./pages/SuperAdminPage";
-import AboutPage                  from "./pages/AboutPage";
-import ContactPage                from "./pages/ContactPage";
-import PaymentGateway             from "./pages/Payment/PaymentGateway";
-import UserDashboard              from "./pages/Profile/UserDashboard";
-import PrivacyPage from "./pages/legal/PrivacyPage";
-import CGUPage from "./pages/legal/CGUPage";
-import RecrutementPage from "./pages/RecrutementPage";
-import TermsPage    from "./pages/legal/TermsPage";
-import InfoPage     from "./pages/legal/InfoPage";
-import FidelitePage from "./pages/FidelitePage";
+const HeroLandingPage  = lazy(() => import("./pages/HeroLandingPage"));
+const HomePage         = lazy(() => import("./pages/HomePage"));
+const CartPage         = lazy(() => import("./pages/CartPage"));
+const AdminPage        = lazy(() => import("./pages/AdminPage"));
+const AdminOrders      = lazy(() => import("./pages/Admin/AdminOrders"));
+const POSPage          = lazy(() => import("./pages/Admin/POSPage"));
+const SuperAdminPage   = lazy(() => import("./pages/SuperAdminPage"));
+const AboutPage        = lazy(() => import("./pages/AboutPage"));
+const ContactPage      = lazy(() => import("./pages/ContactPage"));
+const PaymentGateway   = lazy(() => import("./pages/Payment/PaymentGateway"));
+const UserDashboard    = lazy(() => import("./pages/Profile/UserDashboard"));
+const PrivacyPage      = lazy(() => import("./pages/legal/PrivacyPage"));
+const CGUPage          = lazy(() => import("./pages/legal/CGUPage"));
+const RecrutementPage  = lazy(() => import("./pages/RecrutementPage"));
+const TermsPage        = lazy(() => import("./pages/legal/TermsPage"));
+const InfoPage         = lazy(() => import("./pages/legal/InfoPage"));
+const FidelitePage     = lazy(() => import("./pages/FidelitePage"));
 import LegalTemplate, { LEGAL_PAGES } from "./pages/Legal/LegalTemplate";
 
 // ── Anti-scraping / anti-inspect protection ──────────────────────────────────
@@ -77,6 +78,29 @@ function useAntiScraping() {
       clearInterval(devtoolsCheck);
     };
   }, []);
+}
+
+
+// Minimal full-screen spinner shown while lazy chunks load
+function PageLoader() {
+  return (
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "#0a2318",
+    }}>
+      <div style={{
+        width: 40, height: 40,
+        border: "3px solid rgba(46,139,87,0.2)",
+        borderTop: "3px solid #2E8B57",
+        borderRadius: "50%",
+        animation: "spin 0.8s linear infinite",
+      }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 }
 
 // ── Public shell (all routes that show Header + Footer) ──────────────────────
@@ -163,12 +187,14 @@ export default function App() {
   return (
     <BrowserRouter>
       <LanguageProvider>
-        <Routes>
-          {/* Super-admin is fully standalone — no Header/Footer */}
-          <Route path="/super-admin" element={<SuperAdminPage />} />
-          {/* All other routes get the public shell */}
-          <Route path="/*" element={<PublicShell />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Super-admin is fully standalone — no Header/Footer */}
+            <Route path="/super-admin" element={<SuperAdminPage />} />
+            {/* All other routes get the public shell */}
+            <Route path="/*" element={<PublicShell />} />
+          </Routes>
+        </Suspense>
         <CookieBanner />
       </LanguageProvider>
     </BrowserRouter>
