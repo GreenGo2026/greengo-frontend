@@ -237,6 +237,14 @@ function SuccessScreen({ orderId }: { orderId: string }) {
         </p>
       </div>
 
+      {/* Track order button */}
+      
+        href={`/track/${orderId}`}
+        className="flex items-center gap-2.5 rounded-2xl bg-[#2E8B57] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/25 transition-all hover:bg-[#1F6B40] hover:shadow-xl active:scale-95"
+      >
+        🛵 Suivre ma commande #{shortId}
+      </a>
+
       {/* Invoice download */}
       <div className="flex flex-col items-center gap-2 w-full max-w-xs">
         <button
