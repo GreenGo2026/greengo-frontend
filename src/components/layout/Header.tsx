@@ -246,6 +246,7 @@ export default function Header() {
 
   const navLinks = [
     { to: "/shop",    label: language === "ar" ? "الكتالوج" : language === "fr" ? "Catalogue" : "Catalog" },
+    { to: "/offres",  label: language === "ar" ? "🔥 العروض" : language === "fr" ? "🔥 Offres"  : "🔥 Deals", highlight: true },
     { to: "/about",   label: language === "ar" ? "عنا"      : language === "fr" ? "À propos"  : "About"   },
     { to: "/contact", label: t("nav_contact") },
   ];
@@ -305,8 +306,12 @@ export default function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-0.5 lg:flex">
-          {navLinks.map(({ to, label }) => (
-            <NavLink key={to} to={to} end={to === "/"} className={desktopNavCls}>
+          {navLinks.map(({ to, label, highlight }) => (
+            <NavLink key={to} to={to} end={to === "/"} className={highlight
+              ? ({ isActive }) => (isActive
+                  ? "rounded-lg px-4 py-2 text-sm font-semibold text-orange-400 transition-all"
+                  : "rounded-lg px-4 py-2 text-sm font-semibold text-orange-400/80 transition-all hover:text-orange-300 hover:bg-orange-900/10")
+              : desktopNavCls}>
               {label}
             </NavLink>
           ))}
@@ -397,8 +402,12 @@ export default function Header() {
           <div className="flex flex-col space-y-1 px-4 py-4">
 
             {/* Nav links */}
-            {navLinks.map(({ to, label }) => (
-              <NavLink key={to} to={to} end={to === "/"} onClick={closeAll} className={mobileNavCls}>
+            {navLinks.map(({ to, label, highlight }) => (
+              <NavLink key={to} to={to} end={to === "/"} onClick={closeAll} className={highlight
+                ? ({ isActive }) => (isActive
+                    ? "flex items-center rounded-xl px-4 py-3 text-sm font-semibold bg-orange-900/20 text-orange-400"
+                    : "flex items-center rounded-xl px-4 py-3 text-sm font-semibold text-orange-400/70 hover:bg-orange-900/15 hover:text-orange-400 transition-colors")
+                : mobileNavCls}>
                 {label}
               </NavLink>
             ))}
