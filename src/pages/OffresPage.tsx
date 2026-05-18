@@ -1,6 +1,7 @@
 // src/pages/OffresPage.tsx
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useCartStore, getUnitStep } from "../store/cartStore";
 
@@ -228,6 +229,7 @@ export default function OffresPage() {
     <div className={language==="ar"?"font-arabic":"font-latin"} dir={isRTL?"rtl":"ltr"}
       style={{ minHeight:"100vh", background:"linear-gradient(160deg,#031409 0%,#061a12 40%,#0a2318 100%)" }}>
       <main>
+        <SocialProofStrip />
 
         {/* Hero */}
         <section aria-label="Offres flash GreenGo Market" className="relative overflow-hidden px-6 py-14 text-center">

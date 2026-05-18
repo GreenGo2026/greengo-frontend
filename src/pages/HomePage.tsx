@@ -9,6 +9,7 @@ import { getProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
 import { Link } from "react-router-dom";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
+import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
 
 // ── Niche category definitions ───────────────────────────────────────────────
@@ -695,10 +696,11 @@ export default function HomePage() {
       );
     }
 
-    // Sort
-    if (sortKey === "price_asc")  list.sort((a, b) => a.price_mad - b.price_mad);
-    if (sortKey === "price_desc") list.sort((a, b) => b.price_mad - a.price_mad);
-    if (sortKey === "name_az")    list.sort((a, b) => (a.name_ar ?? "").localeCompare(b.name_ar ?? ""));
+    // Sort — always in-stock first
+    list.sort((a, b) => (b.in_stock ? 1 : 0) - (a.in_stock ? 1 : 0));
+    if (sortKey === "price_asc")  list.sort((a, b) => (b.in_stock === a.in_stock ? a.price_mad - b.price_mad : (b.in_stock ? 1 : -1)));
+    if (sortKey === "price_desc") list.sort((a, b) => (b.in_stock === a.in_stock ? b.price_mad - a.price_mad : (b.in_stock ? 1 : -1)));
+    if (sortKey === "name_az")    list.sort((a, b) => (b.in_stock === a.in_stock ? (a.name_ar ?? "").localeCompare(b.name_ar ?? "") : (b.in_stock ? 1 : -1)));
 
     return list;
   }, [products, activeKey, search, sortKey]);
@@ -737,6 +739,7 @@ export default function HomePage() {
         </div>
         <div className="zellige-border" />
       </div>
+      <SocialProofStrip />
 
       <div className="mx-auto max-w-7xl px-4 py-6 space-y-5">
 
