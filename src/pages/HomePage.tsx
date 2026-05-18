@@ -488,7 +488,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
         className="gg-product-card group relative flex flex-col overflow-hidden"
         style={{ minHeight: "340px" }}>
         <div
-          className={"relative overflow-hidden cursor-pointer " + meta.bg}
+          className={"relative overflow-hidden cursor-pointer " + (product.image_url?.endsWith('.jpg') || product.image_url?.endsWith('.jpeg') ? "bg-white" : meta.bg)}
           style={{ aspectRatio: "1 / 1", width: "100%" }}
           onClick={() => product.image_url && !imgError && setShowModal(true)}>
           <div className="absolute inset-0 bg-gradient-to-t from-black/6 via-transparent to-transparent pointer-events-none z-10" />
@@ -496,8 +496,8 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
             <img
               src={resolveImg(product.image_url)}
               alt={product.name_fr || product.name_ar || "product"}
-              className="absolute inset-0 h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.07] select-none pointer-events-none"
-              style={{ padding: "10%", filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.09))" }}
+              className={`absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-[1.07] select-none pointer-events-none ${product.image_url?.endsWith('.jpg') || product.image_url?.endsWith('.jpeg') ? 'object-cover' : 'object-contain'}`}
+              style={product.image_url?.endsWith('.jpg') || product.image_url?.endsWith('.jpeg') ? {} : { padding: "8%", filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.09))" }}
               onError={() => setImgError(true)}
             />
           ) : (
@@ -517,12 +517,10 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
               </div>
             </div>
           )}
-          {isTop3 && (
+          {rank === 0 && (
             <div className="absolute left-2.5 top-2.5 z-20 flex items-center gap-1 rounded-full bg-[#FF9800] px-2.5 py-1 shadow-lg shadow-[#FF9800]/30">
               <Star size={9} className="fill-white text-white" />
-              <span className="text-[9px] font-extrabold text-white tracking-wide">
-                {rank === 0 ? "TOP" : "#" + (rank + 1)}
-              </span>
+              <span className="text-[9px] font-extrabold text-white tracking-wide">TOP</span>
             </div>
           )}
           <div className="absolute right-2.5 top-2.5 z-20">
