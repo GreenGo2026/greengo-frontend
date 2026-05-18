@@ -2,6 +2,7 @@
 import "./index.css";
 import { Suspense, lazy } from "react";
 import { useEffect }              from "react";
+import StickyCartBar from "./components/ui/StickyCartBar";
 import CookieBanner               from "./components/ui/CookieBanner";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider }       from "./contexts/LanguageContext";
@@ -184,6 +185,7 @@ function PublicShell() {
       <Footer />
       <MobileBottomNav />
       <NewsletterModal />
+      <StickyCartBar />
     </div>
   );
 }
