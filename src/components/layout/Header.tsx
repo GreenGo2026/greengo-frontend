@@ -246,7 +246,8 @@ export default function Header() {
 
   const navLinks = [
     { to: "/shop",    label: language === "ar" ? "الكتالوج" : language === "fr" ? "Catalogue" : "Catalog" },
-    { to: "/offres",  label: language === "ar" ? "🔥 العروض" : language === "fr" ? "🔥 Offres"  : "🔥 Deals", highlight: true },
+    { to: "/offres",      label: language === "ar" ? "🔥 العروض"  : language === "fr" ? "🔥 Offres"   : "🔥 Deals",   highlight: true },
+    { to: "/panier-type", label: language === "ar" ? "🛒 السلات"  : language === "fr" ? "🛒 Paniers"  : "🛒 Baskets" },
     { to: "/about",   label: language === "ar" ? "عنا"      : language === "fr" ? "À propos"  : "About"   },
     { to: "/contact", label: t("nav_contact") },
   ];
