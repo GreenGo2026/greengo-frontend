@@ -88,14 +88,14 @@ function HeaderLogo() {
 // ── NavLink class helpers ─────────────────────────────────────────────────────
 function desktopNavCls({ isActive }: { isActive: boolean }): string {
   return isActive
-    ? "rounded-lg px-4 py-2 text-sm font-semibold text-[#FF9800] transition-all"
-    : "rounded-lg px-4 py-2 text-sm font-semibold text-white/65 transition-all hover:bg-white/8 hover:text-white";
+    ? "rounded-lg px-3.5 py-2 text-[13px] font-bold text-green-400 transition-all"
+    : "rounded-lg px-3.5 py-2 text-[13px] font-medium text-white/55 transition-all hover:bg-white/7 hover:text-white/90";
 }
 
 function mobileNavCls({ isActive }: { isActive: boolean }): string {
   return isActive
-    ? "flex items-center rounded-xl px-4 py-3 text-sm font-semibold bg-white/10 text-white"
-    : "flex items-center rounded-xl px-4 py-3 text-sm font-semibold text-white/70 transition-colors hover:bg-white/10 hover:text-white";
+    ? "flex items-center rounded-xl px-4 py-3.5 text-sm font-bold bg-green-900/30 text-green-400 border-l-2 border-green-500"
+    : "flex items-center rounded-xl px-4 py-3.5 text-sm font-medium text-white/60 transition-colors hover:bg-white/8 hover:text-white/90";
 }
 
 function dropCls(on: boolean): string {
@@ -267,10 +267,10 @@ export default function Header() {
   return (
     <header
       className={"sticky top-0 z-50 w-full " + font}
-      style={{ background: "linear-gradient(180deg,#0d3b36 0%,#0a2e28 100%)" }}
+      style={{ background: "linear-gradient(180deg,#0c3228 0%,#071e18 100%)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
     >
       {/* ── Top utility bar ── */}
-      <div className="hidden border-b border-white/5 md:block" style={{ background: "rgba(0,0,0,0.2)" }}>
+      <div className="hidden border-b border-white/[0.06] md:block" style={{ background: "rgba(0,0,0,0.25)" }}>
         <div dir={dir} className="mx-auto flex max-w-7xl items-center justify-between px-5 py-1.5">
           <p className={"text-[10px] text-white/30 " + font}>
             {language === "ar"
@@ -306,12 +306,12 @@ export default function Header() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-0.5 lg:flex">
+        <nav className="hidden items-center gap-0 lg:flex">
           {navLinks.map(({ to, label, highlight }) => (
             <NavLink key={to} to={to} end={to === "/"} className={highlight
               ? ({ isActive }) => (isActive
-                  ? "rounded-lg px-4 py-2 text-sm font-semibold text-orange-400 transition-all"
-                  : "rounded-lg px-4 py-2 text-sm font-semibold text-orange-400/80 transition-all hover:text-orange-300 hover:bg-orange-900/10")
+                  ? "rounded-lg px-3.5 py-2 text-[13px] font-bold text-amber-400 transition-all"
+                  : "rounded-lg px-3.5 py-2 text-[13px] font-medium text-amber-400/75 transition-all hover:text-amber-300 hover:bg-amber-900/10")
               : desktopNavCls}>
               {label}
             </NavLink>
@@ -324,7 +324,7 @@ export default function Header() {
           {/* Lang picker — desktop */}
           <div ref={langRef} className="relative hidden md:block">
             <button onClick={toggleLang}
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white/70 transition-all hover:bg-white/10 hover:text-white">
+              className="flex items-center gap-1.5 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-white/55 transition-all hover:bg-white/10 hover:text-white">
               <span>{language.toUpperCase()}</span>
               <ChevronDown size={11} className={"transition-transform duration-200 " + (langOpen ? "rotate-180" : "")} />
             </button>
@@ -344,7 +344,7 @@ export default function Header() {
 
           {/* WhatsApp — desktop */}
           <a href={WA_ORDERS} target="_blank" rel={REL}
-            className="hidden items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white/60 transition-all hover:bg-white/10 hover:text-white md:flex">
+            className="hidden items-center gap-1.5 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-2 text-xs font-medium text-white/50 transition-all hover:bg-white/10 hover:text-white/90 md:flex">
             <MessageCircle size={13} />
             <span className={font}>{t("nav_whatsapp")}</span>
           </a>
@@ -370,7 +370,7 @@ export default function Header() {
 
           {/* Cart button */}
           <Link to="/cart" aria-label={t("nav_cart")}
-            className="relative flex items-center gap-2 rounded-xl bg-[#2E8B57] px-3.5 py-2 text-sm font-bold text-white shadow-lg shadow-[#2E8B57]/25 transition-all hover:bg-[#1F6B40] hover:shadow-xl active:scale-95">
+            className="relative flex items-center gap-2 rounded-xl bg-[#2E8B57] px-3.5 py-2 text-sm font-bold text-white shadow-lg shadow-[#2E8B57]/30 transition-all hover:bg-[#267a4c] hover:shadow-[#2E8B57]/50 hover:shadow-xl active:scale-95">
             <ShoppingCart size={18} strokeWidth={2} />
             {hasItems && (
               <span className="absolute -right-2 -top-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[#FF9800] px-1 text-[10px] font-extrabold text-white shadow-md">
@@ -386,7 +386,7 @@ export default function Header() {
 
           {/* Hamburger */}
           <button onClick={toggleMobile} aria-label="Toggle menu"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 lg:hidden">
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/8 bg-white/[0.04] text-white/70 transition-all hover:bg-white/10 hover:text-white lg:hidden">
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
 
@@ -399,22 +399,22 @@ export default function Header() {
       {/* ── Mobile drawer ── */}
       {mobileOpen && (
         <div dir={dir} className={"border-t border-white/8 lg:hidden " + font}
-          style={{ background: "linear-gradient(180deg,#0a2820 0%,#071a14 100%)" }}>
-          <div className="flex flex-col space-y-1 px-4 py-4">
+          style={{ background: "linear-gradient(180deg,#0a2820 0%,#061510 100%)", borderTop: "1px solid rgba(201,169,110,0.12)" }}>
+          <div className="flex flex-col space-y-0.5 px-3 py-4">
 
             {/* Nav links */}
             {navLinks.map(({ to, label, highlight }) => (
               <NavLink key={to} to={to} end={to === "/"} onClick={closeAll} className={highlight
                 ? ({ isActive }) => (isActive
-                    ? "flex items-center rounded-xl px-4 py-3 text-sm font-semibold bg-orange-900/20 text-orange-400"
-                    : "flex items-center rounded-xl px-4 py-3 text-sm font-semibold text-orange-400/70 hover:bg-orange-900/15 hover:text-orange-400 transition-colors")
+                    ? "flex items-center rounded-xl px-4 py-3.5 text-sm font-bold bg-amber-900/20 text-amber-400 border-l-2 border-amber-500"
+                    : "flex items-center rounded-xl px-4 py-3.5 text-sm font-medium text-amber-400/70 hover:bg-amber-900/15 hover:text-amber-300 transition-colors")
                 : mobileNavCls}>
                 {label}
               </NavLink>
             ))}
 
             {/* My Account section */}
-            <div className="border-t border-white/8 pt-3 pb-1">
+            <div className="border-t border-white/[0.07] pt-3 pb-1 mt-1">
               <div className={"mb-2 flex items-center gap-2 px-4 " + (isRTL ? "flex-row-reverse" : "")}>
                 <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#2E8B57]/20">
                   <User size={12} className="text-[#4DB882]" />
