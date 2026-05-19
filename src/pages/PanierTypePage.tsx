@@ -178,7 +178,7 @@ function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
 
   return (
     <article
-      className={`rounded-3xl border overflow-hidden transition-all duration-300 bg-gradient-to-br ${basket.color}`}
+      className={`rounded-3xl border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl bg-gradient-to-br ${basket.color}`}
       style={{ border: `1px solid ${basket.accent}30` }}
     >
       {/* Header */}
@@ -190,7 +190,7 @@ function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
               style={{ background: `${basket.accent}20`, color: basket.accent, border: `1px solid ${basket.accent}40` }}>
               ⭐ {basket.badge[l]}
             </span>
-            <h2 className={`text-xl font-black text-white leading-tight ${l === "ar" ? "font-arabic text-right" : "font-latin"}`}>
+            <h2 className={`text-xl font-black text-white leading-tight ${l === "ar" ? "font-arabic text-right" : "font-latin"}`} style={l !== "ar" ? { fontFamily: "var(--font-display)", fontSize: "1.4rem" } : {}}>
               {basket.emoji} {basket.title[l]}
             </h2>
             <p className={`text-xs text-white/50 mt-0.5 ${l === "ar" ? "font-arabic text-right" : "font-latin"}`}>
@@ -225,7 +225,7 @@ function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
         <div className={`flex items-center gap-3 mb-4 ${l === "ar" ? "flex-row-reverse" : ""}`}>
           <div>
             <div className={`flex items-baseline gap-1.5 ${l === "ar" ? "flex-row-reverse" : ""}`}>
-              <span className="text-3xl font-black text-white font-latin">{discounted.toFixed(0)}</span>
+              <span className="text-4xl font-black text-white font-latin" style={{ fontFamily: "var(--font-body)", letterSpacing: "-0.03em" }}>{discounted.toFixed(0)}</span>
               <span className="text-sm text-white/50 font-latin">MAD</span>
             </div>
             <div className={`flex items-center gap-2 ${l === "ar" ? "flex-row-reverse" : ""}`}>
@@ -275,7 +275,7 @@ function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
         {/* CTA buttons */}
         <div className="flex gap-2">
           <button onClick={handleAddAll}
-            className={`flex-1 rounded-2xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98] ${l === "ar" ? "font-arabic" : "font-latin"}`}
+            className={`flex-1 rounded-2xl py-4 text-sm font-extrabold text-white transition-all duration-200 active:scale-[0.97] hover:brightness-110 ${l === "ar" ? "font-arabic" : "font-latin"}`}
             style={{
               background: added
                 ? "linear-gradient(135deg,#16a34a,#15803d)"
@@ -322,7 +322,7 @@ export default function PanierTypePage() {
                 {l === "ar" ? "سلات جاهزة · GreenGo Market" : l === "fr" ? "Paniers prêts · GreenGo Market" : "Ready baskets · GreenGo Market"}
               </span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight mb-4">
+            <h1 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight mb-4" style={{ fontFamily: 'var(--font-display)' }}>
               {l === "ar" ? "سلاتنا" : l === "fr" ? "Nos Paniers"  : "Our Baskets"}<br/>
               <span className="bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
                 {l === "ar" ? "الجاهزة" : l === "fr" ? "Prêts à Commander" : "Ready to Order"}
@@ -356,7 +356,7 @@ export default function PanierTypePage() {
 
         {/* Baskets grid */}
         <section aria-label="Liste des paniers types" className="px-4 pb-8 max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {BASKETS.map(basket => (
               <BasketCard key={basket.id} basket={basket} lang={language} />
             ))}

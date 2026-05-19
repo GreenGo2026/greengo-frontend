@@ -124,7 +124,7 @@ function DealCard({ deal, lang }: { deal: Deal; lang: string }) {
   }
 
   return (
-    <article className={`relative rounded-2xl border overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl ${
+    <article className={`relative rounded-2xl border overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${
       urgent
         ? "border-red-700/40 bg-gradient-to-br from-red-900/10 to-black/20 hover:shadow-red-900/20"
         : deal.hot
@@ -141,7 +141,7 @@ function DealCard({ deal, lang }: { deal: Deal; lang: string }) {
       )}
 
       {/* Discount bubble */}
-      <div className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-green-600 flex items-center justify-center shadow-lg shadow-green-600/30">
+      <div className="absolute top-3 right-3 z-10 w-11 h-11 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center shadow-lg shadow-green-600/40 border border-green-400/30">
         <span className="text-[10px] font-black text-white">-{discount}%</span>
       </div>
 
@@ -192,7 +192,7 @@ function DealCard({ deal, lang }: { deal: Deal; lang: string }) {
         <button
           onClick={handleAdd}
           disabled={time.expired}
-          className={`mt-4 w-full rounded-xl py-3 text-sm font-extrabold text-white transition-all active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed ${
+          className={`mt-4 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.97] hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed ${
             inCart
               ? "bg-green-700/50 border border-green-600/40"
               : "bg-gradient-to-r from-green-700 to-green-900 border border-green-600/50 hover:opacity-90 shadow-lg shadow-green-900/30"
@@ -242,7 +242,7 @@ export default function OffresPage() {
                 {l==="ar"?"عروض اليوم · GreenGo Market":l==="fr"?"Offres du jour · GreenGo Market":"Today's Deals · GreenGo Market"}
               </span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight mb-4">
+            <h1 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight mb-4" style={{ fontFamily: "var(--font-display)" }}>
               {l==="ar"?"عروض":l==="fr"?"Offres":"Flash"}<br/>
               <span className="bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent">
                 {l==="ar"?"حصرية اليوم":l==="fr"?"Flash du Jour":"Deals Today"}
@@ -272,7 +272,7 @@ export default function OffresPage() {
           <div className="flex flex-wrap gap-2 justify-center">
             {FILTERS.map(f => (
               <button key={f.key} onClick={() => setFilter(f.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold border transition-all ${
                   filter === f.key
                     ? "bg-orange-700/30 border-orange-600/50 text-orange-300"
                     : "bg-white/[0.03] border-white/10 text-white/40 hover:text-white/70 hover:border-white/20"
@@ -292,7 +292,7 @@ export default function OffresPage() {
               <p className="text-white/40 text-sm">{l==="ar"?"لا توجد عروض حالياً":l==="fr"?"Aucune offre pour ce filtre":"No deals for this filter"}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {filtered.map(deal => <DealCard key={deal.id} deal={deal} lang={language} />)}
             </div>
           )}

@@ -549,7 +549,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
             </div>
           )}
         </div>
-        <div className="flex flex-1 flex-col gap-2.5 p-3.5">
+        <div className="flex flex-1 flex-col gap-2 p-3 sm:p-3.5">
           <div>
             <Link to={`/produit/${product.id}`} className="group-hover:underline decoration-[#2E8B57]/40">
               <h3 dir="rtl" className={"line-clamp-2 text-sm font-extrabold leading-snug text-gray-900 font-arabic hover:text-[#2E8B57] transition-colors " + (language === "ar" ? "text-right" : "text-left")}>
@@ -565,7 +565,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
           <div className={"flex items-end justify-between " + (language === "ar" ? "flex-row-reverse" : "")}>
             <div className={language === "ar" ? "text-right" : "text-left"}>
               <div className="flex items-baseline gap-0.5">
-                <span className="text-xl font-extrabold text-[#1A6640] font-latin leading-none">
+                <span className="text-[22px] font-black text-[#1A6640] font-latin leading-none tracking-tight">
                   {product.price_mad.toFixed(2)}
                 </span>
                 <span className="text-xs font-semibold text-gray-400 font-latin ml-0.5">MAD</span>
@@ -727,7 +727,7 @@ export default function HomePage() {
                 {language === "ar" ? "طازج يومياً" : language === "fr" ? "Frais chaque jour" : "Fresh every day"}
               </span>
             </div>
-            <h1 className={"text-2xl font-extrabold text-white md:text-3xl " + font} style={{ letterSpacing: "-0.02em" }}>
+            <h1 className={"text-2xl md:text-4xl font-black text-white " + font} style={{ letterSpacing: "-0.03em", fontFamily: language !== "ar" ? "var(--font-display)" : undefined }}>
               {language === "ar" ? "تسوّق المنتجات الطازجة" : language === "fr" ? "Nos Produits Frais" : "Fresh Product Catalog"}
             </h1>
             <p className={"mt-1.5 text-sm text-white/50 " + font}>
@@ -837,7 +837,7 @@ export default function HomePage() {
 
         {/* ── Skeleton grid ── */}
         {loading && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         )}
@@ -860,7 +860,7 @@ export default function HomePage() {
               )}
             </p>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {filtered.map((product, i) => (
                 <ProductCard key={product.id} product={product} rank={i} />
               ))}
@@ -878,7 +878,7 @@ export default function HomePage() {
               { emoji: "🔒", label_fr: "Paiement sécurisé",    label_ar: "دفع آمن",              label_en: "Secure payment"      },
             ].map((item) => (
               <div key={item.label_en}
-                className={"flex items-center gap-2.5 rounded-2xl border border-white/8 bg-white/5 p-3.5 shadow-sm " + (isRTL ? "flex-row-reverse" : "")}>
+                className={"flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/[0.04] p-3.5 transition-colors hover:border-green-700/25 hover:bg-white/[0.07] " + (isRTL ? "flex-row-reverse" : "")}>
                 <span className="text-2xl leading-none">{item.emoji}</span>
                 <span className={"text-xs font-semibold text-white/60 " + font}>
                   {language === "ar" ? item.label_ar : language === "fr" ? item.label_fr : item.label_en}
