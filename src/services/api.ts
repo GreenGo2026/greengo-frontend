@@ -28,6 +28,8 @@ export interface DBProduct {
   image_status:string;
   visible:     boolean;
   created_at: string | null;
+  on_sale?:      boolean;
+  discount_pct?: number;
 }
 
 export interface DBProductUpdate {
