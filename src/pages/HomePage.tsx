@@ -616,13 +616,13 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
 // ── Skeleton card ─────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm animate-pulse">
-      <div className="h-48 bg-gray-100" />
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-sm">
+      <div className="h-48 gg-skeleton rounded-none" />
       <div className="flex flex-col gap-3 p-4">
-        <div className="h-4 w-3/4 rounded-lg bg-gray-100" />
-        <div className="h-3 w-1/2 rounded-lg bg-gray-100" />
-        <div className="h-6 w-1/3 rounded-lg bg-gray-100" />
-        <div className="h-10 w-full rounded-xl bg-gray-100" />
+        <div className="h-4 w-3/4 rounded-lg gg-skeleton" />
+        <div className="h-3 w-1/2 rounded-lg gg-skeleton" />
+        <div className="h-6 w-1/3 rounded-lg gg-skeleton" />
+        <div className="h-10 w-full rounded-xl gg-skeleton" />
       </div>
     </div>
   );
