@@ -294,6 +294,8 @@ export default function CartPage() {
   const [name,           setName]           = useState("");
   const [phone,          setPhone]          = useState("");
   const [address,        setAddress]        = useState("");
+  const [isReturning,    setIsReturning]    = useState(false);
+  const [savedProfile,   setSavedProfile]   = useState<{name:string;address:string} | null>(null);
   const [location,       setLocation]       = useState<GPS | null>(null);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
   const [isSubmitting,   setIsSubmitting]   = useState(false);
@@ -354,6 +356,15 @@ export default function CartPage() {
       }
       const data = await res.json();
       const id   = data.order_id ?? "";
+      // Save customer profile for returning customer recognition
+      try {
+        const normalizedKey = "+212" + phone.trim().replace(/^0/, "").replace(/^\+212/, "");
+        localStorage.setItem("gg_customer_" + normalizedKey, JSON.stringify({
+          name:    name.trim(),
+          address: address.trim(),
+          lastOrder: new Date().toISOString(),
+        }));
+      } catch { /* ignore */ }
       // Order saved — show success screen (no auto WhatsApp redirect)
       clearCart();
       setOrderId(id);
@@ -482,6 +493,51 @@ export default function CartPage() {
                     className={nameInput} />
                 </div>
 
+                {/* Retourning customer banner */}
+                {isReturning && savedProfile && (
+                  <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-xl shrink-0">👋</span>
+                        <div>
+                          <p className={"text-sm font-extrabold text-green-800 " + font}>
+                            {language === "ar"
+                              ? `مرحباً ${savedProfile.name}!`
+                              : language === "fr"
+                              ? `Bon retour, ${savedProfile.name} !`
+                              : `Welcome back, ${savedProfile.name}!`}
+                          </p>
+                          <p className={"text-xs text-green-600 mt-0.5 " + font}>
+                            {language === "ar"
+                              ? "هل تريد استخدام معلوماتك السابقة؟"
+                              : language === "fr"
+                              ? "Utiliser vos informations précédentes ?"
+                              : "Use your previous delivery details?"}
+                          </p>
+                          <p className="text-xs text-green-500 mt-1 font-latin truncate max-w-[200px]">
+                            📍 {savedProfile.address}
+                          </p>
+                        </div>
+                      </div>
+                      <button onClick={dismissProfile}
+                        aria-label="Ignorer"
+                        className="text-green-400 hover:text-green-600 transition-colors shrink-0 mt-0.5">
+                        ✕
+                      </button>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button onClick={applyProfile}
+                        className={"flex-1 rounded-xl bg-[#2E8B57] py-2.5 text-xs font-extrabold text-white transition-all hover:bg-[#1F6B40] active:scale-[0.98] " + font}>
+                        {language === "ar" ? "✓ نعم، استخدمها" : language === "fr" ? "✓ Oui, utiliser" : "✓ Yes, use these"}
+                      </button>
+                      <button onClick={dismissProfile}
+                        className={"flex-1 rounded-xl border border-gray-200 bg-white py-2.5 text-xs font-semibold text-gray-500 transition-all hover:bg-gray-50 " + font}>
+                        {language === "ar" ? "لا، أدخل يدوياً" : language === "fr" ? "Non, saisir manuellement" : "No, enter manually"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Téléphone */}
                 <div className="space-y-1.5">
                   <label htmlFor="cp-phone"
@@ -495,7 +551,7 @@ export default function CartPage() {
                       <span className="text-sm font-bold text-gray-500 font-latin">🇲🇦 +212</span>
                     </div>
                     <input id="cp-phone" type="tel" dir="ltr" value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
                       placeholder={t("form_phone_placeholder")}
                       className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none font-latin" />
                   </div>
