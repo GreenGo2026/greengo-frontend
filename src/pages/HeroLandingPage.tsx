@@ -51,7 +51,7 @@ export default function HeroLandingPage() {
           backgroundRepeat: "no-repeat",
           animation: "bg-zoom 20s ease-in-out infinite alternate",
           willChange: "transform",
-          contain: "strict",
+          contain: "paint",
         }}
       />
 
