@@ -260,8 +260,8 @@ export default function OffresPage() {
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
               <span className="text-xs font-semibold text-green-300">
                 {l==="ar"?"23 طلبية اليوم في سلا والرباط"
-                  :l==="fr"?"23 commandes passées aujourd'hui à Salé et Rabat"
-                  :"23 orders placed today in Salé and Rabat"}
+                  :l==="fr"?"✅ Produits frais sélectionnés ce matin — livrés aujourd'hui"
+                  :"✅ Fresh products selected this morning — delivered today"}
               </span>
             </div>
           </div>

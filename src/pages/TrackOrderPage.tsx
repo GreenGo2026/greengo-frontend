@@ -20,7 +20,7 @@ interface OrderData {
 const T = {
   title:       { fr:"Suivi de commande",           ar:"تتبع الطلبية",              en:"Order Tracking"              },
   subtitle:    { fr:"Entrez votre numero de commande pour suivre en temps reel.", ar:"أدخل رقم طلبيتك لمتابعتها.", en:"Enter your order number to track in real time." },
-  input_ph:    { fr:"Numero de commande (ex: A1B2C3)", ar:"رقم الطلبية", en:"Order number (e.g. A1B2C3)"  },
+  input_ph:    { fr:"N° de commande reçu par WhatsApp", ar:"رقم الطلبية من واتساب", en:"Order number from WhatsApp"  },
   track_btn:   { fr:"Suivre ma commande",           ar:"تتبع طلبيتي",               en:"Track my order"              },
   not_found:   { fr:"Commande introuvable. Verifiez le numero et reessayez.", ar:"طلبية غير موجودة. تحقق من الرقم.", en:"Order not found. Check the number and try again." },
   loading:     { fr:"Recherche en cours...",        ar:"جارٍ البحث...",             en:"Searching..."                },
