@@ -662,7 +662,15 @@ export default function HomePage() {
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState("");
   const [activeKey, setActiveKey] = useState<NicheKey>("all");
-  const [search,    setSearch]    = useState("");
+  const [search,       setSearch]       = useState("");
+  const [searchInput,  setSearchInput]  = useState(""); // raw input value
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = useCallback((val: string) => {
+    setSearchInput(val);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => setSearch(val), 180);
+  }, []);
   const [sortKey,   setSortKey]   = useState<SortKey>("default");
 
   async function load() {
@@ -791,7 +799,8 @@ export default function HomePage() {
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchInput}
+                onChange={(e) => handleSearchChange(e.target.value)}
               dir={dir}
               placeholder={language === "ar" ? "ابحث عن منتج…" : language === "fr" ? "Rechercher un produit…" : "Search products…"}
               className={"w-full rounded-2xl border border-white/10 bg-white/8 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:bg-white/12 shadow-sm " + (isRTL ? "pr-10 pl-4" : "pl-10 pr-4") + " " + font}
