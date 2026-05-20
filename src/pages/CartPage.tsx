@@ -320,6 +320,46 @@ export default function CartPage() {
     );
   }
 
+  // ── Phone change + returning customer lookup ────────────────────────────────
+  function handlePhoneChange(val: string) {
+    setPhone(val);
+    const trimmed = val.trim();
+    if (trimmed.length >= 9) {
+      const normalized = trimmed.startsWith("+212")
+        ? trimmed
+        : "+212" + trimmed.replace(/^0/, "");
+      try {
+        const stored = localStorage.getItem("gg_customer_" + normalized);
+        if (stored) {
+          const profile = JSON.parse(stored);
+          setSavedProfile(profile);
+          setIsReturning(true);
+        } else {
+          setIsReturning(false);
+          setSavedProfile(null);
+        }
+      } catch {
+        setIsReturning(false);
+        setSavedProfile(null);
+      }
+    } else {
+      setIsReturning(false);
+      setSavedProfile(null);
+    }
+  }
+
+  function applyProfile() {
+    if (!savedProfile) return;
+    setName(savedProfile.name);
+    setAddress(savedProfile.address);
+    setIsReturning(false);
+  }
+
+  function dismissProfile() {
+    setIsReturning(false);
+    setSavedProfile(null);
+  }
+
   // ── Submit ────────────────────────────────────────────────────────────────────
   async function submitOrder() {
     if (!isValid) return;
