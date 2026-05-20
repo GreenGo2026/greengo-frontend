@@ -284,7 +284,7 @@ export default function HeroLandingPage() {
         </div>
 
         {/* Nav CTA */}
-        <Link to="/shop" style={{
+        <Link to="/shop" aria-label="Commander sur GreenGo Market" style={{
           fontFamily: "'DM Sans',sans-serif",
           fontSize: "0.78rem", fontWeight: 500,
           letterSpacing: "0.06em",
@@ -424,8 +424,9 @@ export default function HeroLandingPage() {
               { to:"/shop",        emoji:"🥬", fr:"Tous les produits"},
             ].map(l => (
               <a key={l.to} href={l.to}
+                aria-label={l.fr}
                 className="feat-pill flex items-center gap-1.5">
-                <span>{l.emoji}</span> {l.fr}
+                <span aria-hidden="true">{l.emoji}</span> {l.fr}
               </a>
             ))}
           </div>
