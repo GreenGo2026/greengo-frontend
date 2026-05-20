@@ -27,6 +27,16 @@ export default function HeroLandingPage() {
   return (
     <div className="relative min-h-screen overflow-hidden font-sans">
 
+      {/* LCP hint — preloads hero bg for faster paint */}
+      <img
+        src="/assets/morocco-bg.jpg"
+        alt=""
+        aria-hidden="true"
+        fetchPriority="high"
+        width={1}
+        height={1}
+        style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 1, height: 1 }}
+      />
       {/* ═══════════════════════════════════════════════
           LAYER 1 — Real background image
           Uses the uploaded Moroccan pattern image.
