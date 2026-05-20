@@ -190,6 +190,7 @@ function QtyControl({ product }: { product: DBProduct }) {
     return (
       <button
         onClick={() => add(proxy, step)}
+        aria-label="Ajouter au panier"
         className={"group flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] text-xs font-extrabold text-white shadow-md shadow-[#2E8B57]/20 transition-all duration-200 hover:bg-[#1F6B40] hover:shadow-lg hover:shadow-[#2E8B57]/25 active:scale-[0.97] " + font}>
         <ShoppingCart size={14} strokeWidth={2.5} className="transition-transform group-hover:-rotate-6" />
         {language === "ar" ? "أضف للسلة" : language === "fr" ? "Ajouter" : "Add to cart"}
@@ -201,6 +202,7 @@ function QtyControl({ product }: { product: DBProduct }) {
     <div className="flex h-10 items-center overflow-hidden rounded-xl border-2 border-[#2E8B57]/25 bg-[#2E8B57]/6">
       <button
         onClick={() => remove(product.name_ar, step)}
+        aria-label="Réduire la quantité"
         className="flex h-full w-10 shrink-0 items-center justify-center text-[#2E8B57] transition-colors hover:bg-[#2E8B57]/12 active:scale-90">
         <Minus size={14} strokeWidth={2.5} />
       </button>
@@ -209,6 +211,7 @@ function QtyControl({ product }: { product: DBProduct }) {
       </span>
       <button
         onClick={() => add(proxy, step)}
+        aria-label="Augmenter la quantité"
         className="flex h-full w-10 shrink-0 items-center justify-center text-[#2E8B57] transition-colors hover:bg-[#2E8B57]/12 active:scale-90">
         <Plus size={14} strokeWidth={2.5} />
       </button>
@@ -275,6 +278,7 @@ function ProductGalleryModal({
 
         {/* Close */}
         <button onClick={onClose}
+          aria-label="Fermer"
           className="absolute right-4 top-4 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/8 hover:bg-black/15 transition-colors">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M1 1l11 11M12 1L1 12" stroke="#374151" strokeWidth="2" strokeLinecap="round"/>
@@ -296,7 +300,9 @@ function ProductGalleryModal({
                 <img
                   ref={mg.imgRef}
                   src={resolveImg(product.image_url)}
-                  alt={product.name_fr || "product"}
+                  alt={product.name_fr || product.name_ar || "product"}
+                  width={400}
+                  height={400}
                   className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
                   style={{ padding: "9%", filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.10))" }}
                   onError={() => setImgErr(true)}
@@ -351,7 +357,9 @@ function ProductGalleryModal({
                 onClick={() => setZoomed(true)}>
                 <img
                   src={resolveImg(product.image_url)}
-                  alt={product.name_fr || "product"}
+                  alt={product.name_fr || product.name_ar || "product"}
+                  width={800}
+                  height={800}
                   className="h-full w-full object-contain select-none"
                   style={{ padding: "8%", filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.10))" }}
                   onError={() => setImgErr(true)}
@@ -449,11 +457,14 @@ function ProductGalleryModal({
           onClick={() => setZoomed(false)}>
           <img
             src={resolveImg(product.image_url)}
-            alt={product.name_fr || "product"}
+            alt={product.name_fr || product.name_ar || "product"}
+            width={800}
+            height={800}
             className="max-h-[88vh] max-w-[92vw] object-contain select-none"
             style={{ cursor: "zoom-out" }}
           />
           <button
+            aria-label="Fermer le zoom"
             className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/12 text-white hover:bg-white/22 transition-colors"
             onClick={() => setZoomed(false)}>
             <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
@@ -497,6 +508,8 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
             <img
               src={resolveImg(product.image_url)}
               alt={product.name_fr || product.name_ar || "product"}
+              width={400}
+              height={400}
               className={`absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-[1.07] select-none pointer-events-none ${product.image_url?.endsWith('.jpg') || product.image_url?.endsWith('.jpeg') ? 'object-cover' : 'object-contain'}`}
               style={product.image_url?.endsWith('.jpg') || product.image_url?.endsWith('.jpeg') ? {} : { padding: "8%", filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.09))" }}
               onError={() => setImgError(true)}
