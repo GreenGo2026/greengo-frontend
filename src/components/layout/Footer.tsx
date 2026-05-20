@@ -136,7 +136,7 @@ function Newsletter() {
           }
         </button>
       </form>
-      <p className={"text-[10px] text-white/20 " + font}>{t("newsletter_trust")}</p>
+      <p className={"text-[10px] text-white/55 " + font}>{t("newsletter_trust")}</p>
     </div>
   );
 }
@@ -149,7 +149,7 @@ export default function Footer() {
   const row   = isRTL ? "flex-row-reverse" : "";
   const year  = new Date().getFullYear();
 
-  const headingCls = "mb-4 text-[9px] font-black uppercase tracking-[0.22em] text-white/30 pb-2 border-b border-white/[0.06]";
+  const headingCls = "mb-4 text-[9px] font-black uppercase tracking-[0.22em] text-white/45 pb-2 border-b border-white/[0.06]";
 
   return (
     <footer className={"w-full " + font} style={{ background: "linear-gradient(180deg, #0a1a12 0%, #070f0a 100%)" }}>
@@ -232,7 +232,7 @@ export default function Footer() {
                 <p className="text-xs font-semibold text-white/60 font-latin leading-snug">
                   Lot N° 145 Lotissement EL MOUSTAKBAL
                 </p>
-                <p className="text-xs text-white/38 font-latin">Laayayda, Salé — Maroc</p>
+                <p className="text-xs text-white/52 font-latin">Laayayda, Salé — Maroc</p>
                 <p className="mt-1 text-[11px] font-medium text-white/45 font-arabic" dir="rtl">
                   تجزئة المستقبل، لعيايدة، سلا
                 </p>
@@ -241,7 +241,7 @@ export default function Footer() {
 
             {/* Social icons */}
             <div>
-              <p className={"mb-3 text-[10px] font-bold uppercase tracking-widest text-white/25 " + font}>
+              <p className={"mb-3 text-[10px] font-bold uppercase tracking-widest text-white/42 " + font}>
                 {language === "ar" ? "تابعنا" : "Suivez-nous"}
               </p>
               <div className={"flex items-center gap-2 " + (isRTL ? "flex-row-reverse" : "")}>
@@ -316,7 +316,7 @@ export default function Footer() {
                     <p className={"text-xs font-bold text-white/80 " + font}>
                       {language === "ar" ? "دعم العملاء" : "Support client"}
                     </p>
-                    <p className="text-[11px] text-white/40 font-latin">WhatsApp 0664397031</p>
+                    <p className="text-[11px] text-white/55 font-latin">WhatsApp 0664397031</p>
                   </div>
                 </a>
               </li>
@@ -332,7 +332,7 @@ export default function Footer() {
                     <p className={"text-xs font-bold text-white/65 " + font}>
                       {language === "ar" ? "طلبات الشراء" : "Commandes"}
                     </p>
-                    <p className="text-[11px] text-white/40 font-latin">WhatsApp 0664500789</p>
+                    <p className="text-[11px] text-white/55 font-latin">WhatsApp 0664500789</p>
                   </div>
                 </a>
               </li>
@@ -369,7 +369,7 @@ export default function Footer() {
             <div className={"mt-5 flex flex-wrap gap-1.5 " + (isRTL ? "justify-end" : "")}>
               {["Visa", "CMI", "Cash", "CB"].map((b) => (
                 <span key={b}
-                  className="rounded-md border border-white/12 bg-white/[0.05] px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-white/40">
+                  className="rounded-md border border-white/12 bg-white/[0.05] px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-white/55">
                   {b}
                 </span>
               ))}
@@ -399,12 +399,12 @@ export default function Footer() {
         <div dir={dir}
           className={"mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-5 py-4 md:flex-row " + font}>
 
-          <p className="text-xs text-white/35">
+          <p className="text-xs text-white/50">
             © {year} {t("footer_copyright")}
           </p>
 
           {/* Inline legal links */}
-          <div className={"flex flex-wrap items-center justify-center gap-4 text-[11px] text-white/35 " + row}>
+          <div className={"flex flex-wrap items-center justify-center gap-4 text-[11px] text-white/50 " + row}>
             {[
               { href: "/legal/cgu",     fr: "CGU",              ar: "الشروط" },
               { href: "/legal/privacy", fr: "Confidentialité",  ar: "الخصوصية" },
@@ -419,7 +419,7 @@ export default function Footer() {
 
           {/* Made with love */}
           <div className={"flex items-center gap-1.5 " + row}>
-            <span className="text-[11px] text-white/20">{t("footer_made_in")}</span>
+            <span className="text-[11px] text-white/55">{t("footer_made_in")}</span>
             <Heart size={10} className="text-[#C0614A]/50 fill-[#C0614A]/30" />
           </div>
 

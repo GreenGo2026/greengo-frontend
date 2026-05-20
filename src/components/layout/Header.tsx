@@ -155,7 +155,7 @@ function AccountDropdown({ language, isRTL, onClose }: {
           </div>
           <div className={isRTL ? "text-right" : ""}>
             <p className={"text-xs font-extrabold text-white " + font}>{headerLabel}</p>
-            <p className={"text-[10px] text-white/35 " + font}>GreenGo Market</p>
+            <p className={"text-[10px] text-white/50 " + font}>GreenGo Market</p>
           </div>
         </div>
       </div>
@@ -272,7 +272,7 @@ export default function Header() {
       {/* ── Top utility bar ── */}
       <div className="hidden border-b border-white/[0.06] md:block" style={{ background: "rgba(0,0,0,0.25)" }}>
         <div dir={dir} className="mx-auto flex max-w-7xl items-center justify-between px-5 py-1.5">
-          <p className={"text-[10px] text-white/30 " + font}>
+          <p className={"text-[10px] text-white/45 " + font}>
             {language === "ar"
               ? "توصيل سريع لسلا | واتساب: 0664500789"
               : language === "fr"
@@ -281,12 +281,12 @@ export default function Header() {
           </p>
           <div className={"flex items-center gap-4 " + (isRTL ? "flex-row-reverse" : "")}>
             <a href={WA_SUPPORT} target="_blank" rel={REL}
-              className={"flex items-center gap-1 text-[10px] text-white/30 transition-colors hover:text-white/70 " + font}>
+              className={"flex items-center gap-1 text-[10px] text-white/45 transition-colors hover:text-white/70 " + font}>
               <Headphones size={10} />
               {language === "ar" ? "دعم العملاء" : language === "fr" ? "Support client" : "Customer support"}
             </a>
             <Link to="/orders"
-              className={"text-[10px] text-white/30 transition-colors hover:text-white/70 " + font}>
+              className={"text-[10px] text-white/45 transition-colors hover:text-white/70 " + font}>
               {language === "ar" ? "طلبياتي" : language === "fr" ? "Mes commandes" : "My orders"}
             </Link>
           </div>
@@ -419,7 +419,7 @@ export default function Header() {
                 <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#2E8B57]/20">
                   <User size={12} className="text-[#4DB882]" />
                 </div>
-                <p className={"text-[10px] font-black uppercase tracking-widest text-white/30 " + font}>
+                <p className={"text-[10px] font-black uppercase tracking-widest text-white/45 " + font}>
                   {mobileAccountLabel}
                 </p>
               </div>
@@ -449,7 +449,7 @@ export default function Header() {
 
             {/* Language */}
             <div className="border-t border-white/8 pt-3 pb-1">
-              <p className={"mb-2 px-4 text-[10px] font-black uppercase tracking-widest text-white/30 " + font}>
+              <p className={"mb-2 px-4 text-[10px] font-black uppercase tracking-widest text-white/45 " + font}>
                 {language === "ar" ? "اللغة" : "Langue"}
               </p>
               <div className="flex gap-2 px-2">

@@ -817,7 +817,7 @@ export default function HomePage() {
             onClick={load}
             disabled={loading}
             title="Refresh"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/8 text-white/40 shadow-sm transition-all hover:border-emerald-500/40 hover:text-emerald-400 disabled:opacity-40">
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/8 text-white/55 shadow-sm transition-all hover:border-emerald-500/40 hover:text-emerald-400 disabled:opacity-40">
             {loading
               ? <Loader2 size={14} className="animate-spin" />
               : <RefreshCw size={14} />
