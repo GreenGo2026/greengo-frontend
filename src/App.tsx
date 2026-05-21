@@ -28,6 +28,7 @@ const RecrutementPage  = lazy(() => import("./pages/RecrutementPage"));
 const TermsPage        = lazy(() => import("./pages/legal/TermsPage"));
 const InfoPage         = lazy(() => import("./pages/legal/InfoPage"));
 const ProductPage     = lazy(() => import("./pages/ProductPage"));
+const MenuPage        = lazy(() => import("./pages/MenuPage"));
 const PanierTypePage  = lazy(() => import("./pages/PanierTypePage"));
 const OffresPage      = lazy(() => import("./pages/OffresPage"));
 const TrackOrderPage  = lazy(() => import("./pages/TrackOrderPage"));
@@ -159,6 +160,7 @@ function PublicShell() {
 
           {/* ── Misc ── */}
           <Route path="/produit/:id"    element={<ProductPage />} />
+          <Route path="/menu"           element={<MenuPage />} />
           <Route path="/panier-type"    element={<PanierTypePage />} />
           <Route path="/offres"         element={<OffresPage />} />
           <Route path="/track/:orderId?" element={<TrackOrderPage />} />
