@@ -166,7 +166,7 @@ function CategorySection({ catKey, items, lang, activeCat }: {
           <div key={p.id}
             className="rounded-2xl overflow-hidden"
             style={{
-              background: "#ffffff",
+              background: "#F7F5EF",
               border: "1px solid rgba(0,0,0,0.055)",
               boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}>
@@ -261,7 +261,8 @@ export default function MenuPage() {
 
   return (
     <div className={language === "ar" ? "font-arabic" : "font-latin"} dir={isRTL ? "rtl" : "ltr"}
-      style={{ minHeight: "100vh", background: CREAM }}>
+      style={ minHeight: "100vh", background: "#F7F5EF" }>
+      <style>{`body { background: #F7F5EF !important; }`}</style>
 
       {/* ── Hero ── */}
       <div style={{ background: `linear-gradient(160deg, ${DGREEN} 0%, ${GREEN} 100%)`, paddingBottom: 0 }}>
@@ -325,7 +326,7 @@ export default function MenuPage() {
 
       {/* ── Sticky nav ── */}
       <div className="sticky top-0 z-40 px-4 py-2 flex items-center gap-2"
-        style={{ background: "#ffffff", borderBottom: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+        style={{ background: "#F7F5EF", borderBottom: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
 
         {/* Pills */}
         <div className={`flex gap-1.5 overflow-x-auto flex-1 scrollbar-hide ${isRTL ? "flex-row-reverse" : ""}`}>
@@ -333,7 +334,7 @@ export default function MenuPage() {
             className="shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap"
             style={activeCat === "all"
               ? { background: DGREEN, color: "#fff", boxShadow: "0 2px 8px rgba(12,50,40,0.25)" }
-              : { background: "#fff", color: "#374151", border: "1.5px solid #d1d5db" }}>
+              : { background: "#F7F5EF", color: "#374151", border: "1.5px solid rgba(0,0,0,0.14)" }}>
             {l === "ar" ? "الكل" : l === "fr" ? "Tout" : "All"}
             {!loading && <span className="ml-1 font-latin opacity-60">{products.length}</span>}
           </button>
@@ -352,7 +353,7 @@ export default function MenuPage() {
                 className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap"
                 style={activeCat === cat
                   ? { background: DGREEN, color: "#fff", boxShadow: "0 2px 8px rgba(12,50,40,0.25)" }
-                  : { background: "#fff", color: "#374151", border: "1.5px solid #d1d5db" }}>
+                  : { background: "#F7F5EF", color: "#374151", border: "1.5px solid rgba(0,0,0,0.14)" }}>
                 <span>{m.emoji}</span>
                 <span>{l === "ar" ? m.ar : l === "fr" ? m.fr : m.en}</span>
               </button>
@@ -364,7 +365,7 @@ export default function MenuPage() {
         <div className="flex items-center gap-1.5 shrink-0">
           <button onClick={() => setShowQR(true)} aria-label="QR Code"
             className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-            style={{ background: CREAM2, color: DGREEN }}>
+            style={{ background: "#F7F5EF", color: DGREEN }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
               <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/>
@@ -384,11 +385,11 @@ export default function MenuPage() {
 
       {/* Search bar */}
       {showSearch && (
-        <div className="px-4 py-2" style={{ background: CREAM, borderBottom: `1px solid ${CREAM2}` }}>
+        <div className="px-4 py-2" style={ background: "#F7F5EF", borderBottom: `1px solid ${CREAM2}` }}>
           <input autoFocus type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder={l === "ar" ? "ابحث عن منتج..." : l === "fr" ? "Rechercher un produit..." : "Search..."}
             className="w-full rounded-xl px-4 py-2.5 text-sm outline-none font-latin"
-            style={{ background: CREAM2, border: `1px solid ${CREAM2}`, color: "#1f2937" }}
+            style={{ background: "#F7F5EF", border: `1px solid ${CREAM2}`, color: "#1f2937" }}
             dir="auto" />
         </div>
       )}
@@ -433,7 +434,7 @@ export default function MenuPage() {
 
       {/* ── WhatsApp CTA ── */}
       <div className="fixed bottom-0 left-0 right-0 z-40 px-4 py-3 max-w-lg mx-auto"
-        style={{ background: `linear-gradient(0deg, ${CREAM} 75%, transparent 100%)` }}>
+        style={{ background: "linear-gradient(0deg, #F7F5EF 80%, transparent 100%)" }}>
         <a href={WA} target="_blank" rel="noopener noreferrer"
           className="flex items-center justify-center gap-2.5 w-full rounded-2xl py-3.5 text-sm font-extrabold text-white"
           style={{ background: "linear-gradient(135deg,#25D366,#128C7E)", boxShadow: "0 4px 20px rgba(37,211,102,0.35)" }}>
