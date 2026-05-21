@@ -12,13 +12,24 @@ export type UnitStep = 0.25 | 0.5 | 1;
 
 export function getUnitStep(unit: string | undefined): UnitStep {
   const u = (unit ?? "").toLowerCase().trim();
-  if (u === "kg" || u === "kilo" || u === "kilogram") return 0.5;
-  if (u === "g"  || u === "gram")                      return 0.25;
+  // Latin
+  if (["kg", "kilo", "kilogram", "kgs"].includes(u))   return 0.5;
+  if (["g", "gram", "grams"].includes(u))               return 0.25;
+  // Arabic/Darija unit names
+  if (["كيلو", "كغ", "كيلوغرام"].includes(u)) return 0.5;
+  if (["غرام", "غ"].includes(u)) return 0.25;
   return 1;
 }
 
-export function formatQuantity(qty: number, unit: string | undefined): string {
+export function normalizeUnit(unit: string | undefined): string {
   const u = (unit ?? "").toLowerCase().trim();
+  if (["كيلو", "كغ", "كيلوغرام"].includes(u)) return "kg";
+  if (["غرام", "غ"].includes(u)) return "g";
+  return u;
+}
+
+export function formatQuantity(qty: number, unit: string | undefined): string {
+  const u = normalizeUnit(unit);
   if (u === "kg" || u === "kilo" || u === "kilogram") {
     return qty % 1 === 0 ? qty.toFixed(0) + " kg" : qty.toFixed(2).replace(/\.?0+$/, "") + " kg";
   }
