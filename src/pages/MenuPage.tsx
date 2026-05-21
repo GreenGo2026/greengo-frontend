@@ -19,8 +19,8 @@ function resolveImg(url?: string | null): string {
 const GREEN  = "#1a5c38";
 const DGREEN = "#0c3228";
 const GOLD   = "#C9A96E";
-const CREAM  = "#FAFAF7";
-const CREAM2 = "#F4F1EC";
+const CREAM  = "#F7F5EF";
+const CREAM2 = "#EDE9E0";
 
 // ── Category config ───────────────────────────────────────────────────────────
 const CAT: Record<string, { emoji: string; fr: string; ar: string; en: string; dot: string }> = {
@@ -107,7 +107,7 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
       <div className="shrink-0 flex flex-col items-end gap-1.5">
         {/* Image */}
         <div className="w-[60px] h-[60px] rounded-xl overflow-hidden"
-          style={{ background: isJpg ? "#f9fafb" : "#f0fdf4", border: "1px solid rgba(0,0,0,0.05)" }}>
+          style={{ background: isJpg ? "#F7F5EF" : "#edf7f0", border: "1px solid rgba(0,0,0,0.05)" }}>
           {img
             ? <img src={img} alt={name || ""} width={60} height={60}
                 className={`w-full h-full ${isJpg ? "object-cover" : "object-contain p-1"}`}
@@ -320,7 +320,7 @@ export default function MenuPage() {
 
         {/* Bottom curve */}
         <svg viewBox="0 0 390 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full block" style={{ marginBottom: -1 }}>
-          <path d="M0 24 C97.5 0 292.5 0 390 24 L390 24 L0 24 Z" fill={CREAM} />
+          <path d="M0 24 C97.5 0 292.5 0 390 24 L390 24 L0 24 Z" fill="#F7F5EF" />
         </svg>
       </div>
 
@@ -375,7 +375,7 @@ export default function MenuPage() {
           </button>
           <button onClick={() => setShowSearch(s => !s)} aria-label="Search"
             className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-            style={{ background: showSearch ? DGREEN : CREAM2, color: showSearch ? "#fff" : DGREEN }}>
+            style={{ background: showSearch ? DGREEN : "#F7F5EF", color: showSearch ? "#fff" : DGREEN }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
@@ -395,7 +395,7 @@ export default function MenuPage() {
       )}
 
       {/* ── Products ── */}
-      <main className="px-4 pt-4 pb-32 max-w-lg mx-auto">
+      <main className="px-4 pt-4 pb-32 max-w-lg mx-auto" style={{ background: "#F7F5EF", minHeight: "60vh" }}>
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 6 }).map((_, i) => (

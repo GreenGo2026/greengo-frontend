@@ -119,7 +119,7 @@ function PublicShell() {
 
   return (
     <div
-      className="flex min-h-screen flex-col pb-16 md:pb-0" style={{ overflowX: "hidden" }}
+      className="flex min-h-screen flex-col pb-16 md:pb-0" style={{ overflowX: "hidden", background: "inherit" }}
       style={{
         background: "#FAF7F2",
         // Disable text selection on content container
