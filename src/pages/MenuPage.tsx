@@ -1,5 +1,5 @@
 // src/pages/MenuPage.tsx — Menu Digital GreenGo Market
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { getProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
@@ -139,6 +139,18 @@ export default function MenuPage() {
   const [search,     setSearch]     = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
+  // Hide main site header — menu is a standalone experience
+  useEffect(() => {
+    const header = document.querySelector("header.sticky") as HTMLElement | null;
+    const zellige = document.querySelector(".zellige-border") as HTMLElement | null;
+    if (header) { header.style.display = "none"; }
+    if (zellige) { zellige.style.display = "none"; }
+    return () => {
+      if (header) { header.style.display = ""; }
+      if (zellige) { zellige.style.display = ""; }
+    };
+  }, []);
+
   useEffect(() => {
     getProducts()
       .then(all => { setProducts(all.filter(p => p.visible)); setLoading(false); })
@@ -177,7 +189,7 @@ export default function MenuPage() {
   return (
     <div className={`min-h-screen ${language === "ar" ? "font-arabic" : "font-latin"}`}
       dir={isRTL ? "rtl" : "ltr"}
-      style={{ background: "#f5f7f5" }}>
+      style={{ background: "#fafaf8" }}>
 
       {/* ── Sticky header ── */}
       <header className="sticky top-0 z-40 shadow-lg"
@@ -265,7 +277,7 @@ export default function MenuPage() {
       </header>
 
       {/* ── Products ── */}
-      <main className="px-4 py-4 pb-32 max-w-2xl mx-auto">
+      <main className="px-3 py-4 pb-32 max-w-lg mx-auto sm:px-4">
 
         {loading ? (
           <div className="space-y-3">
@@ -293,16 +305,19 @@ export default function MenuPage() {
               return (
                 <section key={c}>
                   {activeCat === "all" && (
-                    <div className="flex items-center gap-2 mb-2.5 px-1">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
-                        style={{ background: m.bg }}>
+                    <div className="flex items-center gap-3 mb-3 mt-1">
+                      <div className="w-9 h-9 rounded-2xl flex items-center justify-center text-lg shadow-sm shrink-0"
+                        style={{ background: m.bg, border: `1px solid ${m.accent}20` }}>
                         {m.emoji}
                       </div>
-                      <h2 className="font-black text-gray-800 text-[15px]" style={{ color: m.accent }}>
-                        {l === "ar" ? m.ar : l === "fr" ? m.fr : m.en}
-                      </h2>
-                      <div className="flex-1 h-px bg-gray-200 mx-2" />
-                      <span className="text-xs text-gray-400 font-latin shrink-0">{items.length}</span>
+                      <div className="flex-1">
+                        <h2 className="font-black text-[15px] leading-none" style={{ color: m.accent }}>
+                          {l === "ar" ? m.ar : l === "fr" ? m.fr : m.en}
+                        </h2>
+                        <p className="text-[10px] text-gray-400 font-latin mt-0.5">
+                          {items.filter(i => i.in_stock).length}/{items.length} {l === "fr" ? "disponibles" : l === "ar" ? "متوفر" : "available"}
+                        </p>
+                      </div>
                     </div>
                   )}
                   <div className="space-y-2">
