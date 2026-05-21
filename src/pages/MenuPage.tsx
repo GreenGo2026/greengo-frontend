@@ -261,7 +261,7 @@ export default function MenuPage() {
 
   return (
     <div className={language === "ar" ? "font-arabic" : "font-latin"} dir={isRTL ? "rtl" : "ltr"}
-      style={ minHeight: "100vh", background: "#F7F5EF" }>
+      style={{ minHeight: "100vh", background: "#F7F5EF" }}>
       <style>{`body { background: #F7F5EF !important; }`}</style>
 
       {/* ── Hero ── */}
