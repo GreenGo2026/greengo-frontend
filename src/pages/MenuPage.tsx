@@ -176,15 +176,34 @@ export default function MenuPage() {
   const [search,     setSearch]     = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
-  // Hide main site header — menu is a standalone experience
+  // Isolate from main site — hide ALL site chrome elements
   useEffect(() => {
-    const header = document.querySelector("header.sticky") as HTMLElement | null;
-    const zellige = document.querySelector(".zellige-border") as HTMLElement | null;
-    if (header) { header.style.display = "none"; }
-    if (zellige) { zellige.style.display = "none"; }
+    const toHide: HTMLElement[] = [];
+    const selectors = [
+      "header",
+      "header.sticky",
+      "nav",
+      ".zellige-border",
+      "[class*='SocialProof']",
+      "[class*='sticky-cart']",
+      "[class*='MobileBottom']",
+      "footer",
+    ];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => {
+        const e = el as HTMLElement;
+        if (!e.closest("[data-menu-page]")) {
+          e.style.setProperty("display", "none", "important");
+          toHide.push(e);
+        }
+      });
+    });
+    // Also hide pb-16 bottom padding on PublicShell
+    const shell = document.querySelector(".pb-16") as HTMLElement | null;
+    if (shell) shell.style.paddingBottom = "0";
     return () => {
-      if (header) { header.style.display = ""; }
-      if (zellige) { zellige.style.display = ""; }
+      toHide.forEach(e => e.style.removeProperty("display"));
+      if (shell) shell.style.paddingBottom = "";
     };
   }, []);
 
@@ -194,9 +213,13 @@ export default function MenuPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const categories = useMemo(() =>
-    [...new Set(products.map(p => p.category))].sort(),
-  [products]);
+  // Only show categories that have at least 1 in-stock product
+  const categories = useMemo(() => {
+    const cats = [...new Set(products.map(p => p.category))];
+    return cats
+      .filter(c => products.some(p => p.category === c && p.in_stock))
+      .sort();
+  }, [products]);
 
   const filtered = useMemo(() => {
     let list = activeCat === "all" ? products : products.filter(p => p.category === activeCat);
@@ -228,46 +251,74 @@ export default function MenuPage() {
       dir={isRTL ? "rtl" : "ltr"}
       style={{ background: "#fafaf8" }}>
 
-      {/* ── Sticky header ── */}
-      <header className="sticky top-0 z-40 shadow-lg"
-        style={{ background: "linear-gradient(135deg,#0c3228 0%,#2E8B57 100%)" }}>
+      {/* ── Menu Digital standalone header ── */}
+      <header data-menu-page="true" className="sticky top-0 z-40"
+        style={{ background: "linear-gradient(135deg,#0c3228 0%,#1a5c3a 60%,#2E8B57 100%)", boxShadow: "0 2px 16px rgba(0,0,0,0.25)" }}>
 
-        {/* Top row */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+        {/* Zellige top strip */}
+        <div style={{
+          height: 3,
+          backgroundImage: "repeating-linear-gradient(90deg,#C9A96E 0px,#C9A96E 10px,transparent 10px,transparent 14px,#2E8B57 14px,#2E8B57 24px,transparent 24px,transparent 28px)",
+          backgroundSize: "56px 3px",
+          opacity: 0.65,
+        }} />
+
+        {/* Brand row */}
+        <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-              <span className="text-lg">🌿</span>
-            </div>
+            <img src="/greengo-logo-header.png" alt="GreenGo Market"
+              className="h-8 w-auto object-contain"
+              style={{ filter: "brightness(0) invert(1)" }}
+              onError={(e) => { e.currentTarget.style.display = "none"; }} />
+            <div className="h-5 w-px bg-white/20" />
             <div>
-              <p className="text-white font-black text-base leading-none" style={{ fontFamily: "var(--font-display)" }}>
-                GreenGo <span style={{ color: "#C9A96E" }}>Market</span>
+              <p className="text-amber-200 text-[11px] font-black leading-none tracking-[0.12em] uppercase">
+                {l === "ar" ? "قائمة رقمية" : l === "fr" ? "Menu Digital" : "Digital Menu"}
               </p>
-              <p className="text-green-300 text-[10px] font-semibold leading-none mt-0.5">
-                {l === "ar" ? "\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u0646\u062a\u062c\u0627\u062a" : l === "fr" ? "Menu Digital" : "Digital Menu"}
-              </p>
+              <p className="text-white/35 text-[9px] leading-none mt-0.5 font-latin">mygreengoo.com</p>
             </div>
           </div>
+
           <div className="flex items-center gap-2">
-            {/* Live indicator */}
-            <div className="flex items-center gap-1.5 bg-green-900/30 border border-green-600/30 rounded-full px-2.5 py-1">
+            {/* Live stock count */}
+            <div className="flex items-center gap-1.5 bg-green-900/40 border border-green-600/30 rounded-full px-2.5 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[10px] font-bold text-green-300">
-                {loading ? "..." : `${inStockCount} ${l === "ar" ? "\u0645\u062a\u0648\u0641\u0631" : l === "fr" ? "dispo" : "live"}`}
+              <span className="text-[10px] font-bold text-green-300 font-latin">
+                {loading ? "..." : `${inStockCount} dispo`}
               </span>
             </div>
+            {/* Share button */}
+            <button
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({ title: "GreenGo Market — Menu Digital", url: window.location.href });
+                } else {
+                  navigator.clipboard?.writeText(window.location.href);
+                }
+              }}
+              aria-label="Partager le menu"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-amber-300 hover:bg-amber-500/20 transition-colors"
+              style={{ background: "rgba(201,169,110,0.15)", border: "1px solid rgba(201,169,110,0.25)" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            </button>
             {/* Search toggle */}
             <button
               onClick={() => setShowSearch(s => !s)}
-              aria-label="Search"
-              className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center text-white hover:bg-white/25 transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              aria-label="Rechercher"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-white/60 hover:bg-white/15 transition-colors"
+              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
               </svg>
             </button>
           </div>
         </div>
 
-        {/* Search bar — expandable */}
+        {/* Expandable search */}
         {showSearch && (
           <div className="px-4 pb-2">
             <input
@@ -275,8 +326,9 @@ export default function MenuPage() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder={l === "ar" ? "\u0627\u0628\u062d\u062b \u0639\u0646 \u0645\u0646\u062a\u062c..." : l === "fr" ? "Rechercher..." : "Search..."}
-              className="w-full rounded-xl bg-white/15 border border-white/20 px-4 py-2.5 text-sm text-white placeholder-white/40 outline-none focus:bg-white/25"
+              placeholder={l === "ar" ? "ابحث عن منتج..." : l === "fr" ? "Rechercher un produit..." : "Search products..."}
+              className="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 outline-none"
+              style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)" }}
               dir="auto"
             />
           </div>
@@ -288,10 +340,11 @@ export default function MenuPage() {
             className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
               activeCat === "all"
                 ? "bg-white text-[#2E8B57] shadow-md"
-                : "bg-white/15 text-white/70 hover:bg-white/25"
-            }`}>
-            {l === "ar" ? "\u0627\u0644\u0643\u0644" : l === "fr" ? "Tout" : "All"}
-            {!loading && <span className="ml-1.5 opacity-70 font-latin">{products.length}</span>}
+                : "text-white/70 hover:bg-white/20"
+            }`}
+            style={activeCat !== "all" ? { background: "rgba(255,255,255,0.12)" } : {}}>
+            {l === "ar" ? "الكل" : l === "fr" ? "Tout" : "All"}
+            {!loading && <span className="ml-1.5 opacity-60 font-latin">{products.length}</span>}
           </button>
           {categories.map(c => {
             const m     = cat(c);
@@ -299,7 +352,6 @@ export default function MenuPage() {
             return (
               <button key={c} onClick={() => {
                 if (activeCat === "all") {
-                  // scroll to section anchor
                   const el = document.getElementById(`section-${c.replace(/\s+/g, "-").toLowerCase()}`);
                   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                 } else {
@@ -307,11 +359,9 @@ export default function MenuPage() {
                 }
               }}
                 className={`shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
-                  activeCat === c
-                    ? "bg-white shadow-md"
-                    : "bg-white/15 text-white/70 hover:bg-white/25"
+                  activeCat === c ? "bg-white shadow-md" : "text-white/70 hover:bg-white/20"
                 }`}
-                style={activeCat === c ? { color: m.accent } : {}}>
+                style={{ background: activeCat === c ? "#fff" : "rgba(255,255,255,0.12)", ...(activeCat === c ? { color: m.accent } : {}) }}>
                 <span>{m.emoji}</span>
                 <span>{l === "ar" ? m.ar : l === "fr" ? m.fr : m.en}</span>
                 <span className="opacity-50 font-latin">{count}</span>
