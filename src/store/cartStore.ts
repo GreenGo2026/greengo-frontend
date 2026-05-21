@@ -42,12 +42,23 @@ export const useCartStore = create<CartState>()(
       cart: [],
 
       addToCart: (product: Product, step?: number) => {
-        const s = step ?? getUnitStep(product.unit);
+        const s   = step ?? getUnitStep(product.unit);
+        // Use id if available, fall back to name for backward compat
+        const key = (product as any).id || product.name;
         set((state) => {
-          const existing = state.cart.find((i) => i.name === product.name);
+          const existing = state.cart.find((i) =>
+            ((i as any).id && (product as any).id)
+              ? (i as any).id === (product as any).id
+              : i.name === product.name
+          );
           if (existing) {
             const next = Math.round((existing.cartQuantity + s) * 1000) / 1000;
-            return { cart: state.cart.map((i) => i.name === product.name ? { ...i, cartQuantity: next } : i) };
+            return {
+              cart: state.cart.map((i) => {
+                const iKey = (i as any).id || i.name;
+                return iKey === key ? { ...i, cartQuantity: next } : i;
+              })
+            };
           }
           return { cart: [...state.cart, { ...product, cartQuantity: s }] };
         });
@@ -78,6 +89,20 @@ export const useCartStore = create<CartState>()(
       name:       "greengo-cart",
       storage:    createJSONStorage(() => localStorage),
       partialize: (state) => ({ cart: state.cart }),
+      // Merge duplicate cart items on rehydration
+      merge: (persisted: any, current: any) => {
+        const seen = new Map<string, any>();
+        for (const item of (persisted?.cart ?? [])) {
+          const key = item.id || item.name;
+          if (seen.has(key)) {
+            const existing = seen.get(key);
+            existing.cartQuantity = Math.round((existing.cartQuantity + item.cartQuantity) * 1000) / 1000;
+          } else {
+            seen.set(key, { ...item });
+          }
+        }
+        return { ...current, cart: Array.from(seen.values()) };
+      },
     }
   )
 );
