@@ -61,71 +61,101 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
   const dealPrice = disc ? Math.round(p.price_mad * (1 - disc / 100) * 100) / 100 : null;
 
   return (
-    <div className={`flex items-center gap-3 rounded-2xl border p-3 transition-all ${
+    <div className={`relative flex items-stretch rounded-2xl overflow-hidden transition-all duration-200 ${
       !p.in_stock
-        ? "opacity-50 bg-gray-50 border-gray-100"
-        : "bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200"
-    }`}>
+        ? "opacity-40 bg-gray-50"
+        : "bg-white shadow-[0_1px_6px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_12px_rgba(0,0,0,0.10)]"
+    }`}
+      style={p.in_stock ? { border: "1px solid rgba(0,0,0,0.06)" } : { border: "1px solid #e5e7eb" }}>
+
+      {/* Discount ribbon */}
+      {disc && disc > 0 && p.in_stock && (
+        <div className="absolute top-0 right-0 z-10">
+          <div className="text-[9px] font-black text-white px-2 py-0.5 rounded-bl-xl"
+            style={{ background: meta.accent }}>
+            -{disc}%
+          </div>
+        </div>
+      )}
+
+      {/* Left accent bar */}
+      <div className="w-1 shrink-0"
+        style={{ background: p.in_stock ? meta.accent : "#e5e7eb" }} />
 
       {/* Image */}
-      <div
-        className="shrink-0 w-[68px] h-[68px] rounded-xl overflow-hidden flex items-center justify-center"
-        style={{ background: isJpg ? "#fff" : meta.bg }}>
+      <div className="shrink-0 w-[72px] h-[72px] flex items-center justify-center my-auto mx-3"
+        style={{ borderRadius: 14, background: isJpg ? "#f9fafb" : meta.bg, overflow: "hidden" }}>
         {img
-          ? <img src={img} alt={name || ""} width={68} height={68}
-              className={`w-full h-full ${isJpg ? "object-cover" : "object-contain p-1.5"}`}
+          ? <img src={img} alt={name || ""} width={72} height={72}
+              className={`w-full h-full ${isJpg ? "object-cover" : "object-contain p-1"}`}
               loading="lazy" />
-          : <span className="text-3xl">{meta.emoji}</span>}
+          : <span className="text-[28px]">{meta.emoji}</span>}
       </div>
 
       {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className={`font-bold text-gray-900 text-[14px] leading-snug ${
-          l === "ar" ? "font-arabic text-right" : "font-latin"
+      <div className="flex-1 min-w-0 py-3 pr-1">
+        <p className={`font-extrabold text-gray-900 leading-tight ${
+          l === "ar" ? "font-arabic text-right text-[14px]" : "font-latin text-[13px]"
         }`}>{name}</p>
-        {nameAlt && nameAlt !== name && (
-          <p className={`text-[11px] text-gray-400 leading-tight mt-0.5 ${
-            l === "ar" ? "font-latin" : "font-arabic"
+
+        {nameAlt && nameAlt !== name && nameAlt !== "null" && (
+          <p className={`leading-tight mt-[2px] text-gray-400 ${
+            l === "ar" ? "font-latin text-[11px]" : "font-arabic text-[12px]"
           }`}>{nameAlt}</p>
         )}
-        {/* Step hint for kg products */}
-        {(p.unit?.toLowerCase() === "kg" || p.unit === "\u0643\u064a\u0644\u0648") && p.in_stock && (
-          <p className="text-[10px] text-green-600 mt-1 font-latin">
-            {l === "ar" ? "\u0645\u062a\u0627\u062d \u0628\u0646\u0635\u0641 \u0643\u064a\u0644\u0648" : l === "fr" ? "Disponible au demi-kilo" : "Available per 500g"}
-          </p>
-        )}
+
+        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+          <span className="text-[10px] font-semibold text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-md font-latin">
+            {p.unit}
+          </span>
+          {(p.unit?.toLowerCase() === "kg" || p.unit === "كيلو") && p.in_stock && (
+            <span className="text-[9px] font-bold rounded-md px-1.5 py-0.5"
+              style={{ background: meta.bg, color: meta.accent }}>
+              {l === "fr" ? "½ kg min." : l === "ar" ? "½ كغ" : "½ kg"}
+            </span>
+          )}
+          {!p.in_stock && (
+            <span className="text-[9px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md">
+              {l === "ar" ? "نفذ المخزون" : l === "fr" ? "Épuisé" : "Out of stock"}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Price */}
-      <div className="shrink-0 text-right">
+      <div className="shrink-0 flex flex-col items-end justify-center px-3 py-3 text-right min-w-[72px]">
         {p.in_stock ? (
           <>
             {disc && dealPrice ? (
               <>
-                <p className="text-base font-black font-latin leading-none" style={{ color: meta.accent }}>
+                <span className="text-[10px] text-gray-300 line-through font-latin leading-none">
+                  {p.price_mad.toFixed(2)}
+                </span>
+                <span className="text-[22px] font-black font-latin leading-none mt-0.5"
+                  style={{ color: meta.accent }}>
                   {dealPrice.toFixed(2)}
-                </p>
-                <p className="text-[10px] text-gray-300 line-through font-latin">{p.price_mad.toFixed(2)}</p>
-                <p className="text-[9px] font-bold rounded-full px-1.5 py-0.5 inline-block mt-0.5"
-                  style={{ background: meta.bg, color: meta.accent }}>-{disc}%</p>
+                </span>
+                <span className="text-[9px] text-gray-400 font-latin leading-none mt-0.5">MAD</span>
               </>
             ) : (
               <>
-                <p className="text-base font-black font-latin leading-none" style={{ color: meta.accent }}>
+                <span className="text-[22px] font-black font-latin leading-none"
+                  style={{ color: meta.accent }}>
                   {p.price_mad.toFixed(2)}
-                </p>
-                <p className="text-[9px] text-gray-400 font-latin">{fmtUnit(p.unit, lang)}</p>
+                </span>
+                <span className="text-[9px] text-gray-400 font-latin leading-none mt-0.5">
+                  MAD {fmtUnit(p.unit, lang)}
+                </span>
               </>
             )}
           </>
         ) : (
-          <span className="text-[10px] font-bold text-red-400 bg-red-50 px-2 py-1 rounded-full">
-            {l === "ar" ? "\u0646\u0641\u0630" : l === "fr" ? "\u00c9puis\u00e9" : "Out"}
-          </span>
+          <span className="text-[13px] text-gray-300 font-latin">—</span>
         )}
       </div>
     </div>
   );
+
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
