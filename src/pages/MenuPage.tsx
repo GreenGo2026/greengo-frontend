@@ -64,9 +64,16 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
     <div className={`relative flex items-stretch rounded-2xl overflow-hidden transition-all duration-200 ${
       !p.in_stock
         ? "opacity-40 bg-gray-50"
-        : "bg-white shadow-[0_1px_6px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_12px_rgba(0,0,0,0.10)]"
+        : disc && disc > 0
+          ? "bg-amber-50/60 shadow-[0_1px_6px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_12px_rgba(0,0,0,0.10)]"
+          : "bg-white shadow-[0_1px_6px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_12px_rgba(0,0,0,0.10)]"
     }`}
-      style={p.in_stock ? { border: "1px solid rgba(0,0,0,0.06)" } : { border: "1px solid #e5e7eb" }}>
+      style={p.in_stock
+        ? disc && disc > 0
+          ? { border: "1px solid rgba(251,146,60,0.25)" }
+          : { border: "1px solid rgba(0,0,0,0.06)" }
+        : { border: "1px solid #e5e7eb" }
+      }>
 
       {/* Discount ribbon */}
       {disc && disc > 0 && p.in_stock && (
@@ -290,7 +297,15 @@ export default function MenuPage() {
             const m     = cat(c);
             const count = products.filter(p => p.category === c).length;
             return (
-              <button key={c} onClick={() => setActiveCat(c)}
+              <button key={c} onClick={() => {
+                if (activeCat === "all") {
+                  // scroll to section anchor
+                  const el = document.getElementById(`section-${c.replace(/\s+/g, "-").toLowerCase()}`);
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                } else {
+                  setActiveCat(c);
+                }
+              }}
                 className={`shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
                   activeCat === c
                     ? "bg-white shadow-md"
@@ -333,7 +348,7 @@ export default function MenuPage() {
             {Object.entries(grouped).map(([c, items]) => {
               const m = cat(c);
               return (
-                <section key={c}>
+                <section key={c} id={`section-${c.replace(/\s+/g, "-").toLowerCase()}`}>
                   {activeCat === "all" && (
                     <div className="flex items-center gap-3 mb-3 mt-1">
                       <div className="w-9 h-9 rounded-2xl flex items-center justify-center text-lg shadow-sm shrink-0"
@@ -381,13 +396,18 @@ export default function MenuPage() {
             {l === "ar" ? "\u0627\u0637\u0644\u0628 \u0627\u0644\u0622\u0646 \u0639\u0628\u0631 \u0648\u0627\u062a\u0633\u0627\u0628" : l === "fr" ? "Commander via WhatsApp" : "Order via WhatsApp"}
           </a>
           {/* Site link */}
-          <p className="text-center text-[10px] text-gray-400">
-            <a href="https://www.mygreengoo.com/shop" className="hover:text-[#2E8B57] transition-colors font-latin">
-              mygreengoo.com
-            </a>
-            {" "}&bull;{" "}
-            <span className="font-latin">+212 664 500 789</span>
-          </p>
+          <div className="text-center space-y-1">
+            <p className="text-[10px] text-gray-400">
+              <a href="https://www.mygreengoo.com/shop" className="hover:text-[#2E8B57] transition-colors font-latin font-semibold">
+                mygreengoo.com
+              </a>
+              <span className="mx-1.5 text-gray-300">&bull;</span>
+              <span className="font-latin">+212 664 500 789</span>
+            </p>
+            <p className="text-[9px] text-gray-300 font-latin">
+              Laayayda, Salé &bull; Livraison rapide à Salé &amp; Rabat
+            </p>
+          </div>
         </div>
       </div>
 
