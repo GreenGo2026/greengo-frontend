@@ -385,7 +385,7 @@ export default function MenuPage() {
 
       {/* Search bar */}
       {showSearch && (
-        <div className="px-4 py-2" style={ background: "#F7F5EF", borderBottom: `1px solid ${CREAM2}` }}>
+        <div className="px-4 py-2" style={{ background: "#F7F5EF", borderBottom: `1px solid ${CREAM2}` }}>
           <input autoFocus type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder={l === "ar" ? "ابحث عن منتج..." : l === "fr" ? "Rechercher un produit..." : "Search..."}
             className="w-full rounded-xl px-4 py-2.5 text-sm outline-none font-latin"
