@@ -1,5 +1,6 @@
 // src/pages/MenuPage.tsx — Menu Digital GreenGo Market
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import QRCode from "qrcode";
 import { useLanguage } from "../contexts/LanguageContext";
 import { getProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
@@ -175,6 +176,20 @@ export default function MenuPage() {
   const [activeCat,  setActiveCat]  = useState("all");
   const [search,     setSearch]     = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [showQR,     setShowQR]     = useState(false);
+  const [updatedAt,  setUpdatedAt]  = useState("");
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Generate QR code
+  useEffect(() => {
+    if (showQR && qrCanvasRef.current) {
+      QRCode.toCanvas(qrCanvasRef.current, "https://www.mygreengoo.com/menu", {
+        width: 200,
+        margin: 2,
+        color: { dark: "#0c3228", light: "#ffffff" },
+      }).catch(console.error);
+    }
+  }, [showQR]);
 
   // Isolate from main site — hide ALL site chrome elements
   useEffect(() => {
@@ -287,6 +302,21 @@ export default function MenuPage() {
                 {loading ? "..." : `${inStockCount} dispo`}
               </span>
             </div>
+            {/* QR Code button */}
+            <button
+              onClick={() => setShowQR(true)}
+              aria-label="Afficher le QR Code"
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-amber-300 hover:bg-amber-500/20 transition-colors"
+              style={{ background: "rgba(201,169,110,0.15)", border: "1px solid rgba(201,169,110,0.25)" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                <rect x="19" y="14" width="2" height="2" rx="0.5"/>
+                <rect x="14" y="19" width="2" height="2" rx="0.5"/>
+                <rect x="18" y="18" width="3" height="3" rx="0.5"/>
+              </svg>
+            </button>
             {/* Share button */}
             <button
               onClick={() => {
@@ -317,6 +347,16 @@ export default function MenuPage() {
             </button>
           </div>
         </div>
+
+        {/* Last updated timestamp */}
+        {updatedAt && !loading && (
+          <div className="px-4 pb-1 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
+            <p className="text-[9px] text-green-300/70 font-latin">
+              {l === "fr" ? `Mis à jour ${updatedAt}` : l === "ar" ? `آخر تحديث: ${updatedAt}` : `Updated ${updatedAt}`}
+            </p>
+          </div>
+        )}
 
         {/* Expandable search */}
         {showSearch && (
@@ -431,6 +471,32 @@ export default function MenuPage() {
           </p>
         )}
       </main>
+
+      {/* ── QR Code modal ── */}
+      {showQR && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6"
+          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}
+          onClick={() => setShowQR(false)}>
+          <div className="bg-white rounded-3xl p-6 text-center shadow-2xl max-w-xs w-full"
+            onClick={e => e.stopPropagation()}>
+            <p className="font-black text-gray-900 text-base mb-1" style={{ fontFamily: "var(--font-display)" }}>
+              GreenGo <span style={{ color: "#2E8B57" }}>Market</span>
+            </p>
+            <p className="text-[11px] text-gray-400 mb-4 font-latin">Menu Digital — mygreengoo.com/menu</p>
+            <div className="flex justify-center mb-4">
+              <canvas ref={qrCanvasRef} className="rounded-xl" />
+            </div>
+            <p className="text-[10px] text-gray-400 mb-4 font-latin">
+              {l === "fr" ? "Scannez pour voir le menu en direct" : l === "ar" ? "امسح لرؤية القائمة مباشرة" : "Scan to view live menu"}
+            </p>
+            <button onClick={() => setShowQR(false)}
+              className="w-full rounded-xl py-2.5 text-sm font-bold text-white"
+              style={{ background: "#2E8B57" }}>
+              {l === "fr" ? "Fermer" : l === "ar" ? "إغلاق" : "Close"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Fixed footer CTA ── */}
       <div className="fixed bottom-0 left-0 right-0 z-40 px-4 py-3"
