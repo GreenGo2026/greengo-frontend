@@ -58,7 +58,7 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
 
   if (!p.in_stock) {
     return (
-      <div className="flex items-center gap-3 py-3 px-1 opacity-35 border-b border-gray-100 last:border-0">
+      <div className="flex items-center gap-3 py-3 px-3 opacity-35">
         <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center">
           {img ? <img src={img} alt="" width={40} height={40} className="w-full h-full object-cover" loading="lazy" /> : <span className="text-lg">{meta.emoji}</span>}
         </div>
@@ -73,11 +73,8 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
   }
 
   return (
-    <div className={`flex items-center gap-3.5 py-3 px-1 border-b border-gray-100/80 last:border-0 ${disc ? "relative" : ""}`}>
-      {/* Sale dot */}
-      {disc && disc > 0 && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full" style={{ background: GOLD }} />
-      )}
+    <div className="flex items-center gap-3.5 py-3 px-3">
+
 
       {/* Left: name + details */}
       <div className="flex-1 min-w-0 pl-2">
@@ -164,8 +161,18 @@ function CategorySection({ catKey, items, lang, activeCat }: {
           </span>
         </div>
       )}
-      <div>
-        {items.map(p => <MenuCard key={p.id} p={p} lang={lang} />)}
+      <div className="space-y-2">
+        {items.map(p => (
+          <div key={p.id}
+            className="rounded-2xl overflow-hidden"
+            style={{
+              background: "#ffffff",
+              border: "1px solid rgba(0,0,0,0.055)",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            }}>
+            <MenuCard p={p} lang={lang} />
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -318,15 +325,15 @@ export default function MenuPage() {
 
       {/* ── Sticky nav ── */}
       <div className="sticky top-0 z-40 px-4 py-2 flex items-center gap-2"
-        style={{ background: CREAM, borderBottom: `1px solid ${CREAM2}`, boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+        style={{ background: "#ffffff", borderBottom: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
 
         {/* Pills */}
         <div className={`flex gap-1.5 overflow-x-auto flex-1 scrollbar-hide ${isRTL ? "flex-row-reverse" : ""}`}>
           <button onClick={() => setActiveCat("all")}
             className="shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap"
             style={activeCat === "all"
-              ? { background: DGREEN, color: "#fff", boxShadow: "0 2px 8px rgba(12,50,40,0.3)" }
-              : { background: CREAM2, color: "#6b7280" }}>
+              ? { background: DGREEN, color: "#fff", boxShadow: "0 2px 8px rgba(12,50,40,0.25)" }
+              : { background: "#fff", color: "#374151", border: "1.5px solid #d1d5db" }}>
             {l === "ar" ? "الكل" : l === "fr" ? "Tout" : "All"}
             {!loading && <span className="ml-1 font-latin opacity-60">{products.length}</span>}
           </button>
@@ -344,8 +351,8 @@ export default function MenuPage() {
                 }}
                 className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap"
                 style={activeCat === cat
-                  ? { background: DGREEN, color: "#fff", boxShadow: "0 2px 8px rgba(12,50,40,0.3)" }
-                  : { background: CREAM2, color: "#6b7280" }}>
+                  ? { background: DGREEN, color: "#fff", boxShadow: "0 2px 8px rgba(12,50,40,0.25)" }
+                  : { background: "#fff", color: "#374151", border: "1.5px solid #d1d5db" }}>
                 <span>{m.emoji}</span>
                 <span>{l === "ar" ? m.ar : l === "fr" ? m.fr : m.en}</span>
               </button>
