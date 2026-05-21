@@ -16,19 +16,19 @@ function resolveImg(url: string | null | undefined): string {
 }
 
 const CAT: Record<string, { emoji: string; fr: string; ar: string; en: string; bg: string; accent: string }> = {
-  "Vegetables":      { emoji: "\u{1F955}", fr: "L\u00e9gumes",         ar: "\u062e\u0636\u0631\u0648\u0627\u062a",      en: "Vegetables",     bg: "#f0fdf4", accent: "#16a34a" },
-  "Purified Greens": { emoji: "\u{1F96C}", fr: "Herbes fra\u00eeches", ar: "\u0623\u0639\u0634\u0627\u0628 \u0637\u0627\u0632\u062c\u0629", en: "Fresh Herbs",   bg: "#f0fdf4", accent: "#15803d" },
-  "Fruits":          { emoji: "\u{1F34E}", fr: "Fruits",               ar: "\u0641\u0648\u0627\u0643\u0647",             en: "Fruits",         bg: "#fff7ed", accent: "#ea580c" },
-  "White Meats":     { emoji: "\u{1F357}", fr: "Viandes blanches",     ar: "\u0644\u062d\u0648\u0645 \u0628\u064a\u0636\u0627\u0621",  en: "White Meats",    bg: "#fff1f2", accent: "#dc2626" },
-  "Eggs":            { emoji: "\u{1F95A}", fr: "\u0152ufs",            ar: "\u0628\u064a\u0636",                         en: "Eggs",           bg: "#fefce8", accent: "#ca8a04" },
-  "Olives":          { emoji: "\u{1FAD2}", fr: "Olives",               ar: "\u0632\u064a\u062a\u0648\u0646",             en: "Olives",         bg: "#f7fee7", accent: "#65a30d" },
-  "Epices":          { emoji: "\u{1F9C2}", fr: "\u00c9pices",          ar: "\u062a\u0648\u0627\u0628\u0644",             en: "Spices",         bg: "#faf5ff", accent: "#9333ea" },
-  "Natural Juices":  { emoji: "\u{1F9C3}", fr: "Jus naturels",        ar: "\u0639\u0635\u0627\u0626\u0631 \u0637\u0628\u064a\u0639\u064a\u0629", en: "Natural Juices", bg: "#ecfeff", accent: "#0891b2" },
-  "Mixed Packs":     { emoji: "\u{1F6D2}", fr: "Paniers mixtes",      ar: "\u0633\u0644\u0627\u0644 \u0645\u0634\u0643\u0644\u0629",  en: "Mixed Packs",    bg: "#f5f3ff", accent: "#7c3aed" },
+  "Vegetables":      { emoji: "🥕", fr: "L\u00e9gumes",         ar: "\u062e\u0636\u0631\u0648\u0627\u062a",      en: "Vegetables",     bg: "#f0fdf4", accent: "#16a34a" },
+  "Purified Greens": { emoji: "🥬", fr: "Herbes fra\u00eeches", ar: "\u0623\u0639\u0634\u0627\u0628 \u0637\u0627\u0632\u062c\u0629", en: "Fresh Herbs",   bg: "#f0fdf4", accent: "#15803d" },
+  "Fruits":          { emoji: "🍎", fr: "Fruits",               ar: "\u0641\u0648\u0627\u0643\u0647",             en: "Fruits",         bg: "#fff7ed", accent: "#ea580c" },
+  "White Meats":     { emoji: "🍗", fr: "Viandes blanches",     ar: "\u0644\u062d\u0648\u0645 \u0628\u064a\u0636\u0627\u0621",  en: "White Meats",    bg: "#fff1f2", accent: "#dc2626" },
+  "Eggs":            { emoji: "🥚", fr: "\u0152ufs",            ar: "\u0628\u064a\u0636",                         en: "Eggs",           bg: "#fefce8", accent: "#ca8a04" },
+  "Olives":          { emoji: "🫒", fr: "Olives",               ar: "\u0632\u064a\u062a\u0648\u0646",             en: "Olives",         bg: "#f7fee7", accent: "#65a30d" },
+  "Epices":          { emoji: "🧂", fr: "\u00c9pices",          ar: "\u062a\u0648\u0627\u0628\u0644",             en: "Spices",         bg: "#faf5ff", accent: "#9333ea" },
+  "Natural Juices":  { emoji: "🧃", fr: "Jus naturels",        ar: "\u0639\u0635\u0627\u0626\u0631 \u0637\u0628\u064a\u0639\u064a\u0629", en: "Natural Juices", bg: "#ecfeff", accent: "#0891b2" },
+  "Mixed Packs":     { emoji: "🛒", fr: "Paniers mixtes",      ar: "\u0633\u0644\u0627\u0644 \u0645\u0634\u0643\u0644\u0629",  en: "Mixed Packs",    bg: "#f5f3ff", accent: "#7c3aed" },
 };
 
 function cat(c: string) {
-  return CAT[c] ?? { emoji: "\u{1F6D2}", fr: c, ar: c, en: c, bg: "#f9fafb", accent: "#2E8B57" };
+  return CAT[c] ?? { emoji: "🛒", fr: c, ar: c, en: c, bg: "#f9fafb", accent: "#2E8B57" };
 }
 
 // ── Format unit display ───────────────────────────────────────────────────────
@@ -187,7 +187,7 @@ export default function MenuPage() {
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-              <span className="text-lg">\u{1F33F}</span>
+              <span className="text-lg">🌿</span>
             </div>
             <div>
               <p className="text-white font-black text-base leading-none" style={{ fontFamily: "var(--font-display)" }}>
@@ -276,7 +276,7 @@ export default function MenuPage() {
 
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <span className="text-5xl">\u{1F50D}</span>
+            <span className="text-5xl">🔍</span>
             <p className="text-gray-400 text-sm text-center">
               {l === "ar" ? "\u0644\u0627 \u062a\u0648\u062c\u062f \u0645\u0646\u062a\u062c\u0627\u062a" : l === "fr" ? "Aucun produit trouv\u00e9" : "No products found"}
             </p>
