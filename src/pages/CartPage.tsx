@@ -375,6 +375,31 @@ export default function CartPage() {
       }
       const data = await res.json();
       const id   = data.order_id ?? "";
+
+      // ── GA4 purchase event ────────────────────────────────────────────────
+      try {
+        if (typeof window !== "undefined" && (window as any).gtag) {
+          (window as any).gtag("event", "purchase", {
+            transaction_id: id,
+            value:          total,
+            currency:       "MAD",
+            items: cart.map((i, idx) => ({
+              item_id:    (i as any).id || (i as any).sku || String(idx),
+              item_name:  i.name,
+              price:      i.price_per_unit ?? 0,
+              quantity:   i.cartQuantity,
+            })),
+          });
+          // Also fire add_to_cart retrospectively for Shopping optimization
+          (window as any).gtag("event", "conversion", {
+            send_to:        "G-KX5B69ZWPE",
+            value:          total,
+            currency:       "MAD",
+            transaction_id: id,
+          });
+        }
+      } catch { /* GA4 errors must never block checkout */ }
+
       // Save customer profile for returning customer recognition
       try {
         const normalizedKey = "+212" + phone.trim().replace(/^0/, "").replace(/^\+212/, "");
