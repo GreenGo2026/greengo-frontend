@@ -1,4 +1,4 @@
-// src/pages/AdminPage.tsx
+﻿// src/pages/AdminPage.tsx
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Save, AlertCircle, CheckCircle, Loader2, Lock,
@@ -7,6 +7,7 @@ import {
   MessageCircle, MapPin, Phone, Star, DollarSign,
   ChevronDown, ChevronUp, Bike, RefreshCw,
 } from "lucide-react";
+import PaniersTab from "./PaniersTab";
 import {
   updateProductById, updateOrderStatus, getOrders, getProducts,
   type DBProduct, type OrderStatus, type Order,
@@ -429,131 +430,20 @@ export default function AdminPage() {
               <span className={"text-xs font-semibold text-gray-500 " + font}>Afficher:</span>
               {(["all","promo"] as const).map(key=>(
                 <button key={key} onClick={()=>setPromoFilter(key)}
-                  className={"rounded-full px-3 py-1.5 text-xs font-bold transition-all " + (promoFilter===key
-                    ? "bg-amber-500 text-white shadow-sm"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200")}>
-                  {key==="all" ? "Tous les produits" : "Promotions actives"}
-                  {key==="promo" && <span className="ml-1.5 font-latin opacity-80">{products.filter(p=>(p as any).on_sale).length}</span>}
+                  className={"rounded-full px-3 py-1.5 text-xs font-bold transition-all " + (promoFilter===key ? "bg-amber-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200")}>
+                  {key==="all" ? "Tous" : "Promotions actives"}
+                  {key==="promo"&&<span className="ml-1 font-latin">{products.filter((p:any)=>p.on_sale).length}</span>}
                 </button>
               ))}
             </div>
-            <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className={"border-b border-gray-100 bg-gray-50/50 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 "+(lang==="ar"?"text-right":"")} dir={dir}><th className="px-5 py-3">{L.product}</th><th className="px-5 py-3">{L.curr_price}</th><th className="px-5 py-3">{L.new_price}</th><th className="px-5 py-3">{L.unit_lbl}</th><th className="px-5 py-3">{L.stock_lbl}</th><th className="px-5 py-3"><span className="text-amber-400">Promo</span></th><th className="px-3 py-3"><span className="text-amber-400">Remise</span></th><th className="px-5 py-3">{L.action_lbl}</th><th className="px-2 py-3"></th></tr></thead><tbody>{(promoFilter==="promo"?products.filter(p=>(p as any).on_sale):products).map((item,i)=>(<PriceRow key={item.id} item={item} rowIndex={i} totalRows={products.length} lang={lang} onChange={handlePriceChange} onToggle={handleToggleStock} onToggleSale={handleToggleOnSale} onDiscountChange={handleDiscountChange} onSave={handleSave} inputRef={el=>inputRefs.current.set(item.id,el)}/>))}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className={"border-b border-gray-100 bg-gray-50/50 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 "+(lang==="ar"?"text-right":"")} dir={dir}><th className="px-5 py-3">{L.product}</th><th className="px-5 py-3">{L.curr_price}</th><th className="px-5 py-3">{L.new_price}</th><th className="px-5 py-3">{L.unit_lbl}</th><th className="px-5 py-3">{L.stock_lbl}</th><th className="px-5 py-3"><span className="text-amber-400">Promo</span></th><th className="px-3 py-3"><span className="text-amber-400">Remise</span></th><th className="px-5 py-3">{L.action_lbl}</th><th className="px-2 py-3"></th></tr></thead><tbody>{(promoFilter==="promo"?products.filter((p:any)=>p.on_sale):products).map((item,i)=>(<PriceRow key={item.id} item={item} rowIndex={i} totalRows={products.length} lang={lang} onChange={handlePriceChange} onToggle={handleToggleStock} onToggleSale={handleToggleOnSale} onDiscountChange={handleDiscountChange} onSave={handleSave} inputRef={el=>inputRefs.current.set(item.id,el)}/>))}</tbody></table></div>
               </div>
             )}
           </div>
-        )}
+        )
+          {activeTab==="paniers"&&<PaniersTab products={products} lang={lang} font={font}/>}
+}
       </div>
-          {activeTab==="paniers"&&(
-            <div className="space-y-5 max-w-4xl mx-auto">
-              <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-                <div>
-                  <h2 className={"text-base font-extrabold text-gray-800 " + font}>Paniers pre-composes</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">Lecture seule. Prix en direct depuis le catalogue.</p>
-                </div>
-                <span className="text-xs font-bold text-[#2E8B57] bg-green-50 px-3 py-1.5 rounded-full">5 paniers</span>
-              </div>
-
-              {[
-                { id:"famille", emoji:"F", title:"Panier Famille", persons:4, accent:"#2E8B57",
-                  items:[
-                    {sku:"VEG-TOMATE-001",   label:"Tomate ronde",   qty:2,   unit:"kg"},
-                    {sku:"VEG-PATATE-001",   label:"Pomme de terre", qty:2,   unit:"kg"},
-                    {sku:"VEG-CAROTTE-001",  label:"Carotte",        qty:1,   unit:"kg"},
-                    {sku:"VEG-OIGNON-001",   label:"Oignon rouge",   qty:1,   unit:"kg"},
-                    {sku:"VEG-COURGETTE-001",label:"Courgette",      qty:1,   unit:"kg"},
-                    {sku:"VND-POULET-001",   label:"Poulet entier",  qty:1,   unit:"piece"},
-                    {sku:"OEF-BELDI-001",    label:"Oeufs beldi",    qty:1,   unit:"boite"},
-                  ]},
-                { id:"couple", emoji:"D", title:"Panier Duo", persons:2, accent:"#C9A96E",
-                  items:[
-                    {sku:"VEG-TOMATE-001",  label:"Tomate ronde",   qty:1, unit:"kg"},
-                    {sku:"VEG-PATATE-001",  label:"Pomme de terre", qty:1, unit:"kg"},
-                    {sku:"VEG-CAROTTE-001", label:"Carotte",        qty:1, unit:"kg"},
-                    {sku:"OEF-BELDI-001",   label:"Oeufs beldi",    qty:1, unit:"boite"},
-                  ]},
-                { id:"legumes", emoji:"V", title:"Panier Legumes", persons:4, accent:"#16a34a",
-                  items:[
-                    {sku:"VEG-PATATE-001",    label:"Pomme de terre", qty:2, unit:"kg"},
-                    {sku:"VEG-CAROTTE-001",   label:"Carotte",        qty:1, unit:"kg"},
-                    {sku:"VEG-OIGNON-001",    label:"Oignon rouge",   qty:1, unit:"kg"},
-                    {sku:"VEG-COURGETTE-001", label:"Courgette",      qty:1, unit:"kg"},
-                    {sku:"VEG-POIVRON-001",   label:"Poivron vert",   qty:1, unit:"kg"},
-                    {sku:"VEG-BROCOLI-001",   label:"Brocoli",        qty:1, unit:"kg"},
-                  ]},
-                { id:"tajine", emoji:"T", title:"Panier Tajine", persons:4, accent:"#f97316",
-                  items:[
-                    {sku:"VND-POULET-001",   label:"Poulet entier",  qty:1, unit:"piece"},
-                    {sku:"VEG-PATATE-001",   label:"Pomme de terre", qty:1, unit:"kg"},
-                    {sku:"VEG-CAROTTE-001",  label:"Carotte",        qty:1, unit:"kg"},
-                    {sku:"VEG-OIGNON-001",   label:"Oignon rouge",   qty:1, unit:"kg"},
-                    {sku:"EPC-CUMIN-001",    label:"Cumin moulu",    qty:1, unit:"100g"},
-                    {sku:"EPC-RASELHANT-001",label:"Ras el hanout",  qty:1, unit:"100g"},
-                  ]},
-                { id:"fruits", emoji:"O", title:"Panier Fruits", persons:4, accent:"#a855f7",
-                  items:[
-                    {sku:"FRT-ORANGE-001",  label:"Orange",  qty:2, unit:"kg"},
-                    {sku:"FRT-BANANE-001",  label:"Banane",  qty:1, unit:"kg"},
-                    {sku:"FRT-POMME-001",   label:"Pomme",   qty:1, unit:"kg"},
-                  ]},
-              ].map(basket => {
-                const liveItems = basket.items.map(bi => {
-                  const liveP = products.find((p:any) => p.sku === bi.sku);
-                  const livePrice = liveP ? liveP.price_mad : null;
-                  const lineTotal = livePrice !== null ? livePrice * bi.qty : null;
-                  return { ...bi, livePrice, lineTotal, inStock: liveP?.in_stock ?? null };
-                });
-                const liveTotal  = liveItems.reduce((s:number,i:any) => s + (i.lineTotal ?? 0), 0);
-                const saving     = Math.round(liveTotal * 0.08);
-                const finalPrice = liveTotal - saving;
-                const hasOOS     = liveItems.some((i:any) => i.inStock === false);
-
-                return (
-                  <div key={basket.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="flex items-center justify-between px-5 py-4"
-                      style={{ borderBottom: `2px solid ${basket.accent}25`, background: `${basket.accent}08` }}>
-                      <div>
-                        <h3 className={"font-extrabold text-gray-800 " + font}>{basket.title}</h3>
-                        <p className="text-xs text-gray-400 font-latin">{basket.persons} pers. &bull; {basket.items.length} produits</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[11px] text-gray-300 line-through font-latin">{liveTotal.toFixed(2)} MAD</p>
-                        <p className="text-lg font-black font-latin" style={{color:basket.accent}}>{finalPrice.toFixed(2)} MAD</p>
-                        <p className="text-[9px] text-green-600 font-semibold">-8% &bull; eco {saving.toFixed(0)} MAD</p>
-                      </div>
-                    </div>
-                    <div className="divide-y divide-gray-50">
-                      {liveItems.map((item:any, ii:number) => (
-                        <div key={ii} className={"flex items-center justify-between px-5 py-2 " + (item.inStock===false?"opacity-40":"")}>
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <span className="text-[10px] text-gray-300 font-latin w-4 shrink-0">{ii+1}</span>
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-gray-800 font-latin">{item.label}</p>
-                              <p className="text-[10px] text-gray-400 font-latin">{item.sku} &bull; {item.qty} {item.unit}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {item.inStock===false&&<span className="text-[9px] font-bold text-red-400 bg-red-50 px-1.5 py-0.5 rounded-full">Rupture</span>}
-                            {item.livePrice!==null ? (
-                              <div className="text-right">
-                                <p className="text-xs font-bold text-gray-700 font-latin">{item.livePrice.toFixed(2)} MAD</p>
-                                <p className="text-[10px] text-gray-400 font-latin">{item.lineTotal?.toFixed(2)} MAD total</p>
-                              </div>
-                            ) : <span className="text-xs text-gray-300">SKU non trouve</span>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {hasOOS&&(
-                      <div className="px-5 py-2 bg-amber-50 border-t border-amber-100">
-                        <p className="text-[10px] font-bold text-amber-600">Attention: produit(s) en rupture dans ce panier</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+    </div>
   );
-}    </div>
-
-
+}
