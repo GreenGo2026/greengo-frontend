@@ -208,6 +208,15 @@ function OrderCard({order,lang,isOldest,onStatusChange,showToast,onRefresh}:{ord
             </div>
             <div className={"flex items-center gap-3 flex-wrap "+(lang==="ar"?"flex-row-reverse":"")}>
               {order.customer_name&&<span className="text-xs font-bold text-gray-700">{order.customer_name}</span>}
+              {order.payment_method && (
+                <span className={"text-[9px] font-black px-1.5 py-0.5 rounded-full " + (
+                  order.payment_method === "CARD_TPE"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-green-100 text-green-700"
+                )}>
+                  {order.payment_method === "CARD_TPE" ? "Carte TPE" : "Espèces"}
+                </span>
+              )}
               <div className={"flex items-center gap-1.5 "+(lang==="ar"?"flex-row-reverse":"")}><Phone size={11} className="text-[#2E8B57] shrink-0"/><span className="text-sm font-bold text-gray-700 font-latin">{order.customer_phone}</span></div>
               <div className={"flex items-center gap-1 "+(lang==="ar"?"flex-row-reverse":"")}><Clock size={10} className="text-gray-400"/><span className="text-xs text-gray-400 font-latin">{formatTs(order.created_at)}</span>{ago<120&&<span className="text-[10px] text-gray-400">({ago}min)</span>}</div>
             </div>
