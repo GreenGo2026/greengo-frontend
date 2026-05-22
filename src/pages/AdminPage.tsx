@@ -13,6 +13,19 @@ import {
 } from "../services/api";
 
 const ADMIN_PIN = "greengo2026";
+
+// ── Status normalization ──────────────────────────────────────────────────────
+// MongoDB stores statuses in mixed case ("Out for Delivery", "Pending", etc.)
+// Frontend logic uses lowercase snake_case ("out_for_delivery", "pending")
+// This helper normalizes ANY format to lowercase snake_case consistently
+function normalizeStatus(raw: string | undefined | null): OrderStatus {
+  if (!raw) return "pending";
+  return raw
+    .toLowerCase()
+    .replace(/\s+/g, "_")        // "Out for Delivery" -> "out_for_delivery"
+    .replace(/-/g, "_")          // "out-for-delivery" -> "out_for_delivery"
+    .trim() as OrderStatus;
+}
 type AdminTab = "orders" | "prices";
 type Lang     = "fr" | "ar";
 
@@ -169,8 +182,8 @@ function Timeline({status,lang}:{status:OrderStatus;lang:Lang}){
 }
 
 function OrderCard({order,lang,isOldest,onStatusChange,showToast,onRefresh}:{order:Order;lang:Lang;isOldest:boolean;onStatusChange:(id:string,s:OrderStatus)=>Promise<void>;showToast:(msg:string,type:ToastState["type"])=>void;onRefresh:()=>void;}){
-  const [expanded,setExpanded]=useState(order.status==="pending"||order.status==="out_for_delivery");
-  const [localStatus,setLocal]=useState<OrderStatus>((order.status?.toLowerCase() as OrderStatus)||"pending");
+  const [expanded,setExpanded]=useState(normalizeStatus(order.status)==="pending"||normalizeStatus(order.status)==="out_for_delivery");
+  const [localStatus,setLocal]=useState<OrderStatus>(normalizeStatus(order.status));
   const [loading,setLoading]=useState<OrderStatus|null>(null);
   const L=I[lang];const dir=lang==="ar"?"rtl":"ltr";const font=lang==="ar"?"font-arabic":"font-latin";
   const ago=minutesAgo(order.created_at);
@@ -337,7 +350,7 @@ export default function AdminPage() {
   useEffect(()=>{if(unlocked&&activeTab==="prices")fetchProducts();},[unlocked,activeTab,fetchProducts]);
 
   async function handleStatusChange(id:string,status:OrderStatus){await updateOrderStatus(id,status);setOrders(prev=>prev.map(o=>o.id===id?{...o,status}:o));}
-  function handlePriceChange(id:string,val:number){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_price:val,isDirty:val!==p.price_mad||p.edited_in_stock!==p.in_stock,saveStatus:"idle"}:p));}
+  function handlePriceChange(id:string,val:number){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_price:val,isDirty:val!==p.price_mad||p.edited_in_stock!==p.in_stock||p.edited_on_sale!==((p as any).on_sale??false)||p.edited_discount!==((p as any).discount_pct??0),saveStatus:"idle"}:p));}
   function handleToggleOnSale(id:string){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_on_sale:!p.edited_on_sale,isDirty:true,saveStatus:"idle"}:p));}
   function handleDiscountChange(id:string,val:number){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_discount:Math.max(0,Math.min(99,val)),isDirty:true,saveStatus:"idle"}:p));}
   function handleToggleStock(id:string){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_in_stock:!p.edited_in_stock,isDirty:true,saveStatus:"idle"}:p));}
@@ -364,9 +377,9 @@ export default function AdminPage() {
     {value:"delivered",label:L.status_delivered},{value:"completed",label:L.status_completed},
     {value:"cancelled",label:L.status_cancelled},
   ];
-  const pendingCount=orders.filter(o=>o.status==="pending").length;
+  const pendingCount=orders.filter(o=>normalizeStatus(o.status)==="pending").length;
   const dirtyCount=products.filter(p=>p.isDirty).length;
-  const oldestPendingId=[...orders].filter(o=>o.status==="pending").sort((a,b)=>new Date(a.created_at).getTime()-new Date(b.created_at).getTime())[0]?.id;
+  const oldestPendingId=[...orders].filter(o=>normalizeStatus(o.status)==="pending").sort((a,b)=>new Date(a.created_at).getTime()-new Date(b.created_at).getTime())[0]?.id;
 
   return(
     <div className={"min-h-screen "+font} style={{background:"linear-gradient(160deg,#f0fdf4 0%,#f8fafc 40%,#FAF7F2 100%)"}}>
