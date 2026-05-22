@@ -102,24 +102,23 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
           )}
         </div>
         {/* WhatsApp order deep-link */}
-        
-          href={"https://wa.me/212664500789?text=" + encodeURIComponent(
-            (l === "ar"
-              ? "بغيت نطلب: " + name + " — " + (deal ?? p.price_mad).toFixed(2) + " درهم/" + p.unit
-              : l === "fr"
-              ? "Je souhaite commander: " + name + " — " + (deal ?? p.price_mad).toFixed(2) + " MAD/" + p.unit
-              : "I want to order: " + name + " — " + (deal ?? p.price_mad).toFixed(2) + " MAD/" + p.unit)
-          )}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold transition-colors mt-1"
-          style={{ background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}
-          aria-label={"Commander " + (name || "")}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          {l === "ar" ? "اطلب" : l === "fr" ? "Commander" : "Order"}
-        </a>
+        {(() => {
+          const price = (deal ?? p.price_mad).toFixed(2);
+          const msg = l === 'ar'
+            ? `بغيت نطلب: ${name} - ${price} درهم/${p.unit}`
+            : l === 'fr'
+            ? `Commander: ${name} - ${price} MAD/${p.unit}`
+            : `Order: ${name} - ${price} MAD/${p.unit}`;
+          const waUrl = `https://wa.me/212664500789?text=${encodeURIComponent(msg)}`;
+          return (
+            <a href={waUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold mt-1"
+              style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' }}>
+              <span>&#128172;</span>
+              {l === 'ar' ? 'اطلب' : l === 'fr' ? 'Commander' : 'Order'}
+            </a>
+          );
+        })()}
       </div>
 
       {/* Right: image + price stacked */}
