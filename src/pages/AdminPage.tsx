@@ -1,4 +1,4 @@
-﻿// src/pages/AdminPage.tsx
+// src/pages/AdminPage.tsx
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Save, AlertCircle, CheckCircle, Loader2, Lock,
@@ -444,7 +444,8 @@ export default function AdminPage() {
         )}
       </div>
     </div>
-﻿
+
+
           {activeTab==="paniers"&&(
             <div className="space-y-5 max-w-4xl mx-auto">
               <div className="flex items-center justify-between pb-2 border-b border-gray-100">
