@@ -16,7 +16,7 @@ const WA_NUMBER = "212664500789";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface GPS { lat: number; lng: number; }
-type LocationStatus = "idle" | "loading" | "success" | "error";
+type LocationStatus = "idle" | "loading" | "success" | "denied" | "unavailable" | "timeout" | "error";
 
 // ── Pre-defined className strings (keeps JSX attribute lines short + safe) ────
 const CLS = {
@@ -148,137 +148,106 @@ function CartRow({ item }: { item: CartItem }) {
   );
 }
 
-// ── GPS capture widget ────────────────────────────────────────────────────────
-function GPSCapture({ status, onRequest }: {
+﻿// ── GPS capture widget ────────────────────────────────────────────────────────
+const WA_GPS = "https://wa.me/212664500789?text=" + encodeURIComponent(
+  "📍 Je souhaite partager ma position pour la livraison de ma commande GreenGo."
+);
+
+function GPSCapture({ status, onRequest, language }: {
   status:    LocationStatus;
   onRequest: () => void;
+  language:  string;
 }) {
+  const l = language;
+
   if (status === "success") {
     return (
-      <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-        <CheckCircle2 size={15} className="shrink-0 text-[#2E8B57]" />
-        <span className="text-sm font-bold text-[#2E8B57]">
-          ✅ Position GPS capturée avec succès
+      <div className="flex items-center gap-2.5 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5">
+        <span className="text-green-500 text-sm">✅</span>
+        <span className="text-xs font-semibold text-green-700">
+          {l === "ar" ? "تم تحديد موقعك بنجاح" : l === "fr" ? "Position GPS capturée avec succès" : "GPS location captured"}
         </span>
       </div>
     );
   }
 
-  if (status === "error") {
+  if (status === "loading") {
+    return (
+      <div className="flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+        <svg className="animate-spin h-4 w-4 text-[#2E8B57]" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+        </svg>
+        <span className="text-xs font-semibold text-gray-500">
+          {l === "ar" ? "جاري تحديد الموقع…" : l === "fr" ? "Localisation en cours…" : "Getting location…"}
+        </span>
+      </div>
+    );
+  }
+
+  if (status === "denied") {
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-          <XCircle size={14} className="shrink-0 text-red-500" />
-          <span className="text-sm font-semibold text-red-600">
-            ❌ Erreur de localisation. Veuillez autoriser l'accès.
-          </span>
+        <div className="flex items-start gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+          <span className="text-gray-400 text-sm mt-0.5">📍</span>
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-gray-600">
+              {l === "fr" ? "Localisation désactivée" : l === "ar" ? "تم رفض الوصول للموقع" : "Location access denied"}
+            </p>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              {l === "fr" ? "Votre adresse manuelle suffit — la livraison est confirmée." : l === "ar" ? "عنوانك كافي لإتمام الطلب." : "Your address is enough to complete the order."}
+            </p>
+          </div>
         </div>
-        <button type="button" onClick={onRequest}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-xs font-semibold text-gray-500 transition-all hover:bg-gray-100">
-          <Navigation size={12} />
-          Réessayer
+        <a href={WA_GPS} target="_blank" rel="noopener noreferrer"
+          className="flex items-center gap-2 text-[10px] font-semibold text-gray-400 hover:text-[#2E8B57] transition-colors px-1">
+          <span>💬</span>
+          {l === "fr" ? "Partager ma position via WhatsApp après la commande" : l === "ar" ? "مشاركة موقعي عبر واتساب بعد الطلب" : "Share location via WhatsApp after order"}
+        </a>
+      </div>
+    );
+  }
+
+  if (status === "timeout") {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <span className="text-amber-500 text-sm mt-0.5">⏱️</span>
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-amber-700">
+              {l === "fr" ? "Délai dépassé" : l === "ar" ? "انتهت المهلة" : "Location timed out"}
+            </p>
+            <p className="text-[10px] text-amber-600 mt-0.5">
+              {l === "fr" ? "Continuez avec votre adresse — ou réessayez à l'extérieur." : l === "ar" ? "تابع بعنوانك أو جرب خارج المبنى" : "Continue with your address, or retry outdoors."}
+            </p>
+          </div>
+        </div>
+        <button onClick={onRequest}
+          className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors w-full justify-center">
+          <span>📍</span>
+          {l === "fr" ? "Réessayer" : l === "ar" ? "إعادة المحاولة" : "Try again"}
         </button>
       </div>
     );
   }
 
-  const btnCls = status === "loading" ? CLS.gpsLoading : CLS.gpsIdle;
-  return (
-    <button type="button" onClick={onRequest} disabled={status === "loading"} className={btnCls}>
-      {status === "loading" ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
-      {status === "loading" ? "Chargement de votre position\u2026" : "\ud83d\udccd Obtenir ma position GPS (Recommandé)"}
-    </button>
-  );
-}
-
-// ── Success screen ────────────────────────────────────────────────────────────
-function SuccessScreen({ orderId }: { orderId: string }) {
-  const shortId = orderId.slice(-6).toUpperCase();
-  const [dlLoading, setDlLoading] = useState(false);
-  const [dlError,   setDlError]   = useState("");
-
-  async function downloadInvoice() {
-    setDlLoading(true);
-    setDlError("");
-    try {
-      const res = await fetch(
-        `${API_BASE}/orders/${orderId}/invoice?lang=fr`
-      );
-      if (!res.ok) throw new Error("HTTP " + res.status.toString());
-      const blob = await res.blob();
-      const url  = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-      const a    = document.createElement("a");
-      a.href     = url;
-      a.download = "GreenGo_Facture_" + orderId.slice(-8).toUpperCase() + ".pdf";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch {
-      setDlError("Erreur lors du téléchargement de la facture.");
-    } finally {
-      setDlLoading(false);
-    }
+  if (status === "unavailable" || status === "error") {
+    return (
+      <div className="flex items-start gap-2.5 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+        <span className="text-gray-300 text-sm mt-0.5">📍</span>
+        <p className="text-xs font-medium text-gray-400">
+          {l === "fr" ? "GPS non disponible — votre adresse suffit." : l === "ar" ? "GPS غير متاح — عنوانك كافي." : "GPS unavailable — your address is enough."}
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-6 text-center"
-      style={{ background: "#FAF7F2" }}>
-      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#2E8B57]/10 shadow-inner">
-        <CheckCircle2 size={48} className="text-[#2E8B57]" strokeWidth={1.5} />
-      </div>
-      <div>
-        <h2 className="text-2xl font-extrabold text-gray-800">Commande confirmée ! 🎉</h2>
-        <p className="mt-2 text-gray-500">
-          Votre commande <span className="font-bold text-gray-700 font-latin">#{shortId}</span> a bien été reçue.
-        </p>
-        <p className="mt-1.5 text-sm text-gray-400">
-          Notre équipe vous contactera sur WhatsApp pour confirmer la livraison.
-        </p>
-      </div>
-
-      {/* Track order button */}
-      
-      <a
-        href={`/track/${orderId}`}
-        className="flex items-center gap-2.5 rounded-2xl bg-[#2E8B57] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/25 transition-all hover:bg-[#1F6B40] hover:shadow-xl active:scale-95"
-      >
-        Suivre ma commande #{shortId}
-      </a>
-
-      {/* Invoice download */}
-      <div className="flex flex-col items-center gap-2 w-full max-w-xs">
-        <button
-          onClick={downloadInvoice}
-          disabled={dlLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] px-6 py-3 text-sm font-extrabold text-white shadow-lg transition-all hover:bg-[#1F6B40] active:scale-95 disabled:opacity-60">
-          {dlLoading
-            ? <><Loader2 size={15} className="animate-spin" /> Génération…</>
-            : <>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Télécharger la facture PDF
-              </>
-          }
-        </button>
-        {dlError && <p className="text-xs text-red-500">{dlError}</p>}
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-3">
-        <a href={"https://wa.me/" + WA_NUMBER} target="_blank" rel="noopener noreferrer"
-          className={CLS.waBtn}>
-          <MessageCircle size={15} />
-          Discuter sur WhatsApp
-        </a>
-        <Link to="/" className={CLS.borderBtn}>
-          <Leaf size={15} />
-          Continuer mes achats
-        </Link>
-      </div>
-    </div>
+    <button type="button" onClick={onRequest}
+      className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-[#2E8B57]/30 bg-[#2E8B57]/5 px-4 py-3 text-sm font-bold text-[#2E8B57] transition-all hover:bg-[#2E8B57]/10 active:scale-[0.98]">
+      <span>📍</span>
+      {l === "fr" ? "Partager ma position GPS (Recommandé)" : l === "ar" ? "مشاركة موقعي GPS (يُنصح به)" : "Share GPS location (Recommended)"}
+    </button>
   );
 }
 
@@ -309,15 +278,23 @@ export default function CartPage() {
 
   // ── GPS ──────────────────────────────────────────────────────────────────────
   function handleGetLocation() {
-    if (!navigator.geolocation) { setLocationStatus("error"); return; }
+    if (!navigator.geolocation) {
+      setLocationStatus("unavailable");
+      return;
+    }
     setLocationStatus("loading");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocationStatus("success");
       },
-      () => setLocationStatus("error"),
-      { timeout: 10000, enableHighAccuracy: true }
+      (err) => {
+        if (err.code === 1) setLocationStatus("denied");
+        else if (err.code === 2) setLocationStatus("unavailable");
+        else if (err.code === 3) setLocationStatus("timeout");
+        else setLocationStatus("error");
+      },
+      { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 }
     );
   }
 
@@ -622,7 +599,7 @@ export default function CartPage() {
                       Recommandé
                     </span>
                   </label>
-                  <GPSCapture status={locationStatus} onRequest={handleGetLocation} />
+                  <GPSCapture status={locationStatus} onRequest={handleGetLocation} language={language} />
                   {locationStatus === "success" && location && (
                     <p className="pl-1 text-[10px] text-gray-400 font-latin">
                       {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
