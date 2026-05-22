@@ -283,10 +283,14 @@ function PriceRow({item,rowIndex,totalRows,lang,onChange,onToggle,onSave,inputRe
       <td className="px-5 py-3.5"><button onClick={()=>onToggle(item.id)} className="flex items-center gap-2 rounded-xl px-2 py-1 transition-all hover:bg-gray-100">{item.edited_in_stock?<><ToggleRight size={22} className="text-[#2E8B57]"/><span className={"text-xs font-bold text-[#2E8B57] "+font}>{L.in_stock}</span></>:<><ToggleLeft size={22} className="text-gray-300"/><span className={"text-xs font-bold text-gray-400 "+font}>{L.out_stock}</span></>}</button></td>
       <td className="px-5 py-3.5">
         <button onClick={()=>onToggleSale(item.id)}
-          className={"flex items-center gap-1.5 rounded-xl px-2 py-1 transition-all hover:bg-gray-100 "+(item.edited_on_sale?"text-amber-600":"text-gray-300")}>
+          className={"flex items-center gap-2 rounded-xl px-2 py-1.5 transition-all border "+(
+            item.edited_on_sale
+              ? "bg-amber-50 border-amber-200 hover:bg-amber-100"
+              : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+          )}>
           {item.edited_on_sale
-            ? <><ToggleRight size={22} className="text-amber-500"/><span className="text-xs font-bold text-amber-600">Promo</span></>
-            : <><ToggleLeft size={22} className="text-gray-300"/><span className="text-xs font-bold text-gray-300">-</span></>}
+            ? <><ToggleRight size={20} className="text-amber-500 shrink-0"/><span className="text-xs font-extrabold text-amber-600 whitespace-nowrap">ON</span></>
+            : <><ToggleLeft size={20} className="text-gray-400 shrink-0"/><span className="text-xs font-bold text-gray-400 whitespace-nowrap">OFF</span></>}
         </button>
       </td>
       <td className="px-3 py-3.5">
@@ -349,7 +353,7 @@ export default function AdminPage() {
   },[L.error_products]);
 
   useEffect(()=>{if(unlocked&&activeTab==="orders")fetchOrders();},[unlocked,activeTab,fetchOrders]);
-  useEffect(()=>{if(unlocked&&activeTab==="prices")fetchProducts();},[unlocked,activeTab,fetchProducts]);
+  useEffect(()=>{if(unlocked&&(activeTab==="prices"||activeTab==="paniers"))fetchProducts();},[unlocked,activeTab,fetchProducts]);
 
   async function handleStatusChange(id:string,status:OrderStatus){await updateOrderStatus(id,status);setOrders(prev=>prev.map(o=>o.id===id?{...o,status}:o));}
   function handlePriceChange(id:string,val:number){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_price:val,isDirty:val!==p.price_mad||p.edited_in_stock!==p.in_stock||p.edited_on_sale!==((p as any).on_sale??false)||p.edited_discount!==((p as any).discount_pct??0),saveStatus:"idle"}:p));}
