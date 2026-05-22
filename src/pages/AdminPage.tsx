@@ -443,9 +443,6 @@ export default function AdminPage() {
           </div>
         )}
       </div>
-    </div>
-
-
           {activeTab==="paniers"&&(
             <div className="space-y-5 max-w-4xl mx-auto">
               <div className="flex items-center justify-between pb-2 border-b border-gray-100">
@@ -557,4 +554,6 @@ export default function AdminPage() {
             </div>
           )}
   );
-}
+}    </div>
+
+
