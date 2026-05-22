@@ -192,7 +192,7 @@ export default function MenuPage() {
   const [updatedAt,  setUpdatedAt]  = useState("");
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Hide main site chrome
+  // Hide main site chrome — with pagehide cleanup for iOS Safari bfcache
   useEffect(() => {
     const toHide: HTMLElement[] = [];
     ["header", "footer", "nav", ".zellige-border"].forEach(sel => {
@@ -204,9 +204,21 @@ export default function MenuPage() {
     });
     const shell = document.querySelector(".pb-16") as HTMLElement | null;
     if (shell) shell.style.paddingBottom = "0";
-    return () => {
+
+    // iOS Safari bfcache fix — restore elements synchronously on pagehide
+    function restoreAll() {
       toHide.forEach(e => e.style.removeProperty("display"));
       if (shell) shell.style.paddingBottom = "";
+    }
+    window.addEventListener("pagehide", restoreAll);
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") restoreAll();
+    });
+
+    return () => {
+      restoreAll();
+      window.removeEventListener("pagehide", restoreAll);
+      window.removeEventListener("visibilitychange", restoreAll);
     };
   }, []);
 
@@ -451,7 +463,7 @@ export default function MenuPage() {
       {/* ── QR Modal ── */}
       {showQR && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6"
-          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(0,0,0,0.6)" }}
           onClick={() => setShowQR(false)}>
           <div className="bg-white rounded-3xl p-6 text-center shadow-2xl max-w-xs w-full"
             onClick={e => e.stopPropagation()}>
