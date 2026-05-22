@@ -439,9 +439,9 @@ export default function AdminPage() {
             <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className={"border-b border-gray-100 bg-gray-50/50 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 "+(lang==="ar"?"text-right":"")} dir={dir}><th className="px-5 py-3">{L.product}</th><th className="px-5 py-3">{L.curr_price}</th><th className="px-5 py-3">{L.new_price}</th><th className="px-5 py-3">{L.unit_lbl}</th><th className="px-5 py-3">{L.stock_lbl}</th><th className="px-5 py-3"><span className="text-amber-400">Promo</span></th><th className="px-3 py-3"><span className="text-amber-400">Remise</span></th><th className="px-5 py-3">{L.action_lbl}</th><th className="px-2 py-3"></th></tr></thead><tbody>{(promoFilter==="promo"?products.filter((p:any)=>p.on_sale):products).map((item,i)=>(<PriceRow key={item.id} item={item} rowIndex={i} totalRows={products.length} lang={lang} onChange={handlePriceChange} onToggle={handleToggleStock} onToggleSale={handleToggleOnSale} onDiscountChange={handleDiscountChange} onSave={handleSave} inputRef={el=>inputRefs.current.set(item.id,el)}/>))}</tbody></table></div>
               </div>
             )}
+          {activeTab==="paniers"&&<PaniersTab products={products} lang={lang} font={font}/>}
           </div>
         )
-          {activeTab==="paniers"&&<PaniersTab products={products} lang={lang} font={font}/>}
 }
       </div>
     </div>
