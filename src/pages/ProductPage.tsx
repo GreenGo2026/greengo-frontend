@@ -177,7 +177,12 @@ export default function ProductPage() {
   const qty      = cartItem?.cartQuantity ?? 0;
   const disc     = (product as any).discount_pct as number | undefined;
   const dealPrice = disc ? Math.round(product.price_mad * (1 - disc / 100) * 100) / 100 : null;
-  const desc     = generateDescription(product, l);
+  // Use DB description when available, fall back to generated
+  const desc = (
+    (product as any).description_fr?.trim()
+      ? (product as any).description_fr
+      : generateDescription(product, l)
+  );
 
   function handleAdd() {
     addToCart({

@@ -30,6 +30,8 @@ export interface DBProduct {
   created_at: string | null;
   on_sale?:      boolean;
   discount_pct?: number;
+  description_fr?: string;
+  discount_pct?: number;
 }
 
 export interface DBProductUpdate {
