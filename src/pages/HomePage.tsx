@@ -189,7 +189,7 @@ function QtyControl({ product }: { product: DBProduct }) {
   if (qty === 0) {
     return (
       <button
-        onClick={() => add(proxy, step)}
+        onClick={() => { add(proxy, step); try { if ((window as any).gtag) { (window as any).gtag("event","add_to_cart",{currency:"MAD",value:product.price_mad,items:[{item_id:(product as any).sku||product.id,item_name:product.name_fr||product.name_ar,price:product.price_mad,quantity:step}]}); } } catch {} }}
         aria-label="Ajouter au panier"
         className={"group flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] text-xs font-extrabold text-white shadow-md shadow-[#2E8B57]/20 transition-all duration-200 hover:bg-[#1F6B40] hover:shadow-lg hover:shadow-[#2E8B57]/25 active:scale-[0.97] " + font}>
         <ShoppingCart size={14} strokeWidth={2.5} className="transition-transform group-hover:-rotate-6" />
