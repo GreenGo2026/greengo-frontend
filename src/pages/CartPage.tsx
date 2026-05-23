@@ -251,98 +251,6 @@ function GPSCapture({ status, onRequest, language }: {
   );
 }
 
-function SuccessScreen({ orderId }: { orderId: string }) {
-  const shortId = orderId.slice(-6).toUpperCase();
-  const [dlLoading, setDlLoading] = useState(false);
-  const [dlError,   setDlError]   = useState("");
-
-  async function downloadInvoice() {
-    setDlLoading(true);
-    setDlError("");
-    try {
-      const res = await fetch(
-        `${API_BASE}/orders/${orderId}/invoice?lang=fr`
-      );
-      if (!res.ok) throw new Error("HTTP " + res.status.toString());
-      const blob = await res.blob();
-      const url  = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-      const a    = document.createElement("a");
-      a.href     = url;
-      a.download = "GreenGo_Facture_" + orderId.slice(-8).toUpperCase() + ".pdf";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch {
-      setDlError("Erreur lors du téléchargement de la facture.");
-    } finally {
-      setDlLoading(false);
-    }
-  }
-
-  return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-6 text-center"
-      style={{ background: "#FAF7F2" }}>
-      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#2E8B57]/10 shadow-inner">
-        <CheckCircle2 size={48} className="text-[#2E8B57]" strokeWidth={1.5} />
-      </div>
-      <div>
-        <h2 className="text-2xl font-extrabold text-gray-800">Commande confirmée ! 🎉</h2>
-        <p className="mt-2 text-gray-500">
-          Votre commande <span className="font-bold text-gray-700 font-latin">#{shortId}</span> a bien été reçue.
-        </p>
-        <p className="mt-1.5 text-sm text-gray-400">
-          Notre équipe vous contactera sur WhatsApp pour confirmer la livraison.
-        </p>
-      </div>
-
-      {/* Track order button */}
-      
-      <a
-        href={`/track/${orderId}`}
-        className="flex items-center gap-2.5 rounded-2xl bg-[#2E8B57] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/25 transition-all hover:bg-[#1F6B40] hover:shadow-xl active:scale-95"
-      >
-        Suivre ma commande #{shortId}
-      </a>
-
-      {/* Invoice download */}
-      <div className="flex flex-col items-center gap-2 w-full max-w-xs">
-        <button
-          onClick={downloadInvoice}
-          disabled={dlLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] px-6 py-3 text-sm font-extrabold text-white shadow-lg transition-all hover:bg-[#1F6B40] active:scale-95 disabled:opacity-60">
-          {dlLoading
-            ? <><Loader2 size={15} className="animate-spin" /> Génération…</>
-            : <>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Télécharger la facture PDF
-              </>
-          }
-        </button>
-        {dlError && <p className="text-xs text-red-500">{dlError}</p>}
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-3">
-        <a href={"https://wa.me/" + WA_NUMBER} target="_blank" rel="noopener noreferrer"
-          className={CLS.waBtn}>
-          <MessageCircle size={15} />
-          Discuter sur WhatsApp
-        </a>
-        <Link to="/" className={CLS.borderBtn}>
-          <Leaf size={15} />
-          Continuer mes achats
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-// ── CartPage ──────────────────────────────────────────────────────────────────
-
 // ── CartPage ──────────────────────────────────────────────────────────────────
 export default function CartPage() {
   const { t, dir, language } = useLanguage();
@@ -376,27 +284,9 @@ export default function CartPage() {
     }
     setLocationStatus("loading");
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setLocation({ lat, lng });
+      (pos) => {
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocationStatus("success");
-
-        // Reverse geocode via backend proxy (swap endpoint for scale)
-        try {
-          const API = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
-          const r   = await fetch(`${API}/api/v1/geocode?lat=${lat}&lng=${lng}`);
-          if (r.ok) {
-            const geo = await r.json();
-            const resolved = geo.display || geo.full || "";
-            if (resolved && !address.trim()) {
-              // Only auto-fill if address is empty — never overwrite manual entry
-              setAddress(resolved);
-            }
-          }
-        } catch {
-          // Geocoding failure is silent — user can still type address manually
-        }
       },
       (err) => {
         if (err.code === 1) setLocationStatus("denied");
@@ -416,43 +306,20 @@ export default function CartPage() {
       const normalized = trimmed.startsWith("+212")
         ? trimmed
         : "+212" + trimmed.replace(/^0/, "");
-
-      // 1. Check localStorage cache first (instant, no network)
       try {
-        const cached = localStorage.getItem("gg_customer_" + normalized);
-        if (cached) {
-          const profile = JSON.parse(cached);
+        const stored = localStorage.getItem("gg_customer_" + normalized);
+        if (stored) {
+          const profile = JSON.parse(stored);
           setSavedProfile(profile);
           setIsReturning(true);
-          return;
-        }
-      } catch { /* ignore */ }
-
-      // 2. Backend lookup — works across all devices
-      const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
-      fetch(API_BASE_URL + "/api/v1/customers/" + encodeURIComponent(normalized))
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data && data.name) {
-            const profile = { name: data.name, address: data.last_address || "" };
-            setSavedProfile(profile);
-            setIsReturning(true);
-            try {
-              localStorage.setItem("gg_customer_" + normalized, JSON.stringify({
-                ...profile,
-                total_points: data.total_points,
-                total_orders: data.total_orders,
-              }));
-            } catch { /* ignore */ }
-          } else {
-            setIsReturning(false);
-            setSavedProfile(null);
-          }
-        })
-        .catch(() => {
+        } else {
           setIsReturning(false);
           setSavedProfile(null);
-        });
+        }
+      } catch {
+        setIsReturning(false);
+        setSavedProfile(null);
+      }
     } else {
       setIsReturning(false);
       setSavedProfile(null);
@@ -508,31 +375,6 @@ export default function CartPage() {
       }
       const data = await res.json();
       const id   = data.order_id ?? "";
-
-      // ── GA4 purchase event ────────────────────────────────────────────────
-      try {
-        if (typeof window !== "undefined" && (window as any).gtag) {
-          (window as any).gtag("event", "purchase", {
-            transaction_id: id,
-            value:          total,
-            currency:       "MAD",
-            items: cart.map((i, idx) => ({
-              item_id:    (i as any).id || (i as any).sku || String(idx),
-              item_name:  i.name,
-              price:      i.price_per_unit ?? 0,
-              quantity:   i.cartQuantity,
-            })),
-          });
-          // Also fire add_to_cart retrospectively for Shopping optimization
-          (window as any).gtag("event", "conversion", {
-            send_to:        "G-KX5B69ZWPE",
-            value:          total,
-            currency:       "MAD",
-            transaction_id: id,
-          });
-        }
-      } catch { /* GA4 errors must never block checkout */ }
-
       // Save customer profile for returning customer recognition
       try {
         const normalizedKey = "+212" + phone.trim().replace(/^0/, "").replace(/^\+212/, "");
