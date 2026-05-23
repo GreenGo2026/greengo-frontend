@@ -249,7 +249,7 @@ export default function TrackOrderPage() {
             <span className="text-3xl block mb-2">💬</span>
             <h2 className="text-white font-black text-base mb-1">{T.help[l]}</h2>
             <p className="text-white/40 text-xs mb-4">{T.help_sub[l]}</p>
-            <a href="https://wa.me/212664397031" target="_blank" rel="noopener noreferrer"
+            <a href={"https://wa.me/212664500789?text=" + encodeURIComponent("Bonjour, ma commande #" + orderId.slice(-6).toUpperCase())} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-700 to-green-900 border border-green-600/50 rounded-xl text-white font-bold text-sm hover:opacity-90 transition-opacity">
               💬 {T.wa_btn[l]}
             </a>
