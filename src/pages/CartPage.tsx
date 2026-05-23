@@ -292,12 +292,12 @@ function SuccessScreen({ orderId }: { orderId: string }) {
         </svg>
       </div>
       <div>
-        <h2 className="text-2xl font-extrabold text-gray-800">Commande confirm\u00e9e ! \ud83c\udf89</h2>
+        <h2 className="text-2xl font-extrabold text-gray-800">Commande confirmée ! 🎉</h2>
         <p className="mt-2 text-gray-500">
-          Votre commande <span className="font-bold text-gray-700 font-latin">#{shortId}</span> a bien \u00e9t\u00e9 re\u00e7ue.
+          Votre commande <span className="font-bold text-gray-700 font-latin">#{shortId}</span> a bien été reçue.
         </p>
         <p className="mt-1.5 text-sm text-gray-400">
-          Notre \u00e9quipe vous contactera sur WhatsApp pour confirmer la livraison.
+          Notre équipe vous contactera sur WhatsApp pour confirmer la livraison.
         </p>
       </div>
 
@@ -309,7 +309,7 @@ function SuccessScreen({ orderId }: { orderId: string }) {
       <div className="flex flex-col items-center gap-2 w-full max-w-xs">
         <button onClick={downloadInvoice} disabled={dlLoading}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] px-6 py-3 text-sm font-extrabold text-white shadow-lg transition-all hover:bg-[#1F6B40] active:scale-95 disabled:opacity-60">
-          {dlLoading ? "G\u00e9n\u00e9ration\u2026" : "T\u00e9l\u00e9charger la facture PDF"}
+          {dlLoading ? "Génération…" : "Télécharger la facture PDF"}
         </button>
         {dlError && <p className="text-xs text-red-500">{dlError}</p>}
       </div>
