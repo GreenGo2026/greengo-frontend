@@ -1,297 +1,428 @@
-﻿// src/pages/Profile/UserDashboard.tsx
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+// src/pages/Profile/UserDashboard.tsx
+// Phone-based identity — ready for OTP upgrade later
+import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
+import { useLanguage } from "../../contexts/LanguageContext";
 import {
-  User, Package, MapPin, ChevronRight, CheckCircle2,
-  Clock, Truck, XCircle, Plus, Pencil, Phone,
-  Mail, Leaf,
+  Package, ChevronRight, Clock, Truck, CheckCircle2,
+  XCircle, Phone, Star, MessageCircle, ShoppingCart,
+  RefreshCw, Loader2, LogOut, Edit3, Check,
 } from "lucide-react";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-type Tab = "profile" | "orders" | "addresses";
+type L = "fr" | "ar" | "en";
+const API = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
+const CACHE_KEY = "gg_dashboard_phone";
 
-interface Order {
-  id:      string;
-  date:    string;
-  items:   string;
-  total:   number;
-  status:  "En cours" | "Livré" | "Annulé" | "En préparation";
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function normalizePhone(p: string): string {
+  const d = p.trim().replace(/[\s\-]/g, "");
+  if (d.startsWith("+212")) return d;
+  if (d.startsWith("212")) return "+" + d;
+  if (d.startsWith("0") && d.length === 10) return "+212" + d.slice(1);
+  return d;
 }
 
-interface Address {
-  id:    string;
-  label: string;
-  line:  string;
-  phone: string;
+function formatDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("fr-MA", { day: "numeric", month: "short", year: "numeric" });
+  } catch { return iso; }
 }
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
-const MOCK_ORDERS: Order[] = [
-  { id: "BGO-001", date: "12 Jan 2025", items: "Tomates, Poulet, Bananes", total: 106.50, status: "Livré"          },
-  { id: "BGO-002", date: "19 Jan 2025", items: "Carottes, Courgettes",     total: 43.00,  status: "En cours"       },
-  { id: "BGO-003", date: "25 Jan 2025", items: "Poulet entier × 2",        total: 136.00, status: "En préparation" },
-  { id: "BGO-004", date: "02 Fév 2025", items: "Oranges, Pommes",          total: 55.00,  status: "Annulé"         },
-];
+type OrderStatus = "pending" | "confirmed" | "preparing" | "out_for_delivery" | "delivered" | "cancelled";
 
-const MOCK_ADDRESSES: Address[] = [
-  { id: "a1", label: "Domicile",  line: "Hay Hassani, Rue 12, N°7, Casablanca",   phone: "0661 234 567" },
-  { id: "a2", label: "Bureau",   line: "Maarif, Boulevard Anfa, Bureau 304",       phone: "0522 456 789" },
-];
+const STATUS_CONFIG: Record<string, { label_fr: string; label_ar: string; icon: any; bg: string; text: string; border: string }> = {
+  pending:          { label_fr: "En attente",     label_ar: "قيد الانتظار",  icon: Clock,        bg: "bg-amber-50",   text: "text-amber-700",  border: "border-amber-200"  },
+  confirmed:        { label_fr: "Confirmée",       label_ar: "مؤكد",          icon: CheckCircle2, bg: "bg-blue-50",    text: "text-blue-700",   border: "border-blue-200"   },
+  preparing:        { label_fr: "En préparation",  label_ar: "قيد التحضير",   icon: Truck,        bg: "bg-purple-50",  text: "text-purple-700", border: "border-purple-200" },
+  out_for_delivery: { label_fr: "En livraison",    label_ar: "في الطريق",     icon: Truck,        bg: "bg-indigo-50",  text: "text-indigo-700", border: "border-indigo-200" },
+  delivered:        { label_fr: "Livré",           label_ar: "تم التسليم",    icon: CheckCircle2, bg: "bg-green-50",   text: "text-[#2E8B57]",  border: "border-green-200"  },
+  cancelled:        { label_fr: "Annulée",         label_ar: "ملغاة",          icon: XCircle,      bg: "bg-red-50",     text: "text-red-600",    border: "border-red-200"    },
+};
+
+function getStatus(raw: string) {
+  const key = raw?.toLowerCase().replace(/\s+/g, "_");
+  return STATUS_CONFIG[key] ?? STATUS_CONFIG["pending"];
+}
 
 // ── Status badge ──────────────────────────────────────────────────────────────
-function StatusBadge({ status }: { status: Order["status"] }) {
-  const config = {
-    "En cours":        { icon: Clock,       bg: "bg-amber-50  border-amber-200",  text: "text-amber-700"  },
-    "En préparation":  { icon: Truck,       bg: "bg-blue-50   border-blue-200",   text: "text-blue-700"   },
-    "Livré":           { icon: CheckCircle2,bg: "bg-emerald-50 border-emerald-200",text: "text-[#2E8B57]"  },
-    "Annulé":          { icon: XCircle,     bg: "bg-red-50    border-red-200",    text: "text-red-600"    },
-  }[status];
-  const Icon = config.icon;
+function StatusBadge({ status, lang }: { status: string; lang: string }) {
+  const cfg  = getStatus(status);
+  const Icon = cfg.icon;
+  const label = lang === "ar" ? cfg.label_ar : cfg.label_fr;
   return (
-    <span className={"inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold " + config.bg + " " + config.text}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold ${cfg.bg} ${cfg.text} ${cfg.border}`}>
       <Icon size={10} className="shrink-0" />
-      {status}
+      {label}
     </span>
   );
 }
 
-// ── Tab: Mon Profil ───────────────────────────────────────────────────────────
-function ProfileTab() {
-  const [editing, setEditing] = useState(false);
-  const [name,    setName]    = useState("Youssef El Amrani");
-  const [email,   setEmail]   = useState("youssef@email.com");
-  const [phone,   setPhone]   = useState("0661 234 567");
+// ── Points progress bar ───────────────────────────────────────────────────────
+function LoyaltyCard({ points, lang }: { points: number; lang: string }) {
+  const l        = lang as L;
+  const nextTier = points < 100 ? 100 : points < 250 ? 250 : points < 500 ? 500 : 1000;
+  const progress = Math.min((points / nextTier) * 100, 100);
+  const reward   = nextTier === 100 ? (l === "fr" ? "Livraison offerte" : "توصيل مجاني")
+                 : nextTier === 250 ? (l === "fr" ? "-10% sur votre commande" : "خصم 10%")
+                 : nextTier === 500 ? (l === "fr" ? "Panier cadeau" : "سلة هدية")
+                 : (l === "fr" ? "Statut VIP" : "عضو مميز");
+  return (
+    <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg,#fdf8ef,#f9efda)", border: "1px solid rgba(201,169,110,0.25)" }}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Star size={16} className="text-[#C9A96E] fill-[#C9A96E]" />
+          <span className="text-sm font-extrabold text-[#0c3228]">
+            {l === "fr" ? "Points fidélité" : l === "ar" ? "نقاط الولاء" : "Loyalty points"}
+          </span>
+        </div>
+        <span className="text-2xl font-black text-[#C9A96E] font-latin">{points}</span>
+      </div>
+      <div className="w-full h-2 rounded-full bg-amber-100 mb-2 overflow-hidden">
+        <div className="h-full rounded-full bg-[#C9A96E] transition-all duration-700" style={{ width: `${progress}%` }} />
+      </div>
+      <p className="text-[11px] text-gray-500">
+        {l === "fr"
+          ? `${nextTier - points} points pour : ${reward}`
+          : l === "ar"
+          ? `${nextTier - points} نقطة للحصول على: ${reward}`
+          : `${nextTier - points} pts to: ${reward}`}
+      </p>
+    </div>
+  );
+}
+
+// ── Order card ────────────────────────────────────────────────────────────────
+function OrderCard({ order, lang }: { order: any; lang: string }) {
+  const l       = lang as L;
+  const shortId = String(order._id || order.id || "").slice(-6).toUpperCase();
+  const date    = formatDate(order.created_at || order.date || "");
+  const total   = Number(order.total_price || order.total || 0);
+  const items   = (order.items || []) as any[];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-extrabold text-gray-800">Mon Profil</h2>
-        <button
-          onClick={() => setEditing((p) => !p)}
-          className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-xs font-bold text-gray-600 transition-all hover:border-[#2E8B57]/40 hover:text-[#2E8B57]">
-          <Pencil size={12} />
-          {editing ? "Annuler" : "Modifier"}
-        </button>
-      </div>
-
-      {/* Avatar */}
-      <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#2E8B57] text-2xl font-extrabold text-white shadow-lg shadow-[#2E8B57]/20">
-          {name.charAt(0)}
-        </div>
+    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
+      <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="text-base font-extrabold text-gray-800">{name}</p>
-          <p className="text-sm text-gray-400">Client GreenGo 🌿</p>
+          <p className="text-xs font-bold text-[#2E8B57] font-latin">#{shortId}</p>
+          <p className="text-[11px] text-gray-400 font-latin mt-0.5">{date}</p>
         </div>
+        <StatusBadge status={order.status || "pending"} lang={lang} />
       </div>
-
-      {/* Fields */}
-      <div className="space-y-4">
-        {[
-          { icon: User,  label: "Nom complet",       value: name,  set: setName,  type: "text" },
-          { icon: Mail,  label: "Adresse e-mail",    value: email, set: setEmail, type: "email" },
-          { icon: Phone, label: "Numéro de téléphone",value: phone, set: setPhone, type: "tel" },
-        ].map(({ icon: Icon, label, value, set, type }) => (
-          <div key={label} className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
-              <Icon size={11} className="text-[#2E8B57]" />
-              {label}
-            </label>
-            {editing ? (
-              <input type={type} value={value} onChange={(e) => set(e.target.value)}
-                className="w-full rounded-xl border border-[#2E8B57]/30 bg-[#2E8B57]/3 px-4 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-[#2E8B57]/60 focus:ring-2 focus:ring-[#2E8B57]/10" />
-            ) : (
-              <p className="rounded-xl bg-gray-50 border border-gray-100 px-4 py-2.5 text-sm text-gray-700">{value}</p>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {editing && (
-        <button
-          onClick={() => setEditing(false)}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/20 transition-all hover:bg-[#1F6B40] active:scale-[0.98]">
-          <CheckCircle2 size={15} />
-          Enregistrer les modifications
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ── Tab: Mes Commandes ────────────────────────────────────────────────────────
-function OrdersTab() {
-  return (
-    <div className="space-y-5">
-      <h2 className="text-lg font-extrabold text-gray-800">Mes Commandes</h2>
-      {MOCK_ORDERS.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-center">
-          <Package size={40} className="text-gray-200" />
-          <p className="font-semibold text-gray-400">Aucune commande pour l'instant</p>
-          <Link to="/" className="rounded-xl bg-[#2E8B57] px-5 py-2 text-sm font-bold text-white hover:bg-[#1F6B40] transition-colors">
-            Commander maintenant
-          </Link>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {MOCK_ORDERS.map((order) => (
-            <li key={order.id}
-              className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#2E8B57]/20 hover:shadow-md sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold text-gray-400 font-latin">#{order.id}</span>
-                  <span className="text-xs text-gray-300">·</span>
-                  <span className="text-xs text-gray-400">{order.date}</span>
-                </div>
-                <p className="text-sm font-semibold text-gray-700">{order.items}</p>
-                <StatusBadge status={order.status} />
-              </div>
-              <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
-                <p className="text-lg font-extrabold text-gray-900 font-latin">{order.total.toFixed(2)} <span className="text-xs text-gray-400">MAD</span></p>
-                <button className="flex items-center gap-1 text-xs font-semibold text-[#2E8B57] hover:underline">
-                  Détails <ChevronRight size={12} />
-                </button>
-              </div>
-            </li>
+      {items.length > 0 && (
+        <div className="space-y-1 mb-3">
+          {items.slice(0, 3).map((item: any, i: number) => (
+            <div key={i} className="flex items-center justify-between text-xs text-gray-600">
+              <span className={l === "ar" ? "font-arabic" : "font-latin"}>
+                {item.name || item.item_name || ""}
+                {item.quantity > 1 ? ` ×${item.quantity}` : ""}
+              </span>
+              <span className="font-latin text-gray-400">
+                {((item.price_per_unit || 0) * (item.quantity || 1)).toFixed(2)} MAD
+              </span>
+            </div>
           ))}
-        </ul>
+          {items.length > 3 && (
+            <p className="text-[10px] text-gray-400">
+              +{items.length - 3} {l === "fr" ? "autres articles" : "عناصر أخرى"}
+            </p>
+          )}
+        </div>
       )}
+      <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+        <span className="text-sm font-black text-[#2E8B57] font-latin">{total.toFixed(2)} MAD</span>
+        <div className="flex items-center gap-2">
+          <Link to={`/track/${order._id || order.id}`}
+            className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-bold text-[#2E8B57] bg-green-50 hover:bg-green-100 transition-colors">
+            <Truck size={11} />
+            {l === "fr" ? "Suivre" : l === "ar" ? "تتبع" : "Track"}
+          </Link>
+          <a href={"https://wa.me/212664500789?text=" + encodeURIComponent(
+            l === "fr" ? `Bonjour, je voudrais récommander comme la commande #${shortId}` : `مرحبا، أريد إعادة طلب مثل الطلب #${shortId}`
+          )} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors">
+            <RefreshCw size={11} />
+            {l === "fr" ? "Récommander" : l === "ar" ? "إعادة طلب" : "Reorder"}
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
 
-// ── Tab: Mes Adresses ─────────────────────────────────────────────────────────
-function AddressesTab() {
-  const [addresses, setAddresses] = useState<Address[]>(MOCK_ADDRESSES);
+// ── Phone entry screen ────────────────────────────────────────────────────────
+function PhoneEntry({ onSubmit, lang }: { onSubmit: (p: string) => void; lang: string }) {
+  const l = lang as L;
+  const [val, setVal] = useState("");
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-6">
+      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg,#0d3b36,#2E8B57)" }}>
+        <Phone size={32} className="text-white" />
+      </div>
+      <div>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.6rem", fontWeight: 700, color: "#0c3228", fontStyle: "italic" }}>
+          {l === "fr" ? "Votre espace client" : l === "ar" ? "حسابك الشخصي" : "Your account"}
+        </h2>
+        <p className="text-gray-500 text-sm mt-2 max-w-xs mx-auto">
+          {l === "fr"
+            ? "Entrez votre numéro de téléphone pour accéder à vos commandes et points de fidélité."
+            : l === "ar"
+            ? "أدخل رقم هاتفك للوصول إلى طلباتك ونقاط ولائك."
+            : "Enter your phone number to access your orders and loyalty points."}
+        </p>
+      </div>
+      <div className="w-full max-w-sm space-y-3">
+        <input type="tel" value={val} onChange={e => setVal(e.target.value)}
+          placeholder={l === "fr" ? "06 XX XX XX XX" : "06 XX XX XX XX"}
+          className="w-full rounded-2xl border-2 border-gray-200 px-4 py-3.5 text-center text-lg font-bold font-latin text-gray-800 outline-none focus:border-[#2E8B57] focus:ring-2 focus:ring-[#2E8B57]/15 transition-all"
+          dir="ltr" onKeyDown={e => e.key === "Enter" && val.trim().length >= 9 && onSubmit(val)} />
+        <button onClick={() => onSubmit(val)} disabled={val.trim().length < 9}
+          className="w-full rounded-2xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98] disabled:opacity-40"
+          style={{ background: "linear-gradient(135deg,#2E8B57,#1a5c4a)", boxShadow: "0 4px 16px rgba(46,139,87,0.25)" }}>
+          {l === "fr" ? "Accéder à mon compte" : l === "ar" ? "الوصول إلى حسابي" : "Access my account"}
+        </button>
+        <p className="text-[10px] text-gray-400">
+          {l === "fr"
+            ? "Votre numéro est utilisé uniquement pour retrouver vos commandes."
+            : "رقمك يُستخدم فقط للعثور على طلباتك."}
+        </p>
+      </div>
+    </div>
+  );
+}
 
-  function remove(id: string) {
-    setAddresses((p) => p.filter((a) => a.id !== id));
+// ── Main dashboard ────────────────────────────────────────────────────────────
+export default function UserDashboard() {
+  const { language, isRTL } = useLanguage();
+  const l    = language as L;
+  const font = l === "ar" ? "font-arabic" : "font-latin";
+
+  const [phone,     setPhone]     = useState(() => localStorage.getItem(CACHE_KEY) || "");
+  const [profile,   setProfile]   = useState<any>(null);
+  const [orders,    setOrders]    = useState<any[]>([]);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
+  const [editName,  setEditName]  = useState(false);
+  const [nameVal,   setNameVal]   = useState("");
+  const [activeTab, setActiveTab] = useState<"orders" | "profile">("orders");
+
+  const loadData = useCallback(async (ph: string) => {
+    const normalized = normalizePhone(ph);
+    setLoading(true);
+    setError("");
+    try {
+      // Load customer profile
+      const pr = await fetch(`${API}/api/v1/customers/${encodeURIComponent(normalized)}`);
+      if (pr.ok) {
+        const data = await pr.json();
+        setProfile(data);
+        setNameVal(data.name || "");
+      }
+      // Load orders by phone
+      const or = await fetch(`${API}/api/v1/orders?phone=${encodeURIComponent(normalized)}&limit=20`);
+      if (or.ok) {
+        const data = await or.json();
+        setOrders(Array.isArray(data) ? data : []);
+      }
+    } catch {
+      setError(l === "fr" ? "Impossible de charger vos données." : "تعذر تحميل بياناتك.");
+    } finally {
+      setLoading(false);
+    }
+  }, [l]);
+
+  useEffect(() => {
+    if (phone) loadData(phone);
+  }, []);
+
+  function handlePhoneSubmit(ph: string) {
+    const normalized = normalizePhone(ph);
+    localStorage.setItem(CACHE_KEY, normalized);
+    setPhone(normalized);
+    loadData(normalized);
   }
 
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-extrabold text-gray-800">Mes Adresses</h2>
-        <button className="flex items-center gap-1.5 rounded-xl bg-[#2E8B57] px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#1F6B40] active:scale-95">
-          <Plus size={13} />
-          Ajouter
-        </button>
-      </div>
-      {addresses.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-center">
-          <MapPin size={40} className="text-gray-200" />
-          <p className="font-semibold text-gray-400">Aucune adresse enregistrée</p>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {addresses.map((addr) => (
-            <li key={addr.id}
-              className="flex items-start justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#2E8B57]/20 hover:shadow-md">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2E8B57]/10">
-                  <MapPin size={16} className="text-[#2E8B57]" />
-                </div>
-                <div>
-                  <p className="text-sm font-extrabold text-gray-800">{addr.label}</p>
-                  <p className="mt-0.5 text-sm text-gray-500">{addr.line}</p>
-                  <p className="mt-1 text-xs text-gray-400 font-latin">{addr.phone}</p>
-                </div>
-              </div>
-              <div className="flex shrink-0 flex-col gap-1.5">
-                <button className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-[10px] font-bold text-gray-500 hover:bg-gray-100 transition-colors">
-                  Modifier
-                </button>
-                <button
-                  onClick={() => remove(addr.id)}
-                  className="rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-[10px] font-bold text-red-400 hover:bg-red-100 transition-colors">
-                  Supprimer
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p className="text-xs text-gray-400">📍 Livraison disponible à Casablanca, Salé, et Rabat.</p>
+  function handleLogout() {
+    localStorage.removeItem(CACHE_KEY);
+    setPhone("");
+    setProfile(null);
+    setOrders([]);
+  }
+
+  if (!phone) return (
+    <div className={font} dir={isRTL ? "rtl" : "ltr"} style={{ background: "#FAF7F2", minHeight: "100vh" }}>
+      <PhoneEntry onSubmit={handlePhoneSubmit} lang={language} />
     </div>
   );
-}
 
-// ── UserDashboard ─────────────────────────────────────────────────────────────
-export default function UserDashboard() {
-  const location = useLocation();
-
-  // Derive active tab from URL
-  const activeTab: Tab =
-    location.pathname.includes("/orders")   ? "orders"    :
-    location.pathname.includes("/addresses")? "addresses" :
-    "profile";
-
-  const NAV_ITEMS: { tab: Tab; to: string; icon: React.ElementType; label: string }[] = [
-    { tab: "profile",   to: "/profile/user", icon: User,    label: "Mon Profil"     },
-    { tab: "orders",    to: "/orders",        icon: Package, label: "Mes Commandes"  },
-    { tab: "addresses", to: "/addresses",     icon: MapPin,  label: "Mes Adresses"   },
-  ];
+  const points      = profile?.total_points ?? 0;
+  const totalOrders = orders.length;
+  const totalSpent  = orders.reduce((s: number, o: any) => s + Number(o.total_price || 0), 0);
+  const shortPhone  = phone.replace("+212", "0");
 
   return (
-    <div className="min-h-screen" style={{ background: "#F6F7F9" }}>
+    <div className={font} dir={isRTL ? "rtl" : "ltr"} style={{ background: "#FAF7F2", minHeight: "100vh" }}>
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
 
-      {/* Page header */}
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(135deg,#0d3b36 0%,#1a5c4a 60%,#2E8B57 100%)" }}>
-        <div className="absolute inset-0 zellige-bg-light opacity-10 pointer-events-none" />
-        <div className="mx-auto max-w-6xl px-5 py-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
-              <User size={22} className="text-white" />
+        {/* ── Identity strip ── */}
+        <div className="rounded-3xl p-5 text-white" style={{ background: "linear-gradient(135deg,#0d3b36 0%,#1a5c4a 60%,#2E8B57 100%)" }}>
+          <div className={`flex items-start justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center text-xl font-black">
+                {(profile?.name || shortPhone)[0]?.toUpperCase() || "?"}
+              </div>
+              <div>
+                {editName ? (
+                  <div className="flex items-center gap-2">
+                    <input value={nameVal} onChange={e => setNameVal(e.target.value)}
+                      className="rounded-lg px-2 py-1 text-sm font-bold text-gray-800 outline-none w-36"
+                      autoFocus />
+                    <button onClick={() => { setProfile((p: any) => ({ ...p, name: nameVal })); setEditName(false); }}
+                      className="text-white/70 hover:text-white">
+                      <Check size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <p className="font-extrabold text-white text-base leading-tight">
+                      {profile?.name || (l === "fr" ? "Mon compte" : "حسابي")}
+                    </p>
+                    <button onClick={() => setEditName(true)} className="text-white/40 hover:text-white/70">
+                      <Edit3 size={12} />
+                    </button>
+                  </div>
+                )}
+                <p className="text-white/50 text-xs font-latin mt-0.5">{shortPhone}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-extrabold text-white">Mon Espace Client</h1>
-              <p className="text-xs text-white/50">GreenGo Market · Casablanca</p>
-            </div>
+            <button onClick={handleLogout} className="text-white/40 hover:text-white/70 transition-colors" title="Déconnexion">
+              <LogOut size={16} />
+            </button>
+          </div>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-3 mt-5">
+            {[
+              { label: l === "fr" ? "Commandes" : "الطلبات", value: totalOrders },
+              { label: l === "fr" ? "Dépensé" : "المصروف",  value: totalSpent.toFixed(0) + " MAD" },
+              { label: l === "fr" ? "Points" : "النقاط",    value: points },
+            ].map((s, i) => (
+              <div key={i} className="rounded-2xl bg-white/10 px-3 py-2.5 text-center">
+                <p className="text-lg font-black text-white font-latin leading-none">{s.value}</p>
+                <p className="text-[10px] text-white/50 mt-0.5">{s.label}</p>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="zellige-border" />
-      </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+        {/* ── Quick actions ── */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: ShoppingCart, label: l === "fr" ? "Commander" : "اطلب الآن",   href: "/shop",  color: "#2E8B57" },
+            { icon: MessageCircle,label: l === "fr" ? "Support" : "الدعم",          href: "https://wa.me/212664500789", color: "#25D366", external: true },
+            { icon: Package,      label: l === "fr" ? "Mes commandes" : "طلباتي",  href: "#orders", color: "#C9A96E" },
+          ].map((a, i) => {
+            const Icon = a.icon;
+            const inner = (
+              <div key={i} className="flex flex-col items-center gap-2 rounded-2xl bg-white border border-gray-100 shadow-sm p-4 hover:shadow-md transition-all">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ background: a.color + "15" }}>
+                  <Icon size={18} style={{ color: a.color }} />
+                </div>
+                <p className="text-xs font-bold text-gray-700 text-center leading-tight">{a.label}</p>
+              </div>
+            );
+            return (a as any).external
+              ? <a key={i} href={a.href} target="_blank" rel="noopener noreferrer">{inner}</a>
+              : <Link key={i} to={a.href}>{inner}</Link>;
+          })}
+        </div>
 
-          {/* ── Sidebar ── */}
-          <aside className="md:col-span-1">
-            <nav className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-              {NAV_ITEMS.map(({ tab, to, icon: Icon, label }) => {
-                const active = activeTab === tab;
-                return (
-                  <Link key={tab} to={to}
-                    className={"flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all " + (active ? "border-l-4 border-[#2E8B57] bg-[#2E8B57]/6 text-[#2E8B57]" : "border-l-4 border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-800")}>
-                    <Icon size={16} className="shrink-0" />
-                    <span className="flex-1">{label}</span>
-                    {active && <ChevronRight size={14} />}
-                  </Link>
-                );
-              })}
+        {/* ── Loyalty points ── */}
+        <LoyaltyCard points={points} lang={language} />
 
-              {/* Divider + logout */}
-              <div className="border-t border-gray-100 p-3">
-                <Link to="/"
-                  className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-gray-400 transition-colors hover:bg-gray-50 hover:text-[#2E8B57]">
-                  <Leaf size={13} />
-                  Retour à la boutique
+        {/* ── Tabs ── */}
+        <div className="flex gap-2 bg-white rounded-2xl p-1.5 border border-gray-100 shadow-sm">
+          {(["orders", "profile"] as const).map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all ${activeTab === tab ? "bg-[#2E8B57] text-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+              {tab === "orders"
+                ? (l === "fr" ? `Commandes${totalOrders > 0 ? ` (${totalOrders})` : ""}` : `الطلبات${totalOrders > 0 ? ` (${totalOrders})` : ""}`)
+                : (l === "fr" ? "Mon profil" : "ملفي الشخصي")}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Orders tab ── */}
+        {activeTab === "orders" && (
+          <div id="orders" className="space-y-3">
+            {loading ? (
+              <div className="flex items-center justify-center py-12 gap-3">
+                <Loader2 size={20} className="animate-spin text-[#2E8B57]" />
+                <p className="text-gray-400 text-sm">{l === "fr" ? "Chargement..." : "جاري التحميل..."}</p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center gap-3 py-10 text-center">
+                <p className="text-gray-500 text-sm">{error}</p>
+                <button onClick={() => loadData(phone)} className="text-xs font-bold text-[#2E8B57] underline">
+                  {l === "fr" ? "Réessayer" : "إعادة المحاولة"}
+                </button>
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="flex flex-col items-center gap-4 py-14 text-center">
+                <span className="text-5xl">📦</span>
+                <p className="text-gray-500 text-sm font-semibold">
+                  {l === "fr" ? "Aucune commande trouvée" : "لا توجد طلبات"}
+                </p>
+                <Link to="/shop"
+                  className="rounded-xl px-5 py-2.5 text-sm font-bold text-white bg-[#2E8B57] hover:bg-[#1F6B40] transition-colors">
+                  {l === "fr" ? "Passer une commande" : "اطلب الآن"}
                 </Link>
               </div>
-            </nav>
-          </aside>
+            ) : (
+              orders.map((o: any) => <OrderCard key={o._id || o.id} order={o} lang={language} />)
+            )}
+          </div>
+        )}
 
-          {/* ── Content ── */}
-          <main className="md:col-span-3">
-            <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-              {activeTab === "profile"   && <ProfileTab />}
-              {activeTab === "orders"    && <OrdersTab />}
-              {activeTab === "addresses" && <AddressesTab />}
+        {/* ── Profile tab ── */}
+        {activeTab === "profile" && (
+          <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-4">
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", fontWeight: 700, color: "#0c3228", fontStyle: "italic" }}>
+              {l === "fr" ? "Informations personnelles" : "المعلومات الشخصية"}
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
+                <Phone size={14} className="text-gray-400 shrink-0" />
+                <div>
+                  <p className="text-[10px] text-gray-400">{l === "fr" ? "Téléphone" : "الهاتف"}</p>
+                  <p className="text-sm font-bold text-gray-800 font-latin">{shortPhone}</p>
+                </div>
+              </div>
+              {profile?.last_address && (
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+                  <ChevronRight size={14} className="text-gray-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] text-gray-400">{l === "fr" ? "Dernière adresse" : "آخر عنوان"}</p>
+                    <p className="text-sm font-semibold text-gray-700">{profile.last_address}</p>
+                  </div>
+                </div>
+              )}
             </div>
-          </main>
+            <div className="pt-2 border-t border-gray-100">
+              <p className="text-[10px] text-gray-400 leading-relaxed">
+                {l === "fr"
+                  ? "Votre compte est identifié par votre numéro de téléphone. Une vérification renforcée (OTP) sera disponible prochainement."
+                  : "يتم التعرف على حسابك برقم هاتفك. سيتوفر التحقق المعزز (OTP) قريباً."}
+              </p>
+            </div>
+            <button onClick={handleLogout}
+              className="w-full rounded-xl py-2.5 text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors border border-red-100">
+              {l === "fr" ? "Changer de numéro" : "تغيير الرقم"}
+            </button>
+          </div>
+        )}
 
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
