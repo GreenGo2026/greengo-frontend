@@ -116,8 +116,8 @@ export default function TrackOrderPage() {
     if (!id.trim()) return;
     setLoading(true); setError(""); setOrder(null);
     try {
-      const r = await fetch(`${API}/api/v1/orders`);
-      if (!r.ok) throw new Error("fetch failed");
+      const r = await fetch(`${API}/api/v1/orders/${id.trim()}`);
+      if (!r.ok) throw new Error("Order not found");
       const all: OrderData[] = await r.json();
       const found = all.find(o =>
         o.id === id.trim() ||
