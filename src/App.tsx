@@ -172,11 +172,11 @@ function PublicShell() {
             sections={[
               { heading: "Comment passer une commande ?",       body: "Ajoutez vos produits au panier, remplissez le formulaire de livraison et confirmez. Vous recevrez une confirmation WhatsApp dans les 30 minutes." },
               { heading: "Quels sont les délais de livraison ?", body: "La livraison est assurée en moins de 2h à Salé et Rabat, 7j⁄7 de 8h à 20h." },
-              { heading: "Comment annuler une commande ?",       body: "Contactez-nous sur WhatsApp au +212 664 397 031 dans les 30 minutes suivant votre commande." },
+              { heading: "Comment annuler une commande ?",       body: "Contactez-nous sur WhatsApp au +212 664 500 789 dans les 30 minutes suivant votre commande." },
               { heading: "Les produits sont-ils garantis frais ?", body: "Tous nos produits sont sélectionnés chaque matin. En cas de produit non conforme, nous procédons au remplacement ou au remboursement sous 24h." },
-            ]} />}
+            ]} />
           />
-          <Route path="/livraison" element={<LivraisonPage />}
+          <Route path="/livraison" element={<LivraisonPage />} />
         </Routes>
       </main>
       <Footer />
