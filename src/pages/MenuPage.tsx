@@ -193,27 +193,18 @@ export default function MenuPage() {
       dir={isRTL ? "rtl" : "ltr"}
       style={{ background: "#FAF7F2" }}>
 
-      {/* ── Hero strip — matches CartHeroStrip style ── */}
-      <section style={{
-        background: "linear-gradient(135deg,#0d3b36 0%,#1a5c4a 60%,#2E8B57 100%)",
-        backgroundImage: "repeating-linear-gradient(90deg,rgba(201,169,110,0.15) 0,rgba(201,169,110,0.15) 1px,transparent 1px,transparent 60px),linear-gradient(135deg,#0d3b36 0%,#1a5c4a 60%,#2E8B57 100%)",
-      }}>
-        <div className="mx-auto max-w-2xl px-4 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/greengo-logo-header.png" alt="GreenGo Market"
-              className="h-9 w-auto object-contain"
-              style={{ filter: "brightness(0) invert(1)" }}
-              onError={e => { e.currentTarget.style.display = "none"; }} />
-            <div>
-              <h1 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", fontWeight: 700, color: "#fff", fontStyle: "italic", lineHeight: 1 }}>
-                {l === "ar" ? "قائمة المنتجات" : l === "fr" ? "Menu Digital" : "Digital Menu"}
-              </h1>
-              {updatedAt && (
-                <p className="text-[9px] text-white/40 font-latin mt-0.5">
-                  {l === "fr" ? `Mis à jour à ${updatedAt}` : `Updated ${updatedAt}`}
-                </p>
-              )}
-            </div>
+      {/* ── Page header — clean, no logo, no Digital Menu label ── */}
+      <div style={{ background: "linear-gradient(135deg,#0d3b36 0%,#1a5c4a 60%,#2E8B57 100%)" }}>
+        <div className="mx-auto max-w-2xl px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", fontWeight: 700, color: "#fff", fontStyle: "italic", lineHeight: 1.1 }}>
+              {l === "ar" ? "منتجاتنا الطازجة" : l === "fr" ? "Nos Produits Frais" : "Our Fresh Products"}
+            </h1>
+            {updatedAt && (
+              <p className="text-[9px] text-white/35 font-latin mt-1">
+                {l === "fr" ? `Mis à jour à ${updatedAt}` : `Updated ${updatedAt}`}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 bg-green-900/30 border border-green-600/30 rounded-full px-3 py-1.5">
@@ -234,18 +225,18 @@ export default function MenuPage() {
           </div>
         </div>
         <div className="zellige-border" />
-      </section>
+      </div>
 
       {/* ── Sticky category nav ── */}
-      <div className="sticky top-0 z-30 bg-white border-b border-gray-100"
-        style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+      <div className="sticky top-0 z-30"
+        style={{ background: "#FAF7F2", borderBottom: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
         <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-2">
           <div className={`flex gap-1.5 overflow-x-auto flex-1 scrollbar-hide ${isRTL ? "flex-row-reverse" : ""}`}>
             <button onClick={() => setActiveCat("all")}
-              className={`shrink-0 rounded-full px-4 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap ${
+              className={`shrink-0 rounded-full px-4 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap border ${
                 activeCat === "all"
                   ? "bg-[#2E8B57] text-white shadow-sm"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  : "text-gray-600 hover:bg-white/80"
               }`}>
               {l === "ar" ? "الكل" : l === "fr" ? "Tout" : "All"}
               {!loading && <span className="ml-1 font-latin opacity-70">{products.length}</span>}
@@ -264,7 +255,7 @@ export default function MenuPage() {
                   className={`shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap ${
                     activeCat === c
                       ? "bg-[#2E8B57] text-white shadow-sm"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      : "text-gray-600 hover:bg-white/80"
                   }`}>
                   <span>{m.emoji}</span>
                   <span>{l === "ar" ? m.ar : l === "fr" ? m.fr : m.en}</span>
@@ -274,7 +265,7 @@ export default function MenuPage() {
           </div>
           <button onClick={() => setShowSearch(s => !s)} aria-label="Search"
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${
-              showSearch ? "bg-[#2E8B57] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              showSearch ? "bg-[#2E8B57] text-white" : "text-gray-600 hover:bg-white/80"
             }`}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -285,7 +276,7 @@ export default function MenuPage() {
           <div className="px-4 pb-2 max-w-2xl mx-auto">
             <input autoFocus type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder={l === "ar" ? "ابحث…" : l === "fr" ? "Rechercher un produit…" : "Search…"}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-[#2E8B57] focus:ring-2 focus:ring-[#2E8B57]/15"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-[#2E8B57] focus:ring-2 focus:ring-[#2E8B57]/15"
               dir="auto" />
           </div>
         )}
