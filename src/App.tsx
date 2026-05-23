@@ -35,6 +35,7 @@ const TrackOrderPage  = lazy(() => import("./pages/TrackOrderPage"));
 const FidelitePage     = lazy(() => import("./pages/FidelitePage"));
 import LegalTemplate, { LEGAL_PAGES } from "./pages/Legal/LegalTemplate";
 import LivraisonPage from "./pages/Legal/LivraisonPage";
+import FAQPage      from "./pages/Legal/FAQPage";
 
 // ── Anti-scraping / anti-inspect protection ──────────────────────────────────
 function useAntiScraping() {
@@ -166,16 +167,7 @@ function PublicShell() {
           <Route path="/offres"         element={<OffresPage />} />
           <Route path="/track/:orderId?" element={<TrackOrderPage />} />
           <Route path="/fidelite"   element={<FidelitePage />} />
-          <Route path="/faq" element={<LegalTemplate
-            title="Questions Fréquentes"
-            subtitle="FAQ - GreenGo Market"
-            sections={[
-              { heading: "Comment passer une commande ?",       body: "Ajoutez vos produits au panier, remplissez le formulaire de livraison et confirmez. Vous recevrez une confirmation WhatsApp dans les 30 minutes." },
-              { heading: "Quels sont les délais de livraison ?", body: "La livraison est assurée en moins de 2h à Salé et Rabat, 7j⁄7 de 8h à 20h." },
-              { heading: "Comment annuler une commande ?",       body: "Contactez-nous sur WhatsApp au +212 664 500 789 dans les 30 minutes suivant votre commande." },
-              { heading: "Les produits sont-ils garantis frais ?", body: "Tous nos produits sont sélectionnés chaque matin. En cas de produit non conforme, nous procédons au remplacement ou au remboursement sous 24h." },
-            ]} />
-          } />
+          <Route path="/faq" element={<FAQPage />} />
           <Route path="/livraison" element={<LivraisonPage />} />
         </Routes>
       </main>
