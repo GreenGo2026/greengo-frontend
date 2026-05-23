@@ -175,6 +175,7 @@ function PublicShell() {
               { heading: "Comment annuler une commande ?",       body: "Contactez-nous sur WhatsApp au +212 664 500 789 dans les 30 minutes suivant votre commande." },
               { heading: "Les produits sont-ils garantis frais ?", body: "Tous nos produits sont sélectionnés chaque matin. En cas de produit non conforme, nous procédons au remplacement ou au remboursement sous 24h." },
             ]} />
+          } />
           <Route path="/livraison" element={<LivraisonPage />} />
         </Routes>
       </main>
