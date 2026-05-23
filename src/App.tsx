@@ -34,6 +34,7 @@ const OffresPage      = lazy(() => import("./pages/OffresPage"));
 const TrackOrderPage  = lazy(() => import("./pages/TrackOrderPage"));
 const FidelitePage     = lazy(() => import("./pages/FidelitePage"));
 import LegalTemplate, { LEGAL_PAGES } from "./pages/Legal/LegalTemplate";
+import LivraisonPage from "./pages/Legal/LivraisonPage";
 
 // ── Anti-scraping / anti-inspect protection ──────────────────────────────────
 function useAntiScraping() {
@@ -175,27 +176,7 @@ function PublicShell() {
               { heading: "Les produits sont-ils garantis frais ?", body: "Tous nos produits sont sélectionnés chaque matin. En cas de produit non conforme, nous procédons au remplacement ou au remboursement sous 24h." },
             ]} />}
           />
-          <Route path="/livraison" element={<LegalTemplate
-            title="Livraison"
-            subtitle="Informations de livraison — GreenGo Market"
-            lastUpdated="Mai 2026"
-            sections={[
-              { heading: "Zone de livraison actuelle",
-                body: "GreenGo Market livre actuellement uniquement à Salé et Rabat. Si vous n'êtes pas dans ces villes, contactez-nous sur WhatsApp avant de passer commande." },
-              { heading: "Délai de livraison",
-                body: "Livraison en moins de 2 heures après confirmation de votre commande, 7j⁄7 de 8h à 20h. Aucune livraison en dehors de ces horaires." },
-              { heading: "Comment commander ?",
-                body: "Ajoutez vos produits au panier sur mygreengoo.com, remplissez le formulaire avec votre adresse à Salé ou Rabat, et confirmez. Notre équipe vous contacte sur WhatsApp dans les 30 minutes." },
-              { heading: "Frais de livraison",
-                body: "Les frais de livraison sont calculés selon votre adresse et le montant de votre commande. Contactez-nous sur WhatsApp au +212 664 500 789 pour toute question." },
-              { heading: "Suivi de commande",
-                body: "Après confirmation, vous pouvez suivre votre commande en temps réel sur mygreengoo.com⁄track. Notre équipe vous envoie également une mise à jour sur WhatsApp à chaque étape." },
-              { heading: "Produits non disponibles ou rupture de stock",
-                body: "Si un produit est épuisé au moment de votre commande, notre équipe vous contacte immédiatement sur WhatsApp pour proposer une alternative ou un remboursement." },
-              { heading: "Besoin d'aide ?",
-                body: "Pour toute question sur votre livraison, contactez notre équipe sur WhatsApp au +212 664 500 789, disponible 7j⁄7 de 8h à 20h." },
-            ]}
-          />
+          <Route path="/livraison" element={<LivraisonPage />}
         </Routes>
       </main>
       <Footer />
