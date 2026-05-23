@@ -195,7 +195,7 @@ function PublicShell() {
               { heading: "Besoin d'aide ?",
                 body: "Pour toute question sur votre livraison, contactez notre équipe sur WhatsApp au +212 664 500 789, disponible 7j/7 de 8h à 20h." },
             ]}
-          />}
+          />
         </Routes>
       </main>
       <Footer />
