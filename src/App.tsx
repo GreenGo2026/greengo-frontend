@@ -192,7 +192,7 @@ function PublicShell() {
                 body: "Après confirmation, vous pouvez suivre votre commande en temps réel sur mygreengoo.com/track. Notre équipe vous envoie également une mise à jour sur WhatsApp à chaque étape." },
               { heading: "Produits non disponibles ou rupture de stock",
                 body: "Si un produit est épuisé au moment de votre commande, notre équipe vous contacte immédiatement sur WhatsApp pour proposer une alternative ou un remboursement." },
-              { heading: "Besoin d'aide ?",
+              { heading: "Besoin d’aide ?",
                 body: "Pour toute question sur votre livraison, contactez notre équipe sur WhatsApp au +212 664 500 789, disponible 7j/7 de 8h à 20h." },
             ]}
           />
