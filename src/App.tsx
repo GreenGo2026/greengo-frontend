@@ -170,7 +170,7 @@ function PublicShell() {
             subtitle="FAQ - GreenGo Market"
             sections={[
               { heading: "Comment passer une commande ?",       body: "Ajoutez vos produits au panier, remplissez le formulaire de livraison et confirmez. Vous recevrez une confirmation WhatsApp dans les 30 minutes." },
-              { heading: "Quels sont les délais de livraison ?", body: "La livraison est assurée en 2 à 4 heures dans Salé et les villes environnantes, entre 8h et 20h du lundi au samedi." },
+              { heading: "Quels sont les délais de livraison ?", body: "La livraison est assurée en moins de 2h à Salé et Rabat, 7j/7 de 8h à 20h." },
               { heading: "Comment annuler une commande ?",       body: "Contactez-nous sur WhatsApp au +212 664 397 031 dans les 30 minutes suivant votre commande." },
               { heading: "Les produits sont-ils garantis frais ?", body: "Tous nos produits sont sélectionnés chaque matin. En cas de produit non conforme, nous procédons au remplacement ou au remboursement sous 24h." },
             ]} />}
@@ -179,8 +179,8 @@ function PublicShell() {
             title="Livraison & Retours"
             subtitle="Politique de livraison - GreenGo Market"
             sections={[
-              { heading: "Zones de livraison", body: "Salé, Rabat, Témara. Extension prévue à Mohammedia et Settat en 2025." },
-              { heading: "Tarifs de livraison", body: "Livraison offerte pendant tout le premier mois. Ensuite : gratuite pour toute commande supérieure à 200 MAD, sinon 15 MAD." },
+              { heading: "Zones de livraison", body: "Salé (Laayayda et quartiers environnants), Rabat et Témara. Zone de livraison principale : Salé." },
+              { heading: "Tarifs de livraison", body: "Livraison disponible à Salé, Rabat et Témara. Tarifs selon votre commande — contactez-nous sur WhatsApp au +212 664 500 789 pour confirmation." },
               { heading: "Politique de retour", body: "Signalez tout problème dans les 24h via WhatsApp avec une photo du produit. Nous remplaçons ou remboursons sans condition." },
             ]} />}
           />
