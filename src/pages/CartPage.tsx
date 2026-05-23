@@ -376,9 +376,27 @@ export default function CartPage() {
     }
     setLocationStatus("loading");
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setLocation({ lat, lng });
         setLocationStatus("success");
+
+        // Reverse geocode via backend proxy (swap endpoint for scale)
+        try {
+          const API = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+          const r   = await fetch(`${API}/api/v1/geocode?lat=${lat}&lng=${lng}`);
+          if (r.ok) {
+            const geo = await r.json();
+            const resolved = geo.display || geo.full || "";
+            if (resolved && !address.trim()) {
+              // Only auto-fill if address is empty — never overwrite manual entry
+              setAddress(resolved);
+            }
+          }
+        } catch {
+          // Geocoding failure is silent — user can still type address manually
+        }
       },
       (err) => {
         if (err.code === 1) setLocationStatus("denied");
