@@ -15,17 +15,17 @@ function resolveImg(url?: string | null): string {
 }
 
 const CAT_META: Record<string, { emoji: string; fr: string; ar: string }> = {
-  "Vegetables":      { emoji: "\u{1F955}", fr: "L\u00e9gumes frais",     ar: "\u062e\u0636\u0631\u0648\u0627\u062a" },
-  "Purified Greens": { emoji: "\u{1F331}", fr: "Herbes fra\u00eeches",   ar: "\u0623\u0639\u0634\u0627\u0628" },
-  "Fruits":          { emoji: "\u{1F34E}", fr: "Fruits frais",            ar: "\u0641\u0648\u0627\u0643\u0647" },
-  "White Meats":     { emoji: "\u{1F357}", fr: "Viandes blanches",       ar: "\u0644\u062d\u0648\u0645 \u0628\u064a\u0636\u0627\u0621" },
-  "Eggs":            { emoji: "\u{1F95A}", fr: "Oeufs frais",             ar: "\u0628\u064a\u0636" },
-  "Olives":          { emoji: "\u{1FAD2}", fr: "Olives",                  ar: "\u0632\u064a\u062a\u0648\u0646" },
-  "Epices":          { emoji: "\u{1F9C2}", fr: "\u00c9pices",             ar: "\u062a\u0648\u0627\u0628\u0644" },
-  "Natural Juices":  { emoji: "\u{1F9C3}", fr: "Jus naturels",           ar: "\u0639\u0635\u0627\u0626\u0631" },
-  "Mixed Packs":     { emoji: "\u{1F6D2}", fr: "Paniers mixtes",         ar: "\u0633\u0644\u0627\u0644" },
+  "Vegetables":      { emoji: "🥕", fr: "L\u00e9gumes frais",     ar: "\u062e\u0636\u0631\u0648\u0627\u062a" },
+  "Purified Greens": { emoji: "🌱", fr: "Herbes fra\u00eeches",   ar: "\u0623\u0639\u0634\u0627\u0628" },
+  "Fruits":          { emoji: "🍎", fr: "Fruits frais",            ar: "\u0641\u0648\u0627\u0643\u0647" },
+  "White Meats":     { emoji: "🍗", fr: "Viandes blanches",       ar: "\u0644\u062d\u0648\u0645 \u0628\u064a\u0636\u0627\u0621" },
+  "Eggs":            { emoji: "🥚", fr: "Oeufs frais",             ar: "\u0628\u064a\u0636" },
+  "Olives":          { emoji: "🫒", fr: "Olives",                  ar: "\u0632\u064a\u062a\u0648\u0646" },
+  "Epices":          { emoji: "🧂", fr: "\u00c9pices",             ar: "\u062a\u0648\u0627\u0628\u0644" },
+  "Natural Juices":  { emoji: "🧃", fr: "Jus naturels",           ar: "\u0639\u0635\u0627\u0626\u0631" },
+  "Mixed Packs":     { emoji: "🛒", fr: "Paniers mixtes",         ar: "\u0633\u0644\u0627\u0644" },
 };
-const getCat = (c: string) => CAT_META[c] ?? { emoji: "\u{1F6D2}", fr: c, ar: c };
+const getCat = (c: string) => CAT_META[c] ?? { emoji: "🛒", fr: c, ar: c };
 
 function generateDescription(p: DBProduct, l: string): string {
   const name   = l === "ar" ? p.name_ar : (p.name_fr || p.name_ar);
@@ -161,7 +161,7 @@ export default function ProductPage() {
 
   if (!product) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-6 text-center" style={{ background: "#FAF7F2" }}>
-      <span className="text-5xl">\u{1F50D}</span>
+      <span className="text-5xl">🔍</span>
       <h1 className="text-gray-800 font-black text-xl">{l === "fr" ? "Produit introuvable" : l === "ar" ? "\u0627\u0644\u0645\u0646\u062a\u062c \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f" : "Product not found"}</h1>
       <Link to="/shop" className="px-5 py-2.5 bg-[#2E8B57] rounded-xl text-white font-bold text-sm hover:bg-[#1F6B40] transition-colors">
         {l === "fr" ? "Retour au catalogue" : l === "ar" ? "\u0627\u0644\u0639\u0648\u062f\u0629 \u0644\u0644\u0643\u062a\u0627\u0644\u0648\u062c" : "Back to catalog"}
@@ -330,7 +330,7 @@ export default function ProductPage() {
             <div className="grid grid-cols-2 gap-2 pt-1">
               <TrustBadge icon="\u26a1" text={l === "fr" ? "Livraison en 2h" : l === "ar" ? "\u062a\u0648\u0635\u064a\u0644 \u062e\u0644\u0627\u0644 \u0633\u0627\u0639\u062a\u064a\u0646" : "2h delivery"} />
               <TrustBadge icon="\u2705" text={l === "fr" ? "Qualit\u00e9 garantie" : l === "ar" ? "\u062c\u0648\u062f\u0629 \u0645\u0636\u0645\u0648\u0646\u0629" : "Quality guaranteed"} />
-              <TrustBadge icon="\u{1F33F}" text={l === "fr" ? "Fra\u00eecheur du matin" : l === "ar" ? "\u0637\u0627\u0632\u062c\u0629 \u0645\u0646 \u0627\u0644\u0635\u0628\u0627\u062d" : "Morning fresh"} />
+              <TrustBadge icon="🌿" text={l === "fr" ? "Fra\u00eecheur du matin" : l === "ar" ? "\u0637\u0627\u0632\u062c\u0629 \u0645\u0646 \u0627\u0644\u0635\u0628\u0627\u062d" : "Morning fresh"} />
               <TrustBadge icon="\ud83d\udccd" text={l === "fr" ? "Sal\u00e9 & Rabat" : l === "ar" ? "\u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" : "Sal\u00e9 & Rabat"} />
             </div>
           </div>
