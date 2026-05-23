@@ -170,7 +170,7 @@ function PublicShell() {
             subtitle="FAQ - GreenGo Market"
             sections={[
               { heading: "Comment passer une commande ?",       body: "Ajoutez vos produits au panier, remplissez le formulaire de livraison et confirmez. Vous recevrez une confirmation WhatsApp dans les 30 minutes." },
-              { heading: "Quels sont les délais de livraison ?", body: "La livraison est assurée en moins de 2h à Salé et Rabat, 7j/7 de 8h à 20h." },
+              { heading: "Quels sont les délais de livraison ?", body: "La livraison est assurée en moins de 2h à Salé et Rabat, 7j⁄7 de 8h à 20h." },
               { heading: "Comment annuler une commande ?",       body: "Contactez-nous sur WhatsApp au +212 664 397 031 dans les 30 minutes suivant votre commande." },
               { heading: "Les produits sont-ils garantis frais ?", body: "Tous nos produits sont sélectionnés chaque matin. En cas de produit non conforme, nous procédons au remplacement ou au remboursement sous 24h." },
             ]} />}
@@ -183,17 +183,17 @@ function PublicShell() {
               { heading: "Zone de livraison actuelle",
                 body: "GreenGo Market livre actuellement uniquement à Salé et Rabat. Si vous n'êtes pas dans ces villes, contactez-nous sur WhatsApp avant de passer commande." },
               { heading: "Délai de livraison",
-                body: "Livraison en moins de 2 heures après confirmation de votre commande, 7j/7 de 8h à 20h. Aucune livraison en dehors de ces horaires." },
+                body: "Livraison en moins de 2 heures après confirmation de votre commande, 7j⁄7 de 8h à 20h. Aucune livraison en dehors de ces horaires." },
               { heading: "Comment commander ?",
                 body: "Ajoutez vos produits au panier sur mygreengoo.com, remplissez le formulaire avec votre adresse à Salé ou Rabat, et confirmez. Notre équipe vous contacte sur WhatsApp dans les 30 minutes." },
               { heading: "Frais de livraison",
                 body: "Les frais de livraison sont calculés selon votre adresse et le montant de votre commande. Contactez-nous sur WhatsApp au +212 664 500 789 pour toute question." },
               { heading: "Suivi de commande",
-                body: "Après confirmation, vous pouvez suivre votre commande en temps réel sur mygreengoo.com/track. Notre équipe vous envoie également une mise à jour sur WhatsApp à chaque étape." },
+                body: "Après confirmation, vous pouvez suivre votre commande en temps réel sur mygreengoo.com⁄track. Notre équipe vous envoie également une mise à jour sur WhatsApp à chaque étape." },
               { heading: "Produits non disponibles ou rupture de stock",
                 body: "Si un produit est épuisé au moment de votre commande, notre équipe vous contacte immédiatement sur WhatsApp pour proposer une alternative ou un remboursement." },
-              { heading: "Besoin d’aide ?",
-                body: "Pour toute question sur votre livraison, contactez notre équipe sur WhatsApp au +212 664 500 789, disponible 7j/7 de 8h à 20h." },
+              { heading: "Besoin d'aide ?",
+                body: "Pour toute question sur votre livraison, contactez notre équipe sur WhatsApp au +212 664 500 789, disponible 7j⁄7 de 8h à 20h." },
             ]}
           />
         </Routes>
