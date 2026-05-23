@@ -285,6 +285,8 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {[
                 { to: "/about",         fr: "Engagements GreenGo",    ar: "التزامات GreenGo" },
+                { to: "/livraison", fr: "Livraison",  ar: "التوصيل" },
+                { to: "/faq",       fr: "FAQ",        ar: "أسئلة شائعة" },
                 { to: "/fidelite",      fr: "Programme Fidélité",     ar: "برنامج الولاء" },
                 { to: "/about#story",   fr: "À propos de nous",       ar: "من نحن" },
                 { to: "/recrutement",   fr: "Recrutement",            ar: "التوظيف" },
