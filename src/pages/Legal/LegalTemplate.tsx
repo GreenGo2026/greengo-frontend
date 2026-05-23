@@ -24,7 +24,7 @@ export const LEGAL_PAGES: Record<string, Omit<LegalTemplateProps, "sections"> & 
     sections: [
       {
         heading: "1. Objet",
-        body: "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme GreenGo Market, service de livraison de produits alimentaires frais opérant à Casablanca et dans les villes limitrophes.",
+        body: "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme GreenGo Market, service de livraison de produits alimentaires frais opérant à Salé, Rabat et environs.",
       },
       {
         heading: "2. Acceptation des conditions",
@@ -40,7 +40,7 @@ export const LEGAL_PAGES: Record<string, Omit<LegalTemplateProps, "sections"> & 
       },
       {
         heading: "5. Livraison",
-        body: "La livraison est assurée dans un rayon de 15 km autour de Casablanca, dans un délai de 2 à 4 heures selon la disponibilité. Les frais de livraison sont offerts pour tout premier mois d'abonnement.",
+        body: "La livraison est assurée dans les zones de Salé, Rabat et Témara, en moins de 2h, 7j/7 de 8h à 20h. Les frais de livraison varient selon la commande — consultez notre page /livraison.",
       },
       {
         heading: "6. Politique de retour",
@@ -75,7 +75,7 @@ export const LEGAL_PAGES: Record<string, Omit<LegalTemplateProps, "sections"> & 
       },
       {
         heading: "Contact",
-        body: "Pour toute question relative à vos données personnelles, contactez-nous à : team@mygreengoo.com ou via WhatsApp au +212 664 397 031.",
+        body: "Pour toute question relative à vos données personnelles, contactez-nous à : contact@mygreengoo.com ou via WhatsApp au +212 664 500 789.",
       },
     ],
   },
@@ -109,7 +109,7 @@ export const LEGAL_PAGES: Record<string, Omit<LegalTemplateProps, "sections"> & 
       },
       {
         heading: "Siège social",
-        body: "Lot N° 145 Lotissement EL MOUSTAKBAL, Laayayda, Salé - Maroc. Email : team@mygreengoo.com · Téléphone : +212 664 500 789",
+        body: "Lot N° 145 Lotissement EL MOUSTAKBAL, Laayayda, Salé - Maroc. Email : contact@mygreengoo.com · Téléphone : +212 664 500 789",
       },
       {
         heading: "Hébergement",
@@ -136,7 +136,7 @@ export const LEGAL_PAGES: Record<string, Omit<LegalTemplateProps, "sections"> & 
       },
       {
         heading: "Postuler",
-        body: "Envoyez votre CV et une lettre de motivation à : team@mygreengoo.com avec l'objet « Candidature - [Poste] ».\nOu contactez-nous directement sur WhatsApp : +212 664 397 031.",
+        body: "Envoyez votre CV et une lettre de motivation à : contact@mygreengoo.com avec l'objet « Candidature - [Poste] ».\nOu contactez-nous directement sur WhatsApp : +212 664 500 789.",
       },
     ],
   },
@@ -199,7 +199,7 @@ export default function LegalTemplate({ title, subtitle, lastUpdated, sections }
               </div>
               <p className="text-xs text-gray-400">
                 Des questions ? Contactez-nous à{" "}
-                <a href="mailto:team@mygreengoo.com" className="text-[#2E8B57] hover:underline">team@mygreengoo.com</a>
+                <a href="mailto:contact@mygreengoo.com" className="text-[#2E8B57] hover:underline">contact@mygreengoo.com</a>
               </p>
               <Link to="/"
                 className="flex items-center gap-1.5 rounded-xl bg-[#2E8B57] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1F6B40]">
