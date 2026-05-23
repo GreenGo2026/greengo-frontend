@@ -772,6 +772,8 @@ export default function HomePage() {
               const count   = cat.key === "all"
                 ? products.length
                 : products.filter((p) => cat.db_match.some((m) => (p.category ?? "").toLowerCase() === m.toLowerCase())).length;
+              // Hide categories with no matching products (except "all")
+              if (cat.key !== "all" && count === 0) return null;
               return (
                 <button
                   key={cat.key}
