@@ -315,7 +315,7 @@ export default function HeroLandingPage() {
       {/* ════════════════════════════════════
           HERO CONTENT
           ════════════════════════════════════ */}
-      <main className="relative z-20 flex min-h-[calc(100vh-80px)] items-center justify-center px-4 pb-12">
+      <main className="relative z-20 flex min-h-[calc(100vh-80px)] items-center justify-center px-4 pb-4 sm:pb-12">
         <div className="glass w-full max-w-3xl px-5 py-8 sm:px-8 sm:py-12 md:px-14 md:py-14 text-center">
 
           {/* Badge */}
@@ -375,9 +375,22 @@ export default function HeroLandingPage() {
             marginBottom: "2.5rem",
           }}>
             Fruits, légumes, viandes fraîches et herbes aromatiques —
-            sélectionnés chaque matin, livrés en quelques heures dans tout le Maroc.
+            sélectionnés chaque matin, livrés en moins de 2h à Salé et Rabat.
           </p>
 
+          {/* Delivery zone trust strip */}
+          <div className="r3 flex items-center justify-center gap-4 mb-6 flex-wrap">
+            {[
+              { icon: "📍", text: "Salé & Rabat" },
+              { icon: "⚡", text: "Livraison 2h" },
+              { icon: "✅", text: "Fraîcheur garantie" },
+            ].map((item, i) => (
+              <div key={i} className="feat-pill flex items-center gap-1.5">
+                <span>{item.icon}</span>
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
           {/* CTA buttons */}
           <div className="r4 flex flex-wrap items-center justify-center gap-4 mb-10">
             <Link to="/shop" className="cta-primary inline-flex items-center gap-3 px-9 py-4"
