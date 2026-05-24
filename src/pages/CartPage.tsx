@@ -254,11 +254,30 @@ function GPSCapture({ status, onRequest, language }: {
 // ── CartPage ──────────────────────────────────────────────────────────────────
 
 // ── Success screen ────────────────────────────────────────────────────────────
-function SuccessScreen({ orderId }: { orderId: string }) {
+function SuccessScreen({ orderId, lastCart }: { orderId: string; lastCart: any[] }) {
   const shortId = orderId.slice(-6).toUpperCase();
   const [dlLoading, setDlLoading] = useState(false);
   const [dlError,   setDlError]   = useState("");
   const API = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
+  const [suggested, setSuggested] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!lastCart?.length) return;
+    // Pick the most common category from the last order
+    const cats = lastCart.map((i: any) => i.category).filter(Boolean);
+    const topCat = cats.sort((a: string, b: string) =>
+      cats.filter((c: string) => c === b).length - cats.filter((c: string) => c === a).length
+    )[0] || "";
+    if (!topCat) return;
+    fetch(`${API}/api/v1/products?category=${encodeURIComponent(topCat)}&limit=4`)
+      .then(r => r.ok ? r.json() : [])
+      .then((products: any[]) => {
+        // Exclude products already in the cart
+        const cartNames = new Set(lastCart.map((i: any) => i.name));
+        setSuggested(products.filter((p: any) => !cartNames.has(p.name_ar) && p.in_stock).slice(0, 4));
+      })
+      .catch(() => {});
+  }, []);
 
   async function downloadInvoice() {
     setDlLoading(true);
@@ -524,7 +543,7 @@ export default function CartPage() {
     return (
       <>
         <CartHeroStrip />
-        <SuccessScreen orderId={orderId} />
+        <SuccessScreen orderId={orderId} lastCart={cart} />
       </>
     );
   }
