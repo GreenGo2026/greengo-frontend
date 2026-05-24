@@ -11,7 +11,7 @@ import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import type { CartItem } from "../store/cartStore";
 import { useLanguage } from "../contexts/LanguageContext";
 
-const API_BASE  = `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/v1`;
+const API_BASE  = `${import.meta.env.VITE_API_URL || ""}/api/v1`;
 const WA_NUMBER = "212664500789";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
