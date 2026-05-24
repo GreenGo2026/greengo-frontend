@@ -331,7 +331,7 @@ export default function HeroLandingPage() {
               letterSpacing: "0.14em", textTransform: "uppercase",
               color: "#e8c98a",
             }}>
-              Fraîcheur du Maroc · Livraison Express
+              Salé & Rabat · Livraison en 2h
             </span>
           </div>
 
