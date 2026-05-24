@@ -396,23 +396,50 @@ export default function CartPage() {
       const normalized = trimmed.startsWith("+212")
         ? trimmed
         : "+212" + trimmed.replace(/^0/, "");
+
+      // 1. Check localStorage cache first
       try {
-        const stored = localStorage.getItem("gg_customer_" + normalized);
-        if (stored) {
-          const profile = JSON.parse(stored);
+        const cached = localStorage.getItem("gg_customer_" + normalized);
+        if (cached) {
+          const profile = JSON.parse(cached);
           setSavedProfile(profile);
           setIsReturning(true);
-        } else {
+          if (profile.total_points) setCustomerPoints(profile.total_points);
+          return;
+        }
+      } catch { /* ignore */ }
+
+      // 2. Backend lookup
+      const API_URL = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
+      fetch(API_URL + "/api/v1/customers/" + encodeURIComponent(normalized))
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && data.name) {
+            const profile = { name: data.name, address: data.last_address || "" };
+            setSavedProfile(profile);
+            setIsReturning(true);
+            if (data.total_points) setCustomerPoints(data.total_points);
+            try {
+              localStorage.setItem("gg_customer_" + normalized, JSON.stringify({
+                ...profile,
+                total_points: data.total_points,
+                total_orders: data.total_orders,
+              }));
+            } catch { /* ignore */ }
+          } else {
+            setIsReturning(false);
+            setSavedProfile(null);
+            setCustomerPoints(0);
+          }
+        })
+        .catch(() => {
           setIsReturning(false);
           setSavedProfile(null);
-        }
-      } catch {
-        setIsReturning(false);
-        setSavedProfile(null);
-      }
+        });
     } else {
       setIsReturning(false);
       setSavedProfile(null);
+      setCustomerPoints(0);
     }
   }
 
