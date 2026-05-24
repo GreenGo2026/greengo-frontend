@@ -34,13 +34,14 @@ interface EditableProduct extends DBProduct {
   edited_price:     number;
   edited_in_stock:  boolean;
   edited_on_sale:   boolean;
-  edited_discount:  number;
-  isDirty:          boolean;
+  edited_discount:     number;
+  edited_description:  string;
+  isDirty:             boolean;
   isSaving:         boolean;
   saveStatus:       "idle" | "success" | "error";
 }
 function toEditable(p: DBProduct): EditableProduct {
-  return { ...p, edited_price: p.price_mad, edited_in_stock: p.in_stock, edited_on_sale: (p as any).on_sale ?? false, edited_discount: (p as any).discount_pct ?? 0, isDirty: false, isSaving: false, saveStatus: "idle" };
+  return { ...p, edited_price: p.price_mad, edited_in_stock: p.in_stock, edited_on_sale: (p as any).on_sale ?? false, edited_discount: (p as any).discount_pct ?? 0, edited_description: (p as any).description_fr ?? "", isDirty: false, isSaving: false, saveStatus: "idle" };
 }
 
 const I: Record<Lang, Record<string,string>> = {
@@ -311,6 +312,20 @@ function PriceRow({item,rowIndex,totalRows,lang,onChange,onToggle,onSave,inputRe
       <td className="px-5 py-3.5">{item.saveStatus==="success"?<span className={"flex items-center gap-1 text-xs font-bold text-[#2E8B57] "+font}><CheckCircle size={13}/>{L.saved_lbl}</span>:item.saveStatus==="error"?<span className={"flex items-center gap-1 text-xs font-bold text-red-500 "+font}><AlertCircle size={13}/>{L.failed_lbl}</span>:(<button onClick={()=>onSave(item.id)} disabled={!item.isDirty||item.isSaving} className={"flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-white transition-all "+font+" "+(item.isDirty&&!item.isSaving?"shadow-sm active:scale-95":"cursor-not-allowed bg-gray-200 text-gray-400")} style={item.isDirty&&!item.isSaving?{background:"linear-gradient(135deg,#2E8B57,#1a6b42)"}:{}}>{item.isSaving?<Loader2 size={11} className="animate-spin"/>:<Save size={11}/>}{item.isSaving?L.saving_btn:L.save_btn}</button>)}</td>
       <td className="px-2 py-3.5 text-center"><span className="text-[10px] font-mono text-gray-300">{rowIndex+1}/{totalRows}</span></td>
     </tr>
+    <tr className={"border-b border-dashed border-gray-100 " + (item.isDirty ? "bg-amber-50/30" : "bg-gray-50/50")}>
+      <td colSpan={9} className="px-5 pb-3 pt-1">
+        <div className="flex items-start gap-2">
+          <span className="text-[10px] text-gray-400 font-semibold mt-2 shrink-0 w-20">Description</span>
+          <textarea
+            value={item.edited_description}
+            onChange={e => onDescChange(item.id, e.target.value)}
+            rows={2}
+            placeholder="Description produit (fr)..."
+            className={"flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-700 outline-none resize-none transition-all focus:border-[#2E8B57] focus:ring-1 focus:ring-[#2E8B57]/20 " + (item.isDirty && item.edited_description !== ((item as any).description_fr ?? "") ? "border-amber-300 bg-amber-50" : "bg-white")}
+          />
+        </div>
+      </td>
+    </tr>
   );
 }
 
@@ -358,18 +373,19 @@ export default function AdminPage() {
   async function handleStatusChange(id:string,status:OrderStatus){await updateOrderStatus(id,status);setOrders(prev=>prev.map(o=>o.id===id?{...o,status}:o));}
   function handlePriceChange(id:string,val:number){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_price:val,isDirty:val!==p.price_mad||p.edited_in_stock!==p.in_stock||p.edited_on_sale!==((p as any).on_sale??false)||p.edited_discount!==((p as any).discount_pct??0),saveStatus:"idle"}:p));}
   function handleToggleOnSale(id:string){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_on_sale:!p.edited_on_sale,isDirty:true,saveStatus:"idle"}:p));}
+  function handleDescriptionChange(id:string,val:string){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_description:val,isDirty:true,saveStatus:"idle"}:p));}
   function handleDiscountChange(id:string,val:number){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_discount:Math.max(0,Math.min(99,val)),isDirty:true,saveStatus:"idle"}:p));}
   function handleToggleStock(id:string){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_in_stock:!p.edited_in_stock,isDirty:true,saveStatus:"idle"}:p));}
   async function handleSave(id:string){
     const item=products.find(p=>p.id===id);if(!item||!item.isDirty)return;
     setProducts(prev=>prev.map(p=>p.id===id?{...p,isSaving:true}:p));
-    try{const r=await updateProductById(id,{price_mad:item.edited_price,in_stock:item.edited_in_stock,on_sale:item.edited_on_sale,discount_pct:item.edited_discount} as any);setProducts(prev=>prev.map(p=>p.id===id?{...p,...toEditable(r),isDirty:false,isSaving:false,saveStatus:"success"}:p));setTimeout(()=>setProducts(prev=>prev.map(p=>p.id===id?{...p,saveStatus:"idle"}:p)),3000);}
+    try{const r=await updateProductById(id,{price_mad:item.edited_price,in_stock:item.edited_in_stock,on_sale:item.edited_on_sale,discount_pct:item.edited_discount,description_fr:item.edited_description} as any);setProducts(prev=>prev.map(p=>p.id===id?{...p,...toEditable(r),isDirty:false,isSaving:false,saveStatus:"success"}:p));setTimeout(()=>setProducts(prev=>prev.map(p=>p.id===id?{...p,saveStatus:"idle"}:p)),3000);}
     catch{setProducts(prev=>prev.map(p=>p.id===id?{...p,isSaving:false,saveStatus:"error"}:p));}
   }
   async function handlePublishAll(){
     const dirty=products.filter(p=>p.isDirty);if(dirty.length===0){showToast(L.toast_no_dirty,"info");return;}
     setPublishing(true);let saved=0,failed=0;
-    for(const item of dirty){try{const r=await updateProductById(item.id,{price_mad:item.edited_price,in_stock:item.edited_in_stock,on_sale:item.edited_on_sale,discount_pct:item.edited_discount} as any);setProducts(prev=>prev.map(p=>p.id===item.id?{...p,...toEditable(r),isDirty:false,isSaving:false,saveStatus:"success"}:p));saved++;}catch{failed++;}}
+    for(const item of dirty){try{const r=await updateProductById(item.id,{price_mad:item.edited_price,in_stock:item.edited_in_stock,on_sale:item.edited_on_sale,discount_pct:item.edited_discount,description_fr:item.edited_description} as any);setProducts(prev=>prev.map(p=>p.id===item.id?{...p,...toEditable(r),isDirty:false,isSaving:false,saveStatus:"success"}:p));saved++;}catch{failed++;}}
     setPublishing(false);
     if(failed===0)showToast("\u2705 "+saved+L.toast_saved,"success");else showToast("\u26a0\ufe0f "+saved+L.toast_partial+" "+failed+L.toast_failed,"error");
     setTimeout(()=>setProducts(prev=>prev.map(p=>({...p,saveStatus:"idle"}))),3500);
@@ -440,7 +456,7 @@ export default function AdminPage() {
                 </button>
               ))}
             </div>
-            <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className={"border-b border-gray-100 bg-gray-50/50 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 "+(lang==="ar"?"text-right":"")} dir={dir}><th className="px-5 py-3">{L.product}</th><th className="px-5 py-3">{L.curr_price}</th><th className="px-5 py-3">{L.new_price}</th><th className="px-5 py-3">{L.unit_lbl}</th><th className="px-5 py-3">{L.stock_lbl}</th><th className="px-5 py-3"><span className="text-amber-400">Promo</span></th><th className="px-3 py-3"><span className="text-amber-400">Remise</span></th><th className="px-5 py-3">{L.action_lbl}</th><th className="px-2 py-3"></th></tr></thead><tbody>{(promoFilter==="promo"?products.filter((p:any)=>p.on_sale):products).map((item,i)=>(<PriceRow key={item.id} item={item} rowIndex={i} totalRows={products.length} lang={lang} onChange={handlePriceChange} onToggle={handleToggleStock} onToggleSale={handleToggleOnSale} onDiscountChange={handleDiscountChange} onSave={handleSave} inputRef={el=>inputRefs.current.set(item.id,el)}/>))}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className={"border-b border-gray-100 bg-gray-50/50 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 "+(lang==="ar"?"text-right":"")} dir={dir}><th className="px-5 py-3">{L.product}</th><th className="px-5 py-3">{L.curr_price}</th><th className="px-5 py-3">{L.new_price}</th><th className="px-5 py-3">{L.unit_lbl}</th><th className="px-5 py-3">{L.stock_lbl}</th><th className="px-5 py-3"><span className="text-amber-400">Promo</span></th><th className="px-3 py-3"><span className="text-amber-400">Remise</span></th><th className="px-5 py-3">{L.action_lbl}</th><th className="px-2 py-3"></th></tr></thead><tbody>{(promoFilter==="promo"?products.filter((p:any)=>p.on_sale):products).map((item,i)=>(<PriceRow key={item.id} item={item} rowIndex={i} totalRows={products.length} lang={lang} onChange={handlePriceChange} onToggle={handleToggleStock} onToggleSale={handleToggleOnSale} onDiscountChange={handleDiscountChange} onDescChange={handleDescriptionChange} onSave={handleSave} inputRef={el=>inputRefs.current.set(item.id,el)}/>))}</tbody></table></div>
               </div>
             )}
           {activeTab==="paniers"&&<PaniersTab products={products} lang={lang} font={font}/>}
