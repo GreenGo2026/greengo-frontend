@@ -340,6 +340,8 @@ export default function CartPage() {
   const [isReturning,    setIsReturning]    = useState(false);
   const [savedProfile,   setSavedProfile]   = useState<{name:string;address:string} | null>(null);
   const [paymentMethod,  setPaymentMethod]  = useState<"COD" | "CARD_TPE">("COD");
+  const [customerPoints, setCustomerPoints] = useState<number>(0);
+  const [usePoints,      setUsePoints]      = useState(false);
   const [location,       setLocation]       = useState<GPS | null>(null);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
   const [isSubmitting,   setIsSubmitting]   = useState(false);
@@ -449,6 +451,8 @@ export default function CartPage() {
       })),
       total_price: total,
       payment_method: paymentMethod,
+      use_points:     usePoints && customerPoints >= 50,
+      points_used:    usePoints && customerPoints >= 50 ? 50 : 0,
     };
 
     try {
@@ -753,6 +757,39 @@ export default function CartPage() {
                   </div>
                 </div>
 
+                {/* ── Loyalty points redemption ── */}
+                {customerPoints >= 50 && (
+                  <div className={"rounded-2xl border-2 p-4 transition-all " + (usePoints ? "border-[#C9A96E] bg-[#fdf8ef]" : "border-gray-200 bg-gray-50")}>
+                    <div className={"flex items-center justify-between " + (language === "ar" ? "flex-row-reverse" : "")}>
+                      <div className={"flex items-center gap-2.5 " + (language === "ar" ? "flex-row-reverse" : "")}>
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ background: usePoints ? "#C9A96E20" : "#f3f4f6" }}>
+                          <span className="text-lg">⭐</span>
+                        </div>
+                        <div className={language === "ar" ? "text-right" : ""}>
+                          <p className={"text-xs font-extrabold " + font + (usePoints ? " text-[#C9A96E]" : " text-gray-700")}>
+                            {language === "ar" ? `لديك ${customerPoints} نقطة` : language === "fr" ? `Vous avez ${customerPoints} points` : `You have ${customerPoints} points`}
+                          </p>
+                          <p className={"text-[10px] " + font + " text-gray-400 mt-0.5"}>
+                            {language === "ar" ? "استخدم 50 نقطة = خصم 5 درهم" : language === "fr" ? "Utiliser 50 pts = -5 MAD sur cette commande" : "Use 50 pts = -5 MAD discount"}
+                          </p>
+                        </div>
+                      </div>
+                      <button type="button" onClick={() => setUsePoints(u => !u)}
+                        className={"relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors " + (usePoints ? "bg-[#C9A96E]" : "bg-gray-300")}>
+                        <span className={"inline-block h-4 w-4 rounded-full bg-white shadow transition-transform " + (usePoints ? "translate-x-6" : "translate-x-1")} />
+                      </button>
+                    </div>
+                    {usePoints && (
+                      <div className={"mt-3 flex items-center gap-2 rounded-xl bg-[#C9A96E]/10 px-3 py-2 " + (language === "ar" ? "flex-row-reverse" : "")}>
+                        <span className="text-sm">🎉</span>
+                        <p className={"text-[11px] font-bold text-[#C9A96E] " + font}>
+                          {language === "ar" ? "-5 درهم مطبق على هذا الطلب" : language === "fr" ? "-5 MAD appliques sur cette commande" : "-5 MAD applied to this order"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {/* Submit */}
                 {/* PRIMARY: Confirmer la commande (saves to DB) */}
                 <button onClick={submitOrder} disabled={!isValid || isSubmitting} className={submitCls}>
