@@ -12,8 +12,9 @@ import {
   updateProductById, updateOrderStatus, getOrders, getProducts,
   type DBProduct, type OrderStatus, type Order,
 } from "../services/api";
-
-const ADMIN_PIN = "greengo2026";
+import {
+  clearJwt, isAdminLoggedIn, loginAdmin,
+} from "../services/adminJwt";
 
 // ── Status normalization ──────────────────────────────────────────────────────
 // MongoDB stores statuses in mixed case ("Out for Delivery", "Pending", etc.)
@@ -317,15 +318,62 @@ function PriceRow({item,rowIndex,totalRows,lang,onChange,onToggle,onSave,inputRe
 }
 
 function PinGate({onUnlock,lang,setLang}:{onUnlock:()=>void;lang:Lang;setLang:(l:Lang)=>void}){
-  const [pin,setPin]=useState("");const [err,setErr]=useState(false);
+  const [password,setPassword]=useState("");
+  const [totp,setTotp]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState("");
   const L=I[lang];const font=lang==="ar"?"font-arabic":"font-latin";
-  function submit(){if(pin===ADMIN_PIN){onUnlock();}else{setErr(true);setPin("");setTimeout(()=>setErr(false),2000);}}
-  return(<div className="relative flex min-h-screen flex-col items-center justify-center" style={{background:"linear-gradient(160deg,#0d3b36 0%,#0a2318 50%,#1a3a0d 100%)"}}><div className="absolute inset-0 opacity-10 pointer-events-none zellige-bg-light"/><div className="absolute top-4 right-4"><LangToggle lang={lang} setLang={setLang}/></div><div className={"flex flex-col items-center gap-5 rounded-3xl bg-white/95 p-10 shadow-2xl w-full max-w-sm "+font}><div className="flex h-20 w-20 items-center justify-center rounded-2xl shadow-xl" style={{background:"linear-gradient(135deg,#2E8B57,#0d3b36)"}}><Lock size={32} className="text-white"/></div><div className="text-center"><h1 className="text-2xl font-extrabold text-gray-800">{L.pin_title}</h1><p className="mt-1 text-sm text-gray-500">{L.pin_sub}</p></div><div className="w-full space-y-3"><input type="password" value={pin} onChange={e=>setPin(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()} placeholder={L.pin_ph} dir="ltr" className={"w-full rounded-2xl border-2 bg-gray-50 px-4 py-3.5 text-center text-2xl font-bold tracking-widest outline-none transition-all "+(err?"border-red-400 text-red-500":"border-gray-200 text-gray-800 focus:border-[#2E8B57] focus:bg-white focus:ring-4 focus:ring-[#2E8B57]/10")}/>{err&&<p className={"text-center text-sm font-semibold text-red-500 "+font}>{L.pin_err}</p>}<button onClick={submit} className={"w-full rounded-2xl py-3.5 text-sm font-bold text-white shadow-lg active:scale-95 "+font} style={{background:"linear-gradient(135deg,#2E8B57,#1a6b42)"}}>{L.pin_btn}</button></div></div></div>);
+
+  async function submit(){
+    if(!password.trim()||!totp.trim()){setErr(L.pin_err);return;}
+    setLoading(true);setErr("");
+    const result=await loginAdmin(password.trim(),totp.trim());
+    setLoading(false);
+    if(result.ok){onUnlock();}
+    else{setErr(result.error??L.pin_err);setPassword("");setTotp("");}
+  }
+
+  return(
+    <div className="relative flex min-h-screen flex-col items-center justify-center" style={{background:"linear-gradient(160deg,#0d3b36 0%,#0a2318 50%,#1a3a0d 100%)"}}>
+      <div className="absolute top-4 right-4"><LangToggle lang={lang} setLang={setLang}/></div>
+      <div className={"flex flex-col items-center gap-5 rounded-3xl bg-white/95 p-10 shadow-2xl w-full max-w-sm "+font}>
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl shadow-xl" style={{background:"linear-gradient(135deg,#2E8B57,#0d3b36)"}}><Lock size={32} className="text-white"/></div>
+        <div className="text-center">
+          <h1 className="text-2xl font-extrabold text-gray-800">{L.pin_title}</h1>
+          <p className="mt-1 text-sm text-gray-500">Mot de passe + code Google Authenticator</p>
+        </div>
+        <div className="w-full space-y-3">
+          <input
+            type="password" value={password} autoFocus
+            onChange={e=>setPassword(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&document.getElementById("totp-input")?.focus()}
+            placeholder="Mot de passe" dir="ltr" autoComplete="current-password"
+            className={"w-full rounded-2xl border-2 bg-gray-50 px-4 py-3.5 text-sm outline-none transition-all "+(err?"border-red-400":"border-gray-200 focus:border-[#2E8B57] focus:bg-white focus:ring-4 focus:ring-[#2E8B57]/10")}
+          />
+          <input
+            id="totp-input" type="text" inputMode="numeric" maxLength={6}
+            value={totp} onChange={e=>setTotp(e.target.value.replace(/\D/g,""))}
+            onKeyDown={e=>e.key==="Enter"&&submit()}
+            placeholder="Code à 6 chiffres (Google Authenticator)" dir="ltr" autoComplete="one-time-code"
+            className={"w-full rounded-2xl border-2 bg-gray-50 px-4 py-3.5 text-center text-xl font-mono tracking-[0.4em] outline-none transition-all "+(err?"border-red-400 text-red-500":"border-gray-200 text-gray-800 focus:border-[#2E8B57] focus:bg-white focus:ring-4 focus:ring-[#2E8B57]/10")}
+          />
+          {err&&<p className={"text-center text-sm font-semibold text-red-500 "+font}>{err}</p>}
+          <button onClick={submit} disabled={loading}
+            className={"w-full rounded-2xl py-3.5 text-sm font-bold text-white shadow-lg active:scale-95 disabled:opacity-60 "+font}
+            style={{background:"linear-gradient(135deg,#2E8B57,#1a6b42)"}}>
+            {loading?<Loader2 size={16} className="animate-spin mx-auto"/>:L.pin_btn}
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 text-center">Session fermée à la fermeture de l'onglet</p>
+      </div>
+    </div>
+  );
 }
 
 export default function AdminPage() {
   const [lang,setLang]           = useState<Lang>("ar");
-  const [unlocked,setUnlocked]   = useState(false);
+  // Auto-unlock if a valid JWT is already in sessionStorage from this session
+  const [unlocked,setUnlocked]   = useState(isAdminLoggedIn);
   const [activeTab,setActiveTab] = useState<AdminTab>("orders");
   const [orders,setOrders]                   = useState<Order[]>([]);
   const [ordersLoading,setOrdersLoading]     = useState(false);
@@ -345,7 +393,10 @@ export default function AdminPage() {
   const fetchOrders = useCallback(async()=>{
     setOrdersLoading(true);setOrdersError("");
     try{const data=await getOrders(statusFilter==="all"?undefined:statusFilter,100);setOrders(data);setLastSync(new Date().toLocaleTimeString());}
-    catch{setOrdersError(L.error_orders);}finally{setOrdersLoading(false);}
+    catch(e:any){
+      if(e?.response?.status===401||e?.response?.status===403){clearJwt();setUnlocked(false);return;}
+      setOrdersError(L.error_orders);
+    }finally{setOrdersLoading(false);}
   },[statusFilter,L.error_orders]);
 
   const fetchProducts = useCallback(async()=>{

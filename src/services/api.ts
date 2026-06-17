@@ -1,5 +1,6 @@
-// src/services/api.ts
+﻿// src/services/api.ts
 import axios from "axios";
+import { getJwt, clearJwt } from "./adminJwt";
 
 const _rawBase = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
@@ -8,6 +9,26 @@ export const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
   timeout: 10_000,
 });
+
+// Inject Authorization: Bearer <jwt> on every request when logged in
+apiClient.interceptors.request.use((config) => {
+  const jwt = getJwt();
+  if (jwt) {
+    config.headers["Authorization"] = `Bearer ${jwt}`;
+  }
+  return config;
+});
+
+// Auto-logout on 401 (expired/invalid JWT)
+apiClient.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err?.response?.status === 401) {
+      clearJwt();
+    }
+    return Promise.reject(err);
+  },
+);
 
 export interface Product {
   name:           string;
@@ -31,7 +52,7 @@ export interface DBProduct {
   on_sale?:      boolean;
   discount_pct?: number;
   description_fr?: string;
-  discount_pct?: number;
+  step?: 0.25 | 0.5 | 1;
 }
 
 export interface DBProductUpdate {
@@ -41,6 +62,7 @@ export interface DBProductUpdate {
   name_fr?:    string;
   unit?:       string;
   category?:   string;
+  step?:       0.25 | 0.5 | 1;
 }
 
 export interface DBProductUpdateResponse extends DBProduct {}
@@ -106,7 +128,7 @@ export interface OrderStatusUpdateResponse {
   new_status: OrderStatus;
 }
 
-// ── Analytics ─────────────────────────────────────────────────────────────────
+// â”€â”€ Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type AnalyticsPeriod = "today" | "week" | "month" | "all";
 
 export interface StatusBreakdown {
@@ -132,7 +154,7 @@ export interface AnalyticsData {
   period:            string;
 }
 
-// ── Envelope helper ───────────────────────────────────────────────────────────
+// â”€â”€ Envelope helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface ApiEnvelope {
   products?: unknown; data?: unknown; items?: unknown;
   orders?: unknown;   results?: unknown;
@@ -220,3 +242,4 @@ export async function getRelatedProducts(category: string, excludeId: string): P
     return [];
   }
 }
+

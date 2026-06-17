@@ -33,9 +33,18 @@ interface Order {
   gps_coordinates?: { lat: number; lng: number };
 }
 
+import { getAdminKey } from "../../services/adminAuth";
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const API_BASE = `${import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000"}/api/v1`;
+
+function adminHeaders(): Record<string, string> {
+  const key = getAdminKey();
+  return key
+    ? { "Content-Type": "application/json", "X-Admin-Key": key }
+    : { "Content-Type": "application/json" };
+}
 
 // Terminal states — backend forbids any further transitions
 const TERMINAL_STATUSES: ReadonlySet<string> = new Set(["completed", "cancelled"]);
@@ -238,7 +247,7 @@ export default function AdminOrders() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(API_BASE + "/orders");
+      const res = await fetch(API_BASE + "/orders", { headers: adminHeaders() });
       if (!res.ok) {
         throw new Error("HTTP " + res.status.toString());
       }
@@ -285,7 +294,7 @@ export default function AdminOrders() {
       const url = API_BASE + "/orders/" + orderId + "/status";
       const res = await fetch(url, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: adminHeaders(),
         body: JSON.stringify({ status: apiStatus }),
       });
       if (!res.ok) {
@@ -314,7 +323,7 @@ export default function AdminOrders() {
   async function downloadInvoice(orderId: string): Promise<void> {
     try {
       showToast("Generation...", true);
-      const res = await fetch(API_BASE + "/orders/" + orderId + "/invoice?lang=fr");
+      const res = await fetch(API_BASE + "/orders/" + orderId + "/invoice?lang=fr", { headers: adminHeaders() });
       if (!res.ok) throw new Error("HTTP " + res.status.toString());
       const blob = await res.blob();
       const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));

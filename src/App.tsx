@@ -139,10 +139,7 @@ function PublicShell() {
           <Route path="/about"        element={<AboutPage />}       />
           <Route path="/contact"      element={<ContactPage />}     />
 
-          {/* ── Admin ── */}
-          <Route path="/admin"        element={<AdminPage />}       />
-          <Route path="/admin/orders" element={<AdminOrders />}     />
-          <Route path="/admin/pos"    element={<POSPage />}         />
+          {/* Admin routes are handled at the root level (outside this shell) */}
 
           {/* ── Checkout / Payment ── */}
           <Route path="/payment"      element={<PaymentGateway />}  />
@@ -188,9 +185,12 @@ export default function App() {
       <LanguageProvider>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* Super-admin is fully standalone — no Header/Footer */}
-            <Route path="/super-admin" element={<SuperAdminPage />} />
-            {/* All other routes get the public shell */}
+            {/* Admin routes — fully standalone, no Header/Footer, no public shell */}
+            <Route path="/super-admin"  element={<SuperAdminPage />} />
+            <Route path="/admin"        element={<AdminPage />}      />
+            <Route path="/admin/orders" element={<AdminOrders />}    />
+            <Route path="/admin/pos"    element={<POSPage />}        />
+            {/* All public-facing routes get the shell (Header + Footer) */}
             <Route path="/*" element={<PublicShell />} />
           </Routes>
         </Suspense>
