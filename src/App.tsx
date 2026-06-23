@@ -5,6 +5,7 @@ import { useEffect }              from "react";
 import StickyCartBar from "./components/ui/StickyCartBar";
 import CookieBanner               from "./components/ui/CookieBanner";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ScrollToTop                from "./components/ScrollToTop";
 import { LanguageProvider }       from "./contexts/LanguageContext";
 import { useCartStore }           from "./store/cartStore";
 import Header                     from "./components/layout/Header";
@@ -182,6 +183,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <LanguageProvider>
         <Suspense fallback={<PageLoader />}>
           <Routes>
