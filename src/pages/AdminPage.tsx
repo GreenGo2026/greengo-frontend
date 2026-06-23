@@ -324,6 +324,13 @@ function PinGate({onUnlock,lang,setLang}:{onUnlock:()=>void;lang:Lang;setLang:(l
   const [err,setErr]=useState("");
   const L=I[lang];const font=lang==="ar"?"font-arabic":"font-latin";
 
+  useEffect(()=>{
+    const meta=document.createElement("meta");
+    meta.name="robots";meta.content="noindex, nofollow";
+    document.head.appendChild(meta);
+    return()=>{document.head.removeChild(meta);};
+  },[]);
+
   async function submit(){
     if(!password.trim()||!totp.trim()){setErr(L.pin_err);return;}
     setLoading(true);setErr("");
@@ -340,7 +347,7 @@ function PinGate({onUnlock,lang,setLang}:{onUnlock:()=>void;lang:Lang;setLang:(l
         <div className="flex h-20 w-20 items-center justify-center rounded-2xl shadow-xl" style={{background:"linear-gradient(135deg,#2E8B57,#0d3b36)"}}><Lock size={32} className="text-white"/></div>
         <div className="text-center">
           <h1 className="text-2xl font-extrabold text-gray-800">{L.pin_title}</h1>
-          <p className="mt-1 text-sm text-gray-500">Mot de passe + code Google Authenticator</p>
+          <p className="mt-1 text-sm text-gray-500">Connexion administrateur sécurisée</p>
         </div>
         <div className="w-full space-y-3">
           <input
@@ -354,7 +361,7 @@ function PinGate({onUnlock,lang,setLang}:{onUnlock:()=>void;lang:Lang;setLang:(l
             id="totp-input" type="text" inputMode="numeric" maxLength={6}
             value={totp} onChange={e=>setTotp(e.target.value.replace(/\D/g,""))}
             onKeyDown={e=>e.key==="Enter"&&submit()}
-            placeholder="Code à 6 chiffres (Google Authenticator)" dir="ltr" autoComplete="one-time-code"
+            placeholder="Code de vérification" dir="ltr" autoComplete="one-time-code"
             className={"w-full rounded-2xl border-2 bg-gray-50 px-4 py-3.5 text-center text-xl font-mono tracking-[0.4em] outline-none transition-all "+(err?"border-red-400 text-red-500":"border-gray-200 text-gray-800 focus:border-[#2E8B57] focus:bg-white focus:ring-4 focus:ring-[#2E8B57]/10")}
           />
           {err&&<p className={"text-center text-sm font-semibold text-red-500 "+font}>{err}</p>}

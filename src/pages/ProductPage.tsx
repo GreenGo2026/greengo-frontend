@@ -235,6 +235,7 @@ export default function ProductPage() {
             {img
               ? <img src={img} alt={l === "ar" ? product.name_ar : product.name_fr || product.name_ar}
                   className={`w-full h-full ${isJpg ? "object-cover" : "object-contain p-8"}`}
+                  loading="lazy"
                   onError={() => setImgError(true)} />
               : <span className="text-8xl">{cat.emoji}</span>}
           </div>

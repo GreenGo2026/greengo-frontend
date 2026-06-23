@@ -4,7 +4,7 @@ import { Suspense, lazy } from "react";
 import { useEffect }              from "react";
 import StickyCartBar from "./components/ui/StickyCartBar";
 import CookieBanner               from "./components/ui/CookieBanner";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider }       from "./contexts/LanguageContext";
 import { useCartStore }           from "./store/cartStore";
 import Header                     from "./components/layout/Header";
@@ -34,8 +34,8 @@ const OffresPage      = lazy(() => import("./pages/OffresPage"));
 const TrackOrderPage  = lazy(() => import("./pages/TrackOrderPage"));
 const FidelitePage     = lazy(() => import("./pages/FidelitePage"));
 import LegalTemplate, { LEGAL_PAGES } from "./pages/Legal/LegalTemplate";
-import LivraisonPage from "./pages/Legal/LivraisonPage";
-import FAQPage      from "./pages/Legal/FAQPage";
+const LivraisonPage  = lazy(() => import("./pages/Legal/LivraisonPage"));
+const FAQPage        = lazy(() => import("./pages/Legal/FAQPage"));
 
 // ── Anti-scraping / anti-inspect protection ──────────────────────────────────
 function useAntiScraping() {
@@ -121,10 +121,10 @@ function PublicShell() {
 
   return (
     <div
-      className="flex min-h-screen flex-col pb-16 md:pb-0" style={{ overflowX: "hidden", background: "inherit" }}
+      className="flex min-h-screen flex-col pb-16 md:pb-0"
       style={{
+        overflowX: "hidden",
         background: "#FAF7F2",
-        // Disable text selection on content container
         userSelect: "none",
         WebkitUserSelect: "none",
       }}
@@ -185,11 +185,14 @@ export default function App() {
       <LanguageProvider>
         <Suspense fallback={<PageLoader />}>
           <Routes>
+            {/* Legacy admin paths — silently redirect to home */}
+            <Route path="/admin"        element={<Navigate to="/" replace />} />
+            <Route path="/super-admin"  element={<Navigate to="/" replace />} />
             {/* Admin routes — fully standalone, no Header/Footer, no public shell */}
-            <Route path="/super-admin"  element={<SuperAdminPage />} />
-            <Route path="/admin"        element={<AdminPage />}      />
-            <Route path="/admin/orders" element={<AdminOrders />}    />
-            <Route path="/admin/pos"    element={<POSPage />}        />
+            <Route path="/gestion"        element={<AdminPage />}      />
+            <Route path="/gestion/super"  element={<SuperAdminPage />} />
+            <Route path="/gestion/orders" element={<AdminOrders />}    />
+            <Route path="/gestion/pos"    element={<POSPage />}        />
             {/* All public-facing routes get the shell (Header + Footer) */}
             <Route path="/*" element={<PublicShell />} />
           </Routes>

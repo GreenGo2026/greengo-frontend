@@ -152,7 +152,7 @@ function LangToggle({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void;
   );
 }
 
-// ── Login gate (password + Google Authenticator TOTP) ────────────────────────
+// ── Login gate ────────────────────────────────────────────────────────────────
 function PinGate({ onUnlock }: { onUnlock: () => void; }) {
   const navigate           = useNavigate();
   const [lang,  setLang]   = useState<Lang>("ar");
@@ -164,6 +164,13 @@ function PinGate({ onUnlock }: { onUnlock: () => void; }) {
   const t    = T[lang];
   const dir  = lang === "ar" ? "rtl" : "ltr";
   const font = lang === "ar" ? "font-arabic" : "font-latin";
+
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "robots"; meta.content = "noindex, nofollow";
+    document.head.appendChild(meta);
+    return () => { document.head.removeChild(meta); };
+  }, []);
 
   async function submit() {
     if (!password.trim() || !totp.trim()) { setErr(true); setShk(true); setTimeout(() => { setErr(false); setShk(false); }, 600); return; }
@@ -473,7 +480,7 @@ function Sidebar({ onLogout, lang }: { onLogout: () => void; lang: Lang; }) {
 
           {/* Operations → /admin */}
           <button
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate("/gestion")}
             className={"flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-xs font-bold text-white/40 transition-all hover:bg-white/8 hover:text-white/80 hover:border-white/10 active:scale-95 " + font}>
             <ShoppingBag size={15} className="shrink-0" strokeWidth={1.8}/>
             <span className="hidden md:block">{t.nav_operations}</span>
