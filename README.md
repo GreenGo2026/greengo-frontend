@@ -1,3 +1,14 @@
+# GreenGo Frontend
+
+**Important:** This repo (`GreenGo2026/greengo-frontend`) is what Vercel deploys.
+The backend repo (`GreenGo2026/greengo-backend`) contains a physical copy of this
+folder on disk at `greengo-backend/greengo-frontend/` but that copy is **NOT**
+deployed by Vercel. Always push frontend changes from inside
+`C:\Windows\System32\greengo-backend\greengo-frontend\` which has its own `.git`
+pointing to this repo.
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
