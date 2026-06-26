@@ -446,7 +446,12 @@ export default function AdminPage() {
     );
     if(updates.size>0)setProducts(prev=>prev.map(p=>updates.has(p.id)?{...p,...updates.get(p.id),isDirty:false,isSaving:false,saveStatus:"success"}:p));
     setPublishing(false);
-    if(failed===0)showToast("\u2705 "+saved+L.toast_saved,"success");else showToast("\u26a0\ufe0f "+saved+L.toast_partial+" "+failed+L.toast_failed,"error");
+    if(failed===0){showToast("\u2705 "+saved+L.toast_saved,"success");}else{
+      const _fe=(results.find(r=>r.status==="rejected") as PromiseRejectedResult|undefined)?.reason;
+      const _ec=_fe?.response?.status??_fe?.code??"";
+      const _ed=_fe?.response?.data?.detail??" ";
+      showToast("\u26a0\ufe0f "+saved+L.toast_partial+" "+failed+L.toast_failed+(_ec?" [HTTP "+_ec+" \u2014 "+_ed+"]":""),"error");
+    }
     setTimeout(()=>setProducts(prev=>prev.map(p=>({...p,saveStatus:"idle"}))),3500);
   }
 
