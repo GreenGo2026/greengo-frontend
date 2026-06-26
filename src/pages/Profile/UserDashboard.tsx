@@ -234,6 +234,8 @@ export default function UserDashboard() {
     if (phone) loadData(phone);
   }, []);
 
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [activeTab]);
+
   function handlePhoneSubmit(ph: string) {
     const normalized = normalizePhone(ph);
     localStorage.setItem(CACHE_KEY, normalized);

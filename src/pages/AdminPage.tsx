@@ -397,6 +397,8 @@ export default function AdminPage() {
   const L=I[lang];const dir=lang==="ar"?"rtl":"ltr";const font=lang==="ar"?"font-arabic":"font-latin";
   const showToast = useCallback((msg:string,type:ToastState["type"])=>setToast({msg,type}),[]);
 
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [activeTab]);
+
   const fetchOrders = useCallback(async()=>{
     setOrdersLoading(true);setOrdersError("");
     try{const data=await getOrders(statusFilter==="all"?undefined:statusFilter,100);setOrders(data);setLastSync(new Date().toLocaleTimeString());}
