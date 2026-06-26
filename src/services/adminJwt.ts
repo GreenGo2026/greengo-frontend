@@ -3,12 +3,13 @@
 // A non-sensitive "logged in" flag lives in sessionStorage so JS can
 // check auth state without reading the cookie.
 
-const LOGGED_IN_KEY = "gg_admin_logged_in";
+const LOGGED_IN_KEY  = "gg_admin_logged_in";
+const LEGACY_JWT_KEY = "gg_admin_jwt"; // pre-cookie migration key
 const API_BASE = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
-/** @deprecated JWT no longer stored in sessionStorage — always returns "". */
+/** Returns legacy sessionStorage JWT for backward compat during cookie migration. */
 export function getJwt(): string {
-  return "";
+  return sessionStorage.getItem(LEGACY_JWT_KEY) ?? "";
 }
 
 /** @deprecated Cookie is set server-side — this is a no-op. */
@@ -16,10 +17,10 @@ export function setJwt(_token: string): void {
   // intentionally empty
 }
 
-/** Clear the sessionStorage flag and ask the server to expire the cookie. */
+/** Clear session flags, legacy JWT, and ask server to expire the httpOnly cookie. */
 export function clearJwt(): void {
   sessionStorage.removeItem(LOGGED_IN_KEY);
-  // Fire-and-forget: tell server to clear the httpOnly cookie
+  sessionStorage.removeItem(LEGACY_JWT_KEY);
   fetch(`${API_BASE}/api/v1/admin/auth/logout`, {
     method: "POST",
     credentials: "include",
@@ -27,12 +28,20 @@ export function clearJwt(): void {
 }
 
 export function isAdminLoggedIn(): boolean {
-  return sessionStorage.getItem(LOGGED_IN_KEY) === "1";
+  // Accept either the new flag (cookie session) or a legacy JWT still in sessionStorage
+  return (
+    sessionStorage.getItem(LOGGED_IN_KEY) === "1" ||
+    (sessionStorage.getItem(LEGACY_JWT_KEY) ?? "").length > 0
+  );
 }
 
-/** No Authorization header needed — browser sends the httpOnly cookie automatically. */
+/**
+ * Sends the legacy Bearer token if present (pre-cookie sessions).
+ * New sessions authenticate via httpOnly cookie — browser sends it automatically.
+ */
 export function adminHeaders(): Record<string, string> {
-  return {};
+  const jwt = getJwt();
+  return jwt ? { Authorization: `Bearer ${jwt}` } : {};
 }
 
 /** POST /api/v1/admin/auth/login — returns {ok, error?} */
