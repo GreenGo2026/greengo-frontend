@@ -31,6 +31,8 @@ interface Order {
   status: string;
   created_at: string;
   gps_coordinates?: { lat: number; lng: number };
+  driver_name?: string;
+  driver_phone?: string;
 }
 
 import { adminHeaders } from "../../services/adminJwt";
@@ -235,6 +237,11 @@ export default function AdminOrders() {
   const [toast, setToast]       = useState<{ msg: string; ok: boolean } | null>(null);
   const [search, setSearch]     = useState("");
 
+  // ── Driver assignment ──────────────────────────────────────────────────────
+  const [driverForms, setDriverForms]   = useState<Record<string, { name: string; phone: string }>>({});
+  const [driverEditSet, setDriverEditSet] = useState<Set<string>>(new Set());
+  const [driverSaving, setDriverSaving] = useState<string | null>(null);
+
   // ── Fetch all orders ───────────────────────────────────────────────────────
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -310,9 +317,43 @@ export default function AdminOrders() {
     setTimeout(() => setToast(null), 3500);
   }
 
-  // -- Download invoice
+  // ── Driver assignment helpers ──────────────────────────────────────────────
+  function enterDriverEdit(orderId: string, order: Order): void {
+    setDriverForms(prev => ({
+      ...prev,
+      [orderId]: { name: order.driver_name ?? "", phone: order.driver_phone ?? "" },
+    }));
+    setDriverEditSet(prev => new Set([...prev, orderId]));
+  }
 
+  async function handleAssignDriver(orderId: string): Promise<void> {
+    const form = driverForms[orderId];
+    if (!form?.name?.trim() || !form?.phone?.trim()) return;
+    setDriverSaving(orderId);
+    try {
+      const res = await fetch(API_BASE + "/orders/" + orderId + "/driver", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...adminHeaders() },
+        body: JSON.stringify({ driver_name: form.name.trim(), driver_phone: form.phone.trim() }),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status.toString());
+      setOrders(prev =>
+        prev.map(o =>
+          getId(o) === orderId
+            ? { ...o, driver_name: form.name.trim(), driver_phone: form.phone.trim() }
+            : o
+        )
+      );
+      setDriverEditSet(prev => { const s = new Set(prev); s.delete(orderId); return s; });
+      showToast("Livreur assigné", true);
+    } catch {
+      showToast("Erreur d'assignation", false);
+    } finally {
+      setDriverSaving(null);
+    }
+  }
 
+  // ── Invoice download ───────────────────────────────────────────────────────
   async function downloadInvoice(orderId: string): Promise<void> {
     try {
       showToast("Generation...", true);
@@ -552,6 +593,7 @@ export default function AdminOrders() {
                     <th className="px-6 py-3 text-left font-semibold">Modifier</th>
                     <th className="px-6 py-3 text-center font-semibold">GPS</th>
                     <th className="px-6 py-3 text-center font-semibold">Facture</th>
+                    <th className="px-6 py-3 text-left font-semibold">Livreur</th>
                   </tr>
                 </thead>
 
@@ -722,7 +764,57 @@ export default function AdminOrders() {
                           )}
                         </td>
 
-                        
+                        {/* ── Driver assignment ── */}
+                        <td className="px-4 py-4 min-w-[170px]">
+                          {order.driver_name && !driverEditSet.has(orderId) ? (
+                            <div>
+                              <p className="text-xs font-semibold text-gray-700 truncate max-w-[140px]">
+                                🚗 {order.driver_name}
+                              </p>
+                              <p className="text-xs text-[#2E8B57] font-latin mt-0.5">{order.driver_phone}</p>
+                              <button
+                                onClick={() => enterDriverEdit(orderId, order)}
+                                className="text-[10px] text-gray-400 underline hover:text-gray-600 mt-1"
+                              >
+                                Modifier
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-1">
+                              <input
+                                type="text"
+                                placeholder="Nom livreur"
+                                value={driverForms[orderId]?.name ?? ""}
+                                onChange={e =>
+                                  setDriverForms(prev => ({
+                                    ...prev,
+                                    [orderId]: { ...prev[orderId], name: e.target.value },
+                                  }))
+                                }
+                                className="text-xs border border-gray-200 rounded-lg px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-[#2E8B57]/40"
+                              />
+                              <input
+                                type="tel"
+                                placeholder="0612345678"
+                                value={driverForms[orderId]?.phone ?? ""}
+                                onChange={e =>
+                                  setDriverForms(prev => ({
+                                    ...prev,
+                                    [orderId]: { ...prev[orderId], phone: e.target.value },
+                                  }))
+                                }
+                                className="text-xs border border-gray-200 rounded-lg px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-[#2E8B57]/40 font-latin"
+                              />
+                              <button
+                                onClick={() => handleAssignDriver(orderId)}
+                                disabled={driverSaving === orderId || !driverForms[orderId]?.name?.trim() || !driverForms[orderId]?.phone?.trim()}
+                                className="text-xs bg-[#2E8B57] text-white rounded-lg px-2 py-1 font-semibold hover:bg-[#1F6B40] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              >
+                                {driverSaving === orderId ? "..." : "Assigner"}
+                              </button>
+                            </div>
+                          )}
+                        </td>
 
                       </tr>
                     );
