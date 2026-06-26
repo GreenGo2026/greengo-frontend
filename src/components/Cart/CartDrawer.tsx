@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useCartStore, formatQuantity, getUnitStep } from "../../store/cartStore";
 import type { CartItem } from "../../store/cartStore";
+import { isValidMoroccanPhone, normalizeForValidation } from "../../utils/validation";
 
 const API_BASE  = `${import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000"}/api/v1`;
 const WA_NUMBER = "212664500789";
@@ -63,9 +64,10 @@ function CartRow({ item }: { item: CartItem }) {
 }
 
 // ── GPS Button ────────────────────────────────────────────────────────────────
-function GPSCapture({ status, onRequest }: {
+function GPSCapture({ status, onRequest, errorMsg }: {
   status:    LocationStatus;
   onRequest: () => void;
+  errorMsg?: string;
 }) {
   if (status === "success") {
     return (
@@ -84,7 +86,7 @@ function GPSCapture({ status, onRequest }: {
         <div className="flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5">
           <AlertCircle size={14} className="shrink-0 text-red-500" />
           <span className="text-sm font-semibold text-red-600">
-            ❌ Erreur de localisation. Veuillez autoriser l'accès.
+            {errorMsg ?? "Erreur de localisation. Veuillez autoriser l'accès."}
           </span>
         </div>
         <button
@@ -168,6 +170,8 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [address,        setAddress]        = useState("");
   const [location,       setLocation]       = useState<GPS | null>(null);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
+  const [gpsErrorMsg,    setGpsErrorMsg]    = useState("");
+  const [phoneError,     setPhoneError]     = useState("");
   const [submitting,     setSubmitting]     = useState(false);
   const [serverErr,      setServerErr]      = useState("");
   const [orderId,        setOrderId]        = useState("");
@@ -199,21 +203,40 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
   }, [open, onClose]);
 
   // ── GPS handler ─────────────────────────────────────────────────────────────
+  function handlePhoneBlur() {
+    if (!phone.trim()) return;
+    if (!isValidMoroccanPhone(normalizeForValidation(phone))) {
+      setPhoneError("Numéro invalide. Utilisez le format 06XXXXXXXX ou +212 6XXXXXXXX");
+    } else {
+      setPhoneError("");
+    }
+  }
+
   function handleGetLocation() {
     if (!navigator.geolocation) {
       setLocationStatus("error");
+      setGpsErrorMsg("GPS non disponible sur cet appareil");
       return;
     }
     setLocationStatus("loading");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocation({
+          lat: parseFloat(pos.coords.latitude.toFixed(6)),
+          lng: parseFloat(pos.coords.longitude.toFixed(6)),
+        });
         setLocationStatus("success");
       },
-      () => {
+      (err) => {
         setLocationStatus("error");
+        const msgs: Record<number, string> = {
+          1: "Veuillez autoriser l'accès à votre position",
+          2: "Position indisponible. Vérifiez votre GPS",
+          3: "Délai dépassé. Réessayez en extérieur",
+        };
+        setGpsErrorMsg(msgs[err.code] ?? "Erreur de localisation");
       },
-      { timeout: 10000, enableHighAccuracy: true }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   }
 
@@ -222,7 +245,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
   const itemCount  = cart.length;
   const isFormValid =
     name.trim().length > 1 &&
-    phone.trim().length >= 9 &&
+    phone.trim() !== "" && isValidMoroccanPhone(normalizeForValidation(phone)) &&
     address.trim().length > 5;
 
   // ── Submit order ─────────────────────────────────────────────────────────────
@@ -405,19 +428,26 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                   <Phone size={12} className="text-[#2E8B57]" />
                   Numéro de téléphone *
                 </label>
-                <div className="flex overflow-hidden rounded-xl border border-gray-200 bg-white transition-all focus-within:border-[#2E8B57]/50 focus-within:ring-2 focus-within:ring-[#2E8B57]/15">
+                <div className={"flex overflow-hidden rounded-xl border transition-all focus-within:ring-2 " + (phoneError ? "border-red-300 bg-red-50 focus-within:border-red-400 focus-within:ring-red-100" : "border-gray-200 bg-white focus-within:border-[#2E8B57]/50 focus-within:ring-[#2E8B57]/15")}>
                   <div className="flex shrink-0 items-center border-r border-gray-200 bg-gray-50 px-3">
                     <span className="text-sm font-bold text-gray-500 font-latin">🇲🇦 +212</span>
                   </div>
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(""); }}
+                    onBlur={handlePhoneBlur}
                     placeholder="6XXXXXXXX"
                     dir="ltr"
                     className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none font-latin"
                   />
                 </div>
+                {phoneError && (
+                  <p className="flex items-center gap-1 text-xs font-medium text-red-500">
+                    <AlertCircle size={11} className="shrink-0" />
+                    {phoneError}
+                  </p>
+                )}
               </div>
 
               {/* Adresse */}
@@ -447,7 +477,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                     Recommandé
                   </span>
                 </label>
-                <GPSCapture status={locationStatus} onRequest={handleGetLocation} />
+                <GPSCapture status={locationStatus} onRequest={handleGetLocation} errorMsg={gpsErrorMsg} />
                 {locationStatus === "success" && location && (
                   <p className="text-[10px] text-gray-400 font-latin pl-1">
                     {location.lat.toFixed(5)}, {location.lng.toFixed(5)}

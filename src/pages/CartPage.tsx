@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import { computeLineTotal } from "../utils/pricing";
+import { isValidMoroccanPhone, normalizeForValidation } from "../utils/validation";
 import type { CartItem } from "../store/cartStore";
 import { useLanguage } from "../contexts/LanguageContext";
 
@@ -366,11 +367,13 @@ export default function CartPage() {
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
   const [isSubmitting,   setIsSubmitting]   = useState(false);
   const [submitError,    setSubmitError]    = useState("");
+  const [phoneError,     setPhoneError]     = useState("");
   const [orderId,        setOrderId]        = useState("");
 
   const total     = totalPrice();
   const itemCount = cart.length;
-  const isValid   = itemCount > 0 && name.trim().length > 1 && phone.trim().length >= 9 && address.trim().length > 5 && !!paymentMethod;
+  const phoneValid = phone.trim() !== "" && isValidMoroccanPhone(normalizeForValidation(phone));
+  const isValid   = itemCount > 0 && name.trim().length > 1 && phoneValid && address.trim().length > 5 && !!paymentMethod;
 
   // ── GPS ──────────────────────────────────────────────────────────────────────
   function handleGetLocation() {
@@ -381,8 +384,8 @@ export default function CartPage() {
     setLocationStatus("loading");
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+        const lat = parseFloat(pos.coords.latitude.toFixed(6));
+        const lng = parseFloat(pos.coords.longitude.toFixed(6));
         setLocation({ lat, lng });
         setLocationStatus("success");
         // Reverse geocode — auto-fill address if field is empty
@@ -404,13 +407,23 @@ export default function CartPage() {
         else if (err.code === 3) setLocationStatus("timeout");
         else setLocationStatus("error");
       },
-      { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   }
 
   // ── Phone change + returning customer lookup ────────────────────────────────
+  function handlePhoneBlur() {
+    if (!phone.trim()) return;
+    if (!isValidMoroccanPhone(normalizeForValidation(phone))) {
+      setPhoneError("Numéro invalide. Utilisez le format 06XXXXXXXX ou +212 6XXXXXXXX");
+    } else {
+      setPhoneError("");
+    }
+  }
+
   function handlePhoneChange(val: string) {
     setPhone(val);
+    if (phoneError) setPhoneError("");
     const trimmed = val.trim();
     if (trimmed.length >= 9) {
       const normalized = trimmed.startsWith("+212")
@@ -704,15 +717,22 @@ export default function CartPage() {
                     <Phone size={12} className="text-[#2E8B57]" />
                     {t("form_phone_label")} *
                   </label>
-                  <div className="flex overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-all focus-within:border-[#2E8B57]/50 focus-within:ring-2 focus-within:ring-[#2E8B57]/15">
+                  <div className={"flex overflow-hidden rounded-xl border transition-all focus-within:ring-2 " + (phoneError ? "border-red-300 bg-red-50 focus-within:border-red-400 focus-within:ring-red-100" : "border-gray-200 bg-gray-50 focus-within:border-[#2E8B57]/50 focus-within:ring-[#2E8B57]/15")}>
                     <div className="flex shrink-0 items-center border-r border-gray-200 bg-gray-100 px-3">
                       <span className="text-sm font-bold text-gray-500 font-latin">🇲🇦 +212</span>
                     </div>
                     <input id="cp-phone" type="tel" dir="ltr" value={phone}
                       onChange={(e) => handlePhoneChange(e.target.value)}
+                      onBlur={handlePhoneBlur}
                       placeholder={t("form_phone_placeholder")}
                       className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none font-latin" />
                   </div>
+                  {phoneError && (
+                    <p className="flex items-center gap-1 text-xs font-medium text-red-500">
+                      <AlertCircle size={11} className="shrink-0" />
+                      {phoneError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Adresse */}
