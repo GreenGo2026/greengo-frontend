@@ -29,7 +29,7 @@ export default function HeroLandingPage() {
 
       {/* LCP hint — preloads hero bg for faster paint */}
       <img
-        src="/assets/morocco-bg.jpg"
+        src="/assets/morocco-bg.webp"
         alt=""
         aria-hidden="true"
         fetchPriority="high"
@@ -45,7 +45,7 @@ export default function HeroLandingPage() {
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage: "url('/assets/morocco-bg.jpg')",
+          backgroundImage: "url('/assets/morocco-bg.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
