@@ -1,30 +1,38 @@
 // src/services/adminJwt.ts
-// JWT-based admin session — stored in sessionStorage only (cleared on tab close).
-// The raw X-Admin-Key never reaches the browser; only short-lived JWTs do.
+// Admin session — JWT stored in httpOnly cookie (XSS-resistant).
+// A non-sensitive "logged in" flag lives in sessionStorage so JS can
+// check auth state without reading the cookie.
 
-const JWT_KEY  = "gg_admin_jwt";
+const LOGGED_IN_KEY = "gg_admin_logged_in";
 const API_BASE = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
+/** @deprecated JWT no longer stored in sessionStorage — always returns "". */
 export function getJwt(): string {
-  return sessionStorage.getItem(JWT_KEY) ?? "";
+  return "";
 }
 
-export function setJwt(token: string): void {
-  sessionStorage.setItem(JWT_KEY, token.trim());
+/** @deprecated Cookie is set server-side — this is a no-op. */
+export function setJwt(_token: string): void {
+  // intentionally empty
 }
 
+/** Clear the sessionStorage flag and ask the server to expire the cookie. */
 export function clearJwt(): void {
-  sessionStorage.removeItem(JWT_KEY);
+  sessionStorage.removeItem(LOGGED_IN_KEY);
+  // Fire-and-forget: tell server to clear the httpOnly cookie
+  fetch(`${API_BASE}/api/v1/admin/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  }).catch(() => undefined);
 }
 
 export function isAdminLoggedIn(): boolean {
-  return getJwt().length > 0;
+  return sessionStorage.getItem(LOGGED_IN_KEY) === "1";
 }
 
-/** Returns the Authorization header object for fetch() / axios calls. */
+/** No Authorization header needed — browser sends the httpOnly cookie automatically. */
 export function adminHeaders(): Record<string, string> {
-  const jwt = getJwt();
-  return jwt ? { Authorization: `Bearer ${jwt}` } : {};
+  return {};
 }
 
 /** POST /api/v1/admin/auth/login — returns {ok, error?} */
@@ -34,13 +42,13 @@ export async function loginAdmin(
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     const res = await fetch(`${API_BASE}/api/v1/admin/auth/login`, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ password, totp_code: totpCode }),
+      method:      "POST",
+      headers:     { "Content-Type": "application/json" },
+      credentials: "include",
+      body:        JSON.stringify({ password, totp_code: totpCode }),
     });
     if (res.ok) {
-      const data = await res.json() as { access_token: string };
-      setJwt(data.access_token);
+      sessionStorage.setItem(LOGGED_IN_KEY, "1");
       return { ok: true };
     }
     const err = await res.json().catch(() => ({})) as { detail?: string };

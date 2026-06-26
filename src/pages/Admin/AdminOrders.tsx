@@ -247,7 +247,7 @@ export default function AdminOrders() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(API_BASE + "/orders", { headers: adminHeaders() });
+      const res = await fetch(API_BASE + "/orders", { headers: adminHeaders(), credentials: "include" });
       if (!res.ok) {
         throw new Error("HTTP " + res.status.toString());
       }
@@ -295,6 +295,7 @@ export default function AdminOrders() {
       const res = await fetch(url, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...adminHeaders() },
+        credentials: "include",
         body: JSON.stringify({ status: apiStatus }),
       });
       if (!res.ok) {
@@ -334,6 +335,7 @@ export default function AdminOrders() {
       const res = await fetch(API_BASE + "/orders/" + orderId + "/driver", {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...adminHeaders() },
+        credentials: "include",
         body: JSON.stringify({ driver_name: form.name.trim(), driver_phone: form.phone.trim() }),
       });
       if (!res.ok) throw new Error("HTTP " + res.status.toString());
@@ -357,7 +359,7 @@ export default function AdminOrders() {
   async function downloadInvoice(orderId: string): Promise<void> {
     try {
       showToast("Generation...", true);
-      const res = await fetch(API_BASE + "/orders/" + orderId + "/invoice?lang=fr", { headers: adminHeaders() });
+      const res = await fetch(API_BASE + "/orders/" + orderId + "/invoice?lang=fr", { headers: adminHeaders(), credentials: "include" });
       if (!res.ok) throw new Error("HTTP " + res.status.toString());
       const blob = await res.blob();
       const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));

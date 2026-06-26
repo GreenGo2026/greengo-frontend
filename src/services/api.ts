@@ -5,9 +5,10 @@ import { getJwt, clearJwt } from "./adminJwt";
 const _rawBase = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
 export const apiClient = axios.create({
-  baseURL: `${_rawBase}/api/v1`,
-  headers: { "Content-Type": "application/json" },
-  timeout: 10_000,
+  baseURL:         `${_rawBase}/api/v1`,
+  headers:         { "Content-Type": "application/json" },
+  timeout:         10_000,
+  withCredentials: true,
 });
 
 // Inject Authorization: Bearer <jwt> on every request when logged in
