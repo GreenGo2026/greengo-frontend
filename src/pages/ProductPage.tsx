@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { fetchProductById, getRelatedProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
+import { computeLineTotal } from "../utils/pricing";
 
 type L = "fr" | "ar" | "en";
 const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
@@ -307,6 +308,9 @@ export default function ProductPage() {
                     </span>
                     <button onClick={handleAdd}
                       className="w-10 h-10 rounded-xl bg-[#2E8B57]/10 hover:bg-[#2E8B57]/20 text-[#2E8B57] font-black text-lg transition-colors flex items-center justify-center">+</button>
+                    <span className="ml-auto font-black text-[#2E8B57] font-latin text-lg">
+                      {computeLineTotal(dealPrice ?? product.price_mad, qty, product.unit).toFixed(2)} MAD
+                    </span>
                   </div>
                 )}
                 <button onClick={handleAdd}

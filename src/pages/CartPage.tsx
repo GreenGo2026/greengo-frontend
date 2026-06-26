@@ -8,6 +8,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
+import { computeLineTotal } from "../utils/pricing";
 import type { CartItem } from "../store/cartStore";
 import { useLanguage } from "../contexts/LanguageContext";
 
@@ -41,7 +42,7 @@ function formatWhatsAppMessage(
   address: string
 ): string {
   const lines = cart.map((i) => {
-    const cost = ((i.price_per_unit || 0) * (i.cartQuantity || 0)).toFixed(2);
+    const cost = computeLineTotal(i.price_per_unit || 0, i.cartQuantity || 0, i.unit || "").toFixed(2);
     const qty  = formatQuantity(i.cartQuantity, i.unit);
     return "  - " + qty + " " + i.name + " (" + cost + " \u062f\u0631\u0647\u0645)";
   });
@@ -125,7 +126,7 @@ function CartRow({ item }: { item: CartItem }) {
   const { dir, language } = useLanguage();
   const font      = language === "ar" ? "font-arabic" : "font-latin";
   const unitPrice = item.price_per_unit || 0;
-  const lineTotal = unitPrice * item.cartQuantity;
+  const lineTotal = computeLineTotal(unitPrice, item.cartQuantity, item.unit || "");
   const nameCls   = "truncate text-sm font-bold text-gray-800 " + font + " " + (dir === "rtl" ? "text-right" : "text-left");
 
   return (
@@ -612,7 +613,7 @@ export default function CartPage() {
                   {cart.map((item, i) => (
                     <li key={item.name + i} className={"flex items-center justify-between text-sm " + rowDir}>
                       <span className="font-extrabold text-gray-800 font-latin">
-                        {((item.price_per_unit || 0) * (item.cartQuantity || 0)).toFixed(2)} MAD
+                        {computeLineTotal(item.price_per_unit || 0, item.cartQuantity || 0, item.unit || "").toFixed(2)} MAD
                       </span>
                       <span className={"text-gray-500 " + font}>
                         {item.name} × {formatQuantity(item.cartQuantity, item.unit)}

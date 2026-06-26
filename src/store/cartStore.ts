@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Product } from "../services/api";
+import { computeLineTotal } from "../utils/pricing";
 
 export interface CartItem extends Product {
   cartQuantity: number;
@@ -10,11 +11,17 @@ export interface CartItem extends Product {
 // ── Unit step config — how much each +/- press increments ────────────────────
 export type UnitStep = 0.25 | 0.5 | 1;
 
-export function getUnitStep(unit: string | undefined): UnitStep {
+export function getUnitStep(unit: string | undefined, product?: Partial<Product>): UnitStep {
+  const customStep = Number((product as any)?.step);
+
+  if (customStep === 0.25 || customStep === 0.5 || customStep === 1) {
+    return customStep as UnitStep;
+  }
+
   const u = (unit ?? "").toLowerCase().trim();
   // Latin
-  if (["kg", "kilo", "kilogram", "kgs"].includes(u))   return 0.5;
-  if (["g", "gram", "grams"].includes(u))               return 0.25;
+  if (["kg", "kilo", "kilogram", "kgs"].includes(u)) return 0.5;
+  if (["g", "gram", "grams"].includes(u)) return 0.25;
   // Arabic/Darija unit names
   if (["كيلو", "كغ", "كيلوغرام"].includes(u)) return 0.5;
   if (["غرام", "غ"].includes(u)) return 0.25;
@@ -41,10 +48,10 @@ export function formatQuantity(qty: number, unit: string | undefined): string {
 
 interface CartState {
   cart: CartItem[];
-  addToCart:      (product: Product, step?: number) => void;
+  addToCart: (product: Product, step?: number) => void;
   removeFromCart: (productName: string, step?: number) => void;
-  clearCart:      () => void;
-  totalPrice:     () => number;
+  clearCart: () => void;
+  totalPrice: () => number;
 }
 
 export const useCartStore = create<CartState>()(
@@ -53,15 +60,16 @@ export const useCartStore = create<CartState>()(
       cart: [],
 
       addToCart: (product: Product, step?: number) => {
-        const s   = step ?? getUnitStep(product.unit);
-        // Use id if available, fall back to name for backward compat
+        const s = step ?? getUnitStep(product.unit, product);
         const key = (product as any).id || product.name;
+
         set((state) => {
           const existing = state.cart.find((i) =>
             ((i as any).id && (product as any).id)
               ? (i as any).id === (product as any).id
               : i.name === product.name
           );
+
           if (existing) {
             const next = Math.round((existing.cartQuantity + s) * 1000) / 1000;
             return {
@@ -71,6 +79,7 @@ export const useCartStore = create<CartState>()(
               })
             };
           }
+
           return { cart: [...state.cart, { ...product, cartQuantity: s }] };
         });
       },
@@ -79,12 +88,19 @@ export const useCartStore = create<CartState>()(
         set((state) => {
           const existing = state.cart.find((i) => i.name === productName);
           if (!existing) return state;
-          const s    = step ?? getUnitStep(existing.unit);
+
+          const s = step ?? getUnitStep(existing.unit, existing);
           const next = Math.round((existing.cartQuantity - s) * 1000) / 1000;
+
           if (next <= 0) {
             return { cart: state.cart.filter((i) => i.name !== productName) };
           }
-          return { cart: state.cart.map((i) => i.name === productName ? { ...i, cartQuantity: next } : i) };
+
+          return {
+            cart: state.cart.map((i) =>
+              i.name === productName ? { ...i, cartQuantity: next } : i
+            )
+          };
         });
       },
 
@@ -92,15 +108,14 @@ export const useCartStore = create<CartState>()(
 
       totalPrice: (): number => {
         const { cart } = get();
-        const raw = cart.reduce((sum, i) => sum + (i.price_per_unit || 0) * (i.cartQuantity || 0), 0);
+        const raw = cart.reduce((sum, i) => sum + computeLineTotal(i.price_per_unit || 0, i.cartQuantity || 0, i.unit || ""), 0);
         return Math.round(raw * 100) / 100;
       },
     }),
     {
-      name:       "greengo-cart",
-      storage:    createJSONStorage(() => localStorage),
+      name: "greengo-cart",
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ cart: state.cart }),
-      // Merge duplicate cart items on rehydration
       merge: (persisted: any, current: any) => {
         const seen = new Map<string, any>();
         for (const item of (persisted?.cart ?? [])) {
