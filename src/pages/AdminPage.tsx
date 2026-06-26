@@ -431,8 +431,20 @@ export default function AdminPage() {
   }
   async function handlePublishAll(){
     const dirty=products.filter(p=>p.isDirty);if(dirty.length===0){showToast(L.toast_no_dirty,"info");return;}
-    setPublishing(true);let saved=0,failed=0;
-    for(const item of dirty){try{const r=await updateProductById(item.id,{price_mad:item.edited_price,in_stock:item.edited_in_stock,on_sale:item.edited_on_sale,discount_pct:item.edited_discount,description_fr:item.edited_description} as any);setProducts(prev=>prev.map(p=>p.id===item.id?{...p,...toEditable(r),isDirty:false,isSaving:false,saveStatus:"success"}:p));saved++;}catch{failed++;}}
+    setPublishing(true);
+    const results=await Promise.allSettled(
+      dirty.map(item=>
+        updateProductById(item.id,{price_mad:item.edited_price,in_stock:item.edited_in_stock,on_sale:item.edited_on_sale,discount_pct:item.edited_discount,description_fr:item.edited_description} as any)
+          .then(r=>({id:item.id,r}))
+      )
+    );
+    const saved=results.filter(res=>res.status==="fulfilled").length;
+    const failed=results.filter(res=>res.status==="rejected").length;
+    const updates=new Map(
+      (results.filter(res=>res.status==="fulfilled") as PromiseFulfilledResult<{id:string;r:any}>[])
+        .map(res=>[res.value.id,toEditable(res.value.r)])
+    );
+    if(updates.size>0)setProducts(prev=>prev.map(p=>updates.has(p.id)?{...p,...updates.get(p.id),isDirty:false,isSaving:false,saveStatus:"success"}:p));
     setPublishing(false);
     if(failed===0)showToast("\u2705 "+saved+L.toast_saved,"success");else showToast("\u26a0\ufe0f "+saved+L.toast_partial+" "+failed+L.toast_failed,"error");
     setTimeout(()=>setProducts(prev=>prev.map(p=>({...p,saveStatus:"idle"}))),3500);

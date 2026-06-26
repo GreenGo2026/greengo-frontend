@@ -1,6 +1,6 @@
 ﻿// src/services/api.ts
 import axios from "axios";
-import { getJwt, clearJwt } from "./adminJwt";
+import { getJwt } from "./adminJwt";
 
 const _rawBase = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
@@ -20,15 +20,12 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto-logout on 401 (expired/invalid JWT)
+// Propagate errors — callers handle 401 explicitly at the page level.
+// Do NOT call clearJwt() here: a single 401 mid-loop would wipe auth
+// for every remaining request in bulk operations like handlePublishAll.
 apiClient.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (err?.response?.status === 401) {
-      clearJwt();
-    }
-    return Promise.reject(err);
-  },
+  (err) => Promise.reject(err),
 );
 
 export interface Product {
