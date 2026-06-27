@@ -1,4 +1,4 @@
-// src/pages/HomePage.tsx
+﻿// src/pages/HomePage.tsx
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import {
   ShoppingCart, Plus, Minus, Loader2, RefreshCw,
@@ -12,7 +12,7 @@ import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
 
-// ── Niche category definitions ───────────────────────────────────────────────
+// â”€â”€ Niche category definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type NicheKey = "all" | "Fruits" | "Vegetables" | "Whole Chicken" | "Chicken Cuts";
 
 interface NicheCategory {
@@ -24,7 +24,7 @@ interface NicheCategory {
   db_match: string[];
 }
 
-// Resolve image URL — prepend API base for relative /static/ paths
+// Resolve image URL â€” prepend API base for relative /static/ paths
 const _API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 function resolveImg(url: string | null | undefined): string {
   if (!url || url.trim() === "") return "";
@@ -36,73 +36,73 @@ function resolveImg(url: string | null | undefined): string {
 const NICHE_CATS: NicheCategory[] = [
   {
     key: "all",
-    emoji: "✨",
+    emoji: "âœ¨",
     label_fr: "Tous les produits",
-    label_ar: "كل المنتجات",
+    label_ar: "ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
     label_en: "All",
     db_match: [],
   },
   {
     key: "Fruits",
-    emoji: "🍎",
+    emoji: "ðŸŽ",
     label_fr: "Fruits",
-    label_ar: "فواكه",
+    label_ar: "ÙÙˆØ§ÙƒÙ‡",
     label_en: "Fruits",
     db_match: ["Fruits", "fruits", "fruit"],
   },
   {
     key: "Vegetables",
-    emoji: "🥕",
-    label_fr: "Légumes",
-    label_ar: "خضروات",
+    emoji: "ðŸ¥•",
+    label_fr: "LÃ©gumes",
+    label_ar: "Ø®Ø¶Ø±ÙˆØ§Øª",
     label_en: "Vegetables",
     db_match: ["Vegetables", "vegetables", "Purified Greens", "purified greens"],
   },
   {
     key: "White Meats",
-    emoji: "🍗",
+    emoji: "ðŸ—",
     label_fr: "Viandes",
-    label_ar: "اللحوم",
+    label_ar: "Ø§Ù„Ù„Ø­ÙˆÙ…",
     label_en: "White Meats",
     db_match: ["White Meats", "white meats", "Whole Chicken", "Chicken Cuts"],
   },
   {
     key: "Eggs",
-    emoji: "🥚",
+    emoji: "ðŸ¥š",
     label_fr: "Oeufs",
-    label_ar: "بيض",
+    label_ar: "Ø¨ÙŠØ¶",
     label_en: "Eggs",
     db_match: ["Eggs", "eggs"],
   },
   {
     key: "Natural Juices",
-    emoji: "🧃",
+    emoji: "ðŸ§ƒ",
     label_fr: "Jus naturels",
-    label_ar: "العصائر الطبيعية",
+    label_ar: "Ø§Ù„Ø¹ØµØ§Ø¦Ø± Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©",
     label_en: "Natural Juices",
     db_match: ["Natural Juices", "Juices", "juices"],
   },
   {
     key: "Olives",
-    emoji: "🫒",
+    emoji: "ðŸ«’",
     label_fr: "Olives",
-    label_ar: "زيتون",
+    label_ar: "Ø²ÙŠØªÙˆÙ†",
     label_en: "Olives",
     db_match: ["Olives", "olives"],
   },
   {
     key: "Epices",
-    emoji: "🧂",
+    emoji: "ðŸ§‚",
     label_fr: "Epices",
-    label_ar: "توابل",
+    label_ar: "ØªÙˆØ§Ø¨Ù„",
     label_en: "Spices",
     db_match: ["Epices", "Spices", "epices", "spices"],
   },
   {
     key: "Mixed Packs",
-    emoji: "🛒",
+    emoji: "ðŸ›’",
     label_fr: "Paniers mixtes",
-    label_ar: "باقات الخضار والفواكه مخلطة",
+    label_ar: "Ø¨Ø§Ù‚Ø§Øª Ø§Ù„Ø®Ø¶Ø§Ø± ÙˆØ§Ù„ÙÙˆØ§ÙƒÙ‡ Ù…Ø®Ù„Ø·Ø©",
     label_en: "Mixed Packs",
     db_match: ["Mixed Packs", "Mixed Fruit & Veggie Packs", "mixed packs"],
   },
@@ -114,20 +114,20 @@ function catLabel(cat: NicheCategory, lang: string): string {
   return cat.label_en;
 }
 
-// ── Category visual metadata ─────────────────────────────────────────────────
+// â”€â”€ Category visual metadata â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CAT_META: Record<string, { emoji: string; bg: string; text: string; border: string }> = {
-  Fruits:              { emoji: "🍎", bg: "bg-orange-50",  text: "text-orange-600",  border: "border-orange-100" },
-  Vegetables:          { emoji: "🥕", bg: "bg-green-50",   text: "text-green-700",   border: "border-green-100"  },
-  "Purified Greens":   { emoji: "🥗", bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100"},
-  "White Meats":       { emoji: "🍗", bg: "bg-rose-50",    text: "text-rose-600",    border: "border-rose-100"   },
-  "Whole Chicken":     { emoji: "🍗", bg: "bg-rose-50",    text: "text-rose-600",    border: "border-rose-100"   },
-  "Chicken Cuts":      { emoji: "🥩", bg: "bg-red-50",     text: "text-red-600",     border: "border-red-100"    },
-  Eggs:                { emoji: "🥚", bg: "bg-yellow-50",  text: "text-yellow-700",  border: "border-yellow-100" },
-  "Natural Juices":    { emoji: "🧃", bg: "bg-cyan-50",    text: "text-cyan-700",    border: "border-cyan-100"   },
-  "Olives":          { emoji: "🫒", bg: "bg-lime-50",    text: "text-lime-700",   border: "border-lime-100"   },
-  "Epices":          { emoji: "🧂", bg: "bg-orange-50",  text: "text-orange-700", border: "border-orange-100" },
-  "Mixed Packs":       { emoji: "🛒", bg: "bg-purple-50",  text: "text-purple-700",  border: "border-purple-100" },
-  Other:               { emoji: "🛒", bg: "bg-gray-50",    text: "text-gray-600",    border: "border-gray-100"   },
+  Fruits:              { emoji: "ðŸŽ", bg: "bg-orange-50",  text: "text-orange-600",  border: "border-orange-100" },
+  Vegetables:          { emoji: "ðŸ¥•", bg: "bg-green-50",   text: "text-green-700",   border: "border-green-100"  },
+  "Purified Greens":   { emoji: "ðŸ¥—", bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100"},
+  "White Meats":       { emoji: "ðŸ—", bg: "bg-rose-50",    text: "text-rose-600",    border: "border-rose-100"   },
+  "Whole Chicken":     { emoji: "ðŸ—", bg: "bg-rose-50",    text: "text-rose-600",    border: "border-rose-100"   },
+  "Chicken Cuts":      { emoji: "ðŸ¥©", bg: "bg-red-50",     text: "text-red-600",     border: "border-red-100"    },
+  Eggs:                { emoji: "ðŸ¥š", bg: "bg-yellow-50",  text: "text-yellow-700",  border: "border-yellow-100" },
+  "Natural Juices":    { emoji: "ðŸ§ƒ", bg: "bg-cyan-50",    text: "text-cyan-700",    border: "border-cyan-100"   },
+  "Olives":          { emoji: "ðŸ«’", bg: "bg-lime-50",    text: "text-lime-700",   border: "border-lime-100"   },
+  "Epices":          { emoji: "ðŸ§‚", bg: "bg-orange-50",  text: "text-orange-700", border: "border-orange-100" },
+  "Mixed Packs":       { emoji: "ðŸ›’", bg: "bg-purple-50",  text: "text-purple-700",  border: "border-purple-100" },
+  Other:               { emoji: "ðŸ›’", bg: "bg-gray-50",    text: "text-gray-600",    border: "border-gray-100"   },
 };
 
 function getCatMeta(category: string) {
@@ -135,9 +135,9 @@ function getCatMeta(category: string) {
 }
 
 // Fresh-produce categories that show the Morocco origin badge
-const FRESH_CATS = ["Fruits", "Vegetables", "fruits", "vegetables", "Légumes", "légumes"];
+const FRESH_CATS = ["Fruits", "Vegetables", "fruits", "vegetables", "LÃ©gumes", "lÃ©gumes"];
 
-// ── Sort options ──────────────────────────────────────────────────────────────
+// â”€â”€ Sort options â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type SortKey = "default" | "price_asc" | "price_desc" | "name_az";
 
 interface SortOption {
@@ -148,10 +148,10 @@ interface SortOption {
 }
 
 const SORT_OPTIONS: SortOption[] = [
-  { key: "default",   label_fr: "Par défaut",      label_ar: "افتراضي",           label_en: "Default"           },
-  { key: "price_asc", label_fr: "Prix croissant",  label_ar: "سعر تصاعدي",        label_en: "Price: Low → High" },
-  { key: "price_desc",label_fr: "Prix décroissant",label_ar: "سعر تنازلي",        label_en: "Price: High → Low" },
-  { key: "name_az",   label_fr: "Nom A → Z",       label_ar: "الاسم أ → ي",       label_en: "Name A → Z"        },
+  { key: "default",   label_fr: "Par dÃ©faut",      label_ar: "Ø§ÙØªØ±Ø§Ø¶ÙŠ",           label_en: "Default"           },
+  { key: "price_asc", label_fr: "Prix croissant",  label_ar: "Ø³Ø¹Ø± ØªØµØ§Ø¹Ø¯ÙŠ",        label_en: "Price: Low â†’ High" },
+  { key: "price_desc",label_fr: "Prix dÃ©croissant",label_ar: "Ø³Ø¹Ø± ØªÙ†Ø§Ø²Ù„ÙŠ",        label_en: "Price: High â†’ Low" },
+  { key: "name_az",   label_fr: "Nom A â†’ Z",       label_ar: "Ø§Ù„Ø§Ø³Ù… Ø£ â†’ ÙŠ",       label_en: "Name A â†’ Z"        },
 ];
 
 function sortLabel(opt: SortOption, lang: string): string {
@@ -160,7 +160,7 @@ function sortLabel(opt: SortOption, lang: string): string {
   return opt.label_en;
 }
 
-// ── QtyControl ────────────────────────────────────────────────────────────────
+// â”€â”€ QtyControl â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function QtyControl({ product }: { product: DBProduct }) {
   const cart       = useCartStore((s) => s.cart);
   const add        = useCartStore((s) => s.addToCart);
@@ -173,15 +173,16 @@ function QtyControl({ product }: { product: DBProduct }) {
     price_per_unit: product.price_mad,
     unit:           product.unit,
     available:      product.in_stock,
+    step:           (product as any).step,
   };
-  const step = getUnitStep(product.unit);
+  const step = getUnitStep(proxy.unit, proxy);
   const item = cart.find((i) => i.name === product.name_ar);
   const qty  = item?.cartQuantity ?? 0;
 
   if (!product.in_stock) {
     return (
       <div className={"flex h-10 w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-xs font-semibold text-gray-400 " + font}>
-        {language === "ar" ? "غير متوفر" : language === "fr" ? "Épuisé" : "Out of stock"}
+        {language === "ar" ? "ØºÙŠØ± Ù…ØªÙˆÙØ±" : language === "fr" ? "Ã‰puisÃ©" : "Out of stock"}
       </div>
     );
   }
@@ -193,7 +194,7 @@ function QtyControl({ product }: { product: DBProduct }) {
         aria-label="Ajouter au panier"
         className={"group flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] text-xs font-extrabold text-white shadow-md shadow-[#2E8B57]/20 transition-all duration-200 hover:bg-[#1F6B40] hover:shadow-lg hover:shadow-[#2E8B57]/25 active:scale-[0.97] " + font}>
         <ShoppingCart size={14} strokeWidth={2.5} className="transition-transform group-hover:-rotate-6" />
-        {language === "ar" ? "أضف للسلة" : language === "fr" ? "Ajouter" : "Add to cart"}
+        {language === "ar" ? "Ø£Ø¶Ù Ù„Ù„Ø³Ù„Ø©" : language === "fr" ? "Ajouter" : "Add to cart"}
       </button>
     );
   }
@@ -202,7 +203,7 @@ function QtyControl({ product }: { product: DBProduct }) {
     <div className="flex h-10 items-center overflow-hidden rounded-xl border-2 border-[#2E8B57]/25 bg-[#2E8B57]/6">
       <button
         onClick={() => remove(product.name_ar, step)}
-        aria-label="Réduire la quantité"
+        aria-label="RÃ©duire la quantitÃ©"
         className="flex h-full w-10 shrink-0 items-center justify-center text-[#2E8B57] transition-colors hover:bg-[#2E8B57]/12 active:scale-90">
         <Minus size={14} strokeWidth={2.5} />
       </button>
@@ -211,7 +212,7 @@ function QtyControl({ product }: { product: DBProduct }) {
       </span>
       <button
         onClick={() => add(proxy, step)}
-        aria-label="Augmenter la quantité"
+        aria-label="Augmenter la quantitÃ©"
         className="flex h-full w-10 shrink-0 items-center justify-center text-[#2E8B57] transition-colors hover:bg-[#2E8B57]/12 active:scale-90">
         <Plus size={14} strokeWidth={2.5} />
       </button>
@@ -219,7 +220,7 @@ function QtyControl({ product }: { product: DBProduct }) {
   );
 }
 
-// ── Magnifier hook ───────────────────────────────────────────────────────────
+// â”€â”€ Magnifier hook â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function useMagnifier(zoomFactor: number = 2.8) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [active, setActive] = useState(false);
@@ -239,7 +240,7 @@ function useMagnifier(zoomFactor: number = 2.8) {
   return { imgRef, active, setActive, pos, size, onMove, zoomFactor };
 }
 
-// ── Premium Gallery Modal ─────────────────────────────────────────────────────
+// â”€â”€ Premium Gallery Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ProductGalleryModal({
   product, onClose, onAddToCart, inCart,
 }: {
@@ -346,7 +347,7 @@ function ProductGalleryModal({
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/>
                     </svg>
-                    {language === "ar" ? "حرك للتكبير" : language === "fr" ? "Survolez pour zoomer" : "Hover to zoom"}
+                    {language === "ar" ? "Ø­Ø±Ùƒ Ù„Ù„ØªÙƒØ¨ÙŠØ±" : language === "fr" ? "Survolez pour zoomer" : "Hover to zoom"}
                   </div>
                 )}
               </div>
@@ -368,7 +369,7 @@ function ProductGalleryModal({
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
                   </svg>
-                  {language === "ar" ? "تكبير" : "Agrandir"}
+                  {language === "ar" ? "ØªÙƒØ¨ÙŠØ±" : "Agrandir"}
                 </div>
               </div>
             </>
@@ -388,11 +389,11 @@ function ProductGalleryModal({
             {product.in_stock ? (
               <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-[#2E8B57]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#2E8B57] animate-pulse shrink-0" />
-                {language === "ar" ? "متوفر" : language === "fr" ? "En stock" : "In stock"}
+                {language === "ar" ? "Ù…ØªÙˆÙØ±" : language === "fr" ? "En stock" : "In stock"}
               </span>
             ) : (
               <span className="rounded-full bg-gray-100 border border-gray-200 px-3 py-1 text-[11px] font-bold text-gray-400">
-                {language === "ar" ? "نفذ" : language === "fr" ? "Epuise" : "Out of stock"}
+                {language === "ar" ? "Ù†ÙØ°" : language === "fr" ? "Epuise" : "Out of stock"}
               </span>
             )}
           </div>
@@ -408,7 +409,7 @@ function ProductGalleryModal({
           </div>
           <div className="rounded-2xl bg-gradient-to-br from-[#f0f7f3] to-[#e8f4ec] border border-[#2E8B57]/12 px-4 py-3.5">
             <p className="text-[10px] text-[#2E8B57]/70 font-latin font-semibold mb-1 uppercase tracking-wide">
-              {language === "ar" ? "السعر" : language === "fr" ? "Prix" : "Price"}
+              {language === "ar" ? "Ø§Ù„Ø³Ø¹Ø±" : language === "fr" ? "Prix" : "Price"}
             </p>
             <div className="flex items-baseline gap-1.5">
               <span className="text-3xl font-extrabold text-[#1A6640] font-latin leading-none">
@@ -419,10 +420,10 @@ function ProductGalleryModal({
           </div>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { icon: "🌿", fr: "Produit frais",    ar: "منتج طازج",   en: "Fresh product"   },
-              { icon: "🛵", fr: "Livraison rapide", ar: "توصيل سريع",  en: "Fast delivery"   },
-              { icon: "🇲🇦", fr: "Origine Maroc",   ar: "من المغرب",   en: "From Morocco"    },
-              { icon: "✅", fr: "Qualite garantie", ar: "جودة مضمونة", en: "Quality assured" },
+              { icon: "ðŸŒ¿", fr: "Produit frais",    ar: "Ù…Ù†ØªØ¬ Ø·Ø§Ø²Ø¬",   en: "Fresh product"   },
+              { icon: "ðŸ›µ", fr: "Livraison rapide", ar: "ØªÙˆØµÙŠÙ„ Ø³Ø±ÙŠØ¹",  en: "Fast delivery"   },
+              { icon: "ðŸ‡²ðŸ‡¦", fr: "Origine Maroc",   ar: "Ù…Ù† Ø§Ù„Ù…ØºØ±Ø¨",   en: "From Morocco"    },
+              { icon: "âœ…", fr: "Qualite garantie", ar: "Ø¬ÙˆØ¯Ø© Ù…Ø¶Ù…ÙˆÙ†Ø©", en: "Quality assured" },
             ].map(f => (
               <div key={f.en} className="flex items-center gap-2 rounded-xl bg-white border border-gray-100 px-2.5 py-2">
                 <span className="text-sm leading-none">{f.icon}</span>
@@ -444,8 +445,8 @@ function ProductGalleryModal({
               <path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61h9.72a2 2 0 001.99-1.61L23 6H6"/>
             </svg>
             {inCart
-              ? (language === "ar" ? "اضافة مرة اخرى" : language === "fr" ? "Ajouter encore" : "Add again")
-              : (language === "ar" ? "اضف للسلة" : language === "fr" ? "Ajouter au panier" : "Add to cart")}
+              ? (language === "ar" ? "Ø§Ø¶Ø§ÙØ© Ù…Ø±Ø© Ø§Ø®Ø±Ù‰" : language === "fr" ? "Ajouter encore" : "Add again")
+              : (language === "ar" ? "Ø§Ø¶Ù Ù„Ù„Ø³Ù„Ø©" : language === "fr" ? "Ajouter au panier" : "Add to cart")}
           </button>
         </div>
       </div>
@@ -477,21 +478,21 @@ function ProductGalleryModal({
   );
 }
 
-// ── Product Card ──────────────────────────────────────────────────────────────
-// ── Product Card ──────────────────────────────────────────────────────────────
+// â”€â”€ Product Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Product Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
   const { language } = useLanguage();
   const font    = language === "ar" ? "font-arabic" : "font-latin";
   const meta    = getCatMeta(product.category);
   const isFresh = FRESH_CATS.some((c) => product.category?.toLowerCase() === c.toLowerCase());
-  const name    = product.name_ar || product.name_fr || "—";
+  const name    = product.name_ar || product.name_fr || "â€”";
   const isTop3  = rank < 3;
   const [showModal, setShowModal] = useState(false);
   const [imgError,  setImgError]  = useState(false);
   const add    = useCartStore((s) => s.addToCart);
   const cart   = useCartStore((s) => s.cart);
-  const step   = getUnitStep(product.unit);
-  const proxy  = { name: product.name_ar, price_per_unit: product.price_mad, unit: product.unit, available: product.in_stock };
+  const step   = getUnitStep(proxy.unit, proxy);
+  const proxy  = { name: product.name_ar, price_per_unit: product.price_mad, unit: product.unit, available: product.in_stock, step: (product as any).step };
   const inCart = !!cart.find((i) => i.name === product.name_ar);
 
   return (
@@ -527,7 +528,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/>
                 </svg>
-                {language === "ar" ? "عرض سريع" : language === "fr" ? "Aperçu" : "Quick view"}
+                {language === "ar" ? "Ø¹Ø±Ø¶ Ø³Ø±ÙŠØ¹" : language === "fr" ? "AperÃ§u" : "Quick view"}
               </div>
             </div>
           )}
@@ -541,11 +542,11 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
             {product.in_stock ? (
               <span className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-[#2E8B57] shadow-sm backdrop-blur-sm border border-[#2E8B57]/12">
                 <CheckCircle2 size={9} className="shrink-0" />
-                {language === "ar" ? "متوفر" : language === "fr" ? "Dispo" : "In stock"}
+                {language === "ar" ? "Ù…ØªÙˆÙØ±" : language === "fr" ? "Dispo" : "In stock"}
               </span>
             ) : (
               <span className="rounded-full bg-gray-900/55 px-2.5 py-1 text-[10px] font-bold text-white/85 backdrop-blur-sm">
-                {language === "ar" ? "نفذ" : "Out"}
+                {language === "ar" ? "Ù†ÙØ°" : "Out"}
               </span>
             )}
           </div>
@@ -557,7 +558,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
           {isFresh && (
             <div className="absolute bottom-2.5 right-2.5 z-20">
               <span className="flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-bold text-gray-700 backdrop-blur-sm border border-white/50">
-                🇲🇦 <span className="font-latin">Maroc</span>
+                ðŸ‡²ðŸ‡¦ <span className="font-latin">Maroc</span>
               </span>
             </div>
           )}
@@ -584,14 +585,14 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
                 <span className="text-xs font-semibold text-gray-400 font-latin ml-0.5">MAD</span>
               </div>
               <p className={"text-[10px] text-gray-400 font-latin mt-0.5 " + font}>
-                {language === "ar" ? "لكل " : language === "fr" ? "par " : "per "}{product.unit || "kg"}
+                {language === "ar" ? "Ù„ÙƒÙ„ " : language === "fr" ? "par " : "per "}{product.unit || "kg"}
               </p>
             </div>
             {isFresh && (
               <div className="flex items-center gap-1 rounded-xl bg-emerald-50 border border-emerald-100 px-2 py-1">
                 <Leaf size={9} className="text-[#2E8B57] shrink-0" />
                 <span className={"text-[10px] font-bold text-[#2E8B57] " + font}>
-                  {language === "ar" ? "طازج" : language === "fr" ? "Frais" : "Fresh"}
+                  {language === "ar" ? "Ø·Ø§Ø²Ø¬" : language === "fr" ? "Frais" : "Fresh"}
                 </span>
               </div>
             )}
@@ -613,7 +614,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
   );
 }
 
-// ── Skeleton card ─────────────────────────────────────────────────────────────
+// â”€â”€ Skeleton card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SkeletonCard() {
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-sm">
@@ -628,31 +629,31 @@ function SkeletonCard() {
   );
 }
 
-// ── Empty state ───────────────────────────────────────────────────────────────
+// â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function EmptyState({ onReset, lang }: { onReset: () => void; lang: string }) {
   const font = lang === "ar" ? "font-arabic" : "font-latin";
   return (
     <div className={"flex flex-col items-center gap-4 py-24 text-center " + font}>
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-4xl">
-        🔍
+        ðŸ”
       </div>
       <div>
         <p className="text-lg font-bold text-gray-700">
-          {lang === "ar" ? "لا توجد منتجات" : lang === "fr" ? "Aucun produit trouvé" : "No products found"}
+          {lang === "ar" ? "Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†ØªØ¬Ø§Øª" : lang === "fr" ? "Aucun produit trouvÃ©" : "No products found"}
         </p>
         <p className="mt-1 text-sm text-gray-400">
-          {lang === "ar" ? "جرب تصنيفاً آخر أو ابحث بكلمة مختلفة" : lang === "fr" ? "Essayez une autre catégorie ou recherche" : "Try a different category or search term"}
+          {lang === "ar" ? "Ø¬Ø±Ø¨ ØªØµÙ†ÙŠÙØ§Ù‹ Ø¢Ø®Ø± Ø£Ùˆ Ø§Ø¨Ø­Ø« Ø¨ÙƒÙ„Ù…Ø© Ù…Ø®ØªÙ„ÙØ©" : lang === "fr" ? "Essayez une autre catÃ©gorie ou recherche" : "Try a different category or search term"}
         </p>
       </div>
       <button onClick={onReset}
         className={"mt-1 rounded-xl bg-[#2E8B57] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#1F6B40] " + font}>
-        {lang === "ar" ? "عرض الكل" : lang === "fr" ? "Voir tout" : "Show all"}
+        {lang === "ar" ? "Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„" : lang === "fr" ? "Voir tout" : "Show all"}
       </button>
     </div>
   );
 }
 
-// ── HomePage ──────────────────────────────────────────────────────────────────
+// â”€â”€ HomePage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function HomePage() {
   const { language, isRTL } = useLanguage();
   const font = language === "ar" ? "font-arabic" : "font-latin";
@@ -682,7 +683,7 @@ export default function HomePage() {
     } catch {
       setError(
         language === "ar"
-          ? "تعذّر تحميل المنتجات. هل الخادم يعمل؟"
+          ? "ØªØ¹Ø°Ù‘Ø± ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª. Ù‡Ù„ Ø§Ù„Ø®Ø§Ø¯Ù… ÙŠØ¹Ù…Ù„ØŸ"
           : language === "fr"
           ? "Impossible de charger les produits. Le serveur est-il actif ?"
           : "Could not load products. Is the server running?"
@@ -717,7 +718,7 @@ export default function HomePage() {
       );
     }
 
-    // Sort — always in-stock first
+    // Sort â€” always in-stock first
     list.sort((a, b) => (b.in_stock ? 1 : 0) - (a.in_stock ? 1 : 0));
     if (sortKey === "price_asc")  list.sort((a, b) => (b.in_stock === a.in_stock ? a.price_mad - b.price_mad : (b.in_stock ? 1 : -1)));
     if (sortKey === "price_desc") list.sort((a, b) => (b.in_stock === a.in_stock ? b.price_mad - a.price_mad : (b.in_stock ? 1 : -1)));
@@ -737,7 +738,7 @@ export default function HomePage() {
   return (
     <div className={"min-h-screen " + font} style={{ background: "var(--gg-dark)" }}>
 
-      {/* ── Page hero strip ── */}
+      {/* â”€â”€ Page hero strip â”€â”€ */}
       <div className="gg-hero relative overflow-hidden">
         <div className="absolute inset-0 zellige-bg-light opacity-12 pointer-events-none" />
         <div className="mx-auto max-w-7xl px-5 pt-4 pb-8 md:py-10" dir={dir}>
@@ -745,16 +746,16 @@ export default function HomePage() {
             <div className={"inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 mb-3 " + (isRTL ? "flex-row-reverse" : "")}>
               <Flame size={12} className="text-[#FF9800]" />
               <span className={"text-[10px] font-bold uppercase tracking-widest text-[#FF9800]/80 " + font}>
-                {language === "ar" ? "طازج يومياً" : language === "fr" ? "Frais chaque jour" : "Fresh every day"}
+                {language === "ar" ? "Ø·Ø§Ø²Ø¬ ÙŠÙˆÙ…ÙŠØ§Ù‹" : language === "fr" ? "Frais chaque jour" : "Fresh every day"}
               </span>
             </div>
             <h1 className={"text-2xl md:text-4xl font-black text-white " + font} style={{ letterSpacing: "-0.03em", fontFamily: language !== "ar" ? "var(--font-display)" : undefined }}>
-              {language === "ar" ? "تسوّق المنتجات الطازجة" : language === "fr" ? "Nos Produits Frais" : "Fresh Product Catalog"}
+              {language === "ar" ? "ØªØ³ÙˆÙ‘Ù‚ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø·Ø§Ø²Ø¬Ø©" : language === "fr" ? "Nos Produits Frais" : "Fresh Product Catalog"}
             </h1>
             <p className={"mt-1.5 text-sm text-white/50 " + font}>
               {loading
-                ? (language === "ar" ? "جارٍ التحميل…" : "Chargement…")
-                : inStockCount + " " + (language === "ar" ? "منتج متاح للطلب" : language === "fr" ? "produits disponibles" : "products available")}
+                ? (language === "ar" ? "Ø¬Ø§Ø±Ù Ø§Ù„ØªØ­Ù…ÙŠÙ„â€¦" : "Chargementâ€¦")
+                : inStockCount + " " + (language === "ar" ? "Ù…Ù†ØªØ¬ Ù…ØªØ§Ø­ Ù„Ù„Ø·Ù„Ø¨" : language === "fr" ? "produits disponibles" : "products available")}
             </p>
           </div>
         </div>
@@ -764,7 +765,7 @@ export default function HomePage() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 space-y-5">
 
-        {/* ── Category pills ── */}
+        {/* â”€â”€ Category pills â”€â”€ */}
         <div className="relative">
           <div className={"flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide " + (isRTL ? "flex-row-reverse" : "")}>
             {NICHE_CATS.map((cat) => {
@@ -792,7 +793,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── Search + sort toolbar ── */}
+        {/* â”€â”€ Search + sort toolbar â”€â”€ */}
         <div className={"flex flex-wrap items-center gap-3 " + (isRTL ? "flex-row-reverse" : "")}>
 
           {/* Search */}
@@ -804,7 +805,7 @@ export default function HomePage() {
               value={searchInput}
                 onChange={(e) => handleSearchChange(e.target.value)}
               dir={dir}
-              placeholder={language === "ar" ? "ابحث عن منتج…" : language === "fr" ? "Rechercher un produit…" : "Search products…"}
+              placeholder={language === "ar" ? "Ø§Ø¨Ø­Ø« Ø¹Ù† Ù…Ù†ØªØ¬â€¦" : language === "fr" ? "Rechercher un produitâ€¦" : "Search productsâ€¦"}
               className={"w-full rounded-2xl border border-white/10 bg-white/8 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:bg-white/12 shadow-sm " + (isRTL ? "pr-10 pl-4" : "pl-10 pr-4") + " " + font}
             />
           </div>
@@ -840,12 +841,12 @@ export default function HomePage() {
             <button
               onClick={resetFilters}
               className={"flex items-center gap-1.5 rounded-2xl border border-[#2E8B57]/25 bg-[#2E8B57]/8 px-3.5 py-2.5 text-xs font-bold text-[#2E8B57] transition-all hover:bg-[#2E8B57]/15 " + font}>
-              ✕ {language === "ar" ? "إزالة الفلاتر" : language === "fr" ? "Effacer" : "Clear filters"}
+              âœ• {language === "ar" ? "Ø¥Ø²Ø§Ù„Ø© Ø§Ù„ÙÙ„Ø§ØªØ±" : language === "fr" ? "Effacer" : "Clear filters"}
             </button>
           )}
         </div>
 
-        {/* ── Error state ── */}
+        {/* â”€â”€ Error state â”€â”€ */}
         {error && !loading && (
           <div className={"flex flex-col items-center gap-4 rounded-2xl border border-red-100 bg-red-50 px-6 py-10 text-center " + font}>
             <AlertCircle size={32} className="text-red-400" />
@@ -854,32 +855,32 @@ export default function HomePage() {
               onClick={load}
               className={"flex items-center gap-2 rounded-xl bg-[#2E8B57] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#1F6B40] " + font}>
               <RefreshCw size={13} />
-              {language === "ar" ? "إعادة المحاولة" : language === "fr" ? "Réessayer" : "Retry"}
+              {language === "ar" ? "Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø©" : language === "fr" ? "RÃ©essayer" : "Retry"}
             </button>
           </div>
         )}
 
-        {/* ── Skeleton grid ── */}
+        {/* â”€â”€ Skeleton grid â”€â”€ */}
         {loading && (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         )}
 
-        {/* ── Empty state ── */}
+        {/* â”€â”€ Empty state â”€â”€ */}
         {!loading && !error && filtered.length === 0 && (
           <EmptyState onReset={resetFilters} lang={language} />
         )}
 
-        {/* ── Product grid ── */}
+        {/* â”€â”€ Product grid â”€â”€ */}
         {!loading && !error && filtered.length > 0 && (
           <>
             {/* Result count */}
             <p className={"text-xs text-emerald-400/70 " + font + " " + (isRTL ? "text-right" : "text-left")}>
-              {filtered.length} {language === "ar" ? "نتيجة" : language === "fr" ? "résultats" : "results"}
+              {filtered.length} {language === "ar" ? "Ù†ØªÙŠØ¬Ø©" : language === "fr" ? "rÃ©sultats" : "results"}
               {inStockCount < filtered.length && (
                 <span className="ml-1 text-[#2E8B57]">
-                  ({inStockCount} {language === "ar" ? "متاح" : language === "fr" ? "disponibles" : "in stock"})
+                  ({inStockCount} {language === "ar" ? "Ù…ØªØ§Ø­" : language === "fr" ? "disponibles" : "in stock"})
                 </span>
               )}
             </p>
@@ -892,14 +893,55 @@ export default function HomePage() {
           </>
         )}
 
+        {/* ── WhatsApp CTA ── */}
+        {!loading && !error && filtered.length > 0 && (
+          <div style={{
+            background: “linear-gradient(135deg, #0c3228 0%, #1a5c3a 100%)”,
+            padding: “48px 24px”,
+            textAlign: “center”,
+            borderRadius: “16px”,
+            margin: “8px 0”,
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>📱</div>
+            <h2 style={{ color: “#ffffff”, fontSize: “clamp(18px, 4vw, 26px)”, fontWeight: 800, marginBottom: 8 }}>
+              Commandez directement sur WhatsApp
+            </h2>
+            <p style={{ color: “#C9A96E”, fontSize: “clamp(13px, 3vw, 17px)”, fontWeight: 600, direction: “rtl”, marginBottom: 12 }}>
+              اطلب مباشرة عبر واتساب — سهل وسريع
+            </p>
+            <p style={{ color: “#e0f0e8”, fontSize: “clamp(12px, 2.5vw, 14px)”, maxWidth: 480, margin: “0 auto 24px”, lineHeight: 1.6 }}>
+              Envoyez-nous simplement votre liste de courses sur WhatsApp.
+              Pas besoin de créer un compte — rapide, simple et livré chez vous à Salé et Rabat.
+            </p>
+            <a
+              href={“https://wa.me/212664500789?text=” + encodeURIComponent(“Bonjour GreenGo Market, je voudrais commander :\n”)}
+              target=”_blank”
+              rel=”noopener noreferrer”
+              style={{
+                display: “inline-flex”, alignItems: “center”, gap: 8,
+                background: “#25D366”, color: “white”,
+                padding: “14px 28px”, borderRadius: 50,
+                fontWeight: 700, fontSize: 15,
+                textDecoration: “none”,
+                boxShadow: “0 4px 15px rgba(37,211,102,0.4)”,
+              }}
+            >
+              <span>💬</span> Commander sur WhatsApp
+            </a>
+            <p style={{ color: “#a0c4a8”, fontSize: 11, marginTop: 16 }}>
+              Livraison rapide · Produits frais · Paiement à la livraison
+            </p>
+          </div>
+        )}
+
         {/* ── Trust strip ── */}
         {!loading && !error && (
           <div className="grid grid-cols-2 gap-3 border-t border-gray-200 pt-6 sm:grid-cols-4">
             {[
-              { emoji: "🛵", label_fr: "Livraison rapide",     label_ar: "توصيل سريع",          label_en: "Fast delivery"       },
-              { emoji: "🌿", label_fr: "100% frais",           label_ar: "طازج 100%",            label_en: "100% fresh"          },
-              { emoji: "💬", label_fr: "Support WhatsApp",     label_ar: "دعم عبر واتساب",       label_en: "WhatsApp support"    },
-              { emoji: "🔒", label_fr: "Paiement sécurisé",    label_ar: "دفع آمن",              label_en: "Secure payment"      },
+              { emoji: "ðŸ›µ", label_fr: "Livraison rapide",     label_ar: "ØªÙˆØµÙŠÙ„ Ø³Ø±ÙŠØ¹",          label_en: "Fast delivery"       },
+              { emoji: "ðŸŒ¿", label_fr: "100% frais",           label_ar: "Ø·Ø§Ø²Ø¬ 100%",            label_en: "100% fresh"          },
+              { emoji: "ðŸ’¬", label_fr: "Support WhatsApp",     label_ar: "Ø¯Ø¹Ù… Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨",       label_en: "WhatsApp support"    },
+              { emoji: "ðŸ”’", label_fr: "Paiement sÃ©curisÃ©",    label_ar: "Ø¯ÙØ¹ Ø¢Ù…Ù†",              label_en: "Secure payment"      },
             ].map((item) => (
               <div key={item.label_en}
                 className={"flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/[0.04] p-3.5 transition-colors hover:border-green-700/25 hover:bg-white/[0.07] " + (isRTL ? "flex-row-reverse" : "")}>
@@ -916,3 +958,4 @@ export default function HomePage() {
     </div>
   );
 }
+

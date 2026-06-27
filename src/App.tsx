@@ -19,6 +19,7 @@ const AdminPage        = lazy(() => import("./pages/AdminPage"));
 const AdminOrders      = lazy(() => import("./pages/Admin/AdminOrders"));
 const POSPage          = lazy(() => import("./pages/Admin/POSPage"));
 const AddProductPage   = lazy(() => import("./pages/AddProductPage"));
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 const SuperAdminPage   = lazy(() => import("./pages/SuperAdminPage"));
 const AboutPage        = lazy(() => import("./pages/AboutPage"));
 const ContactPage      = lazy(() => import("./pages/ContactPage"));
@@ -196,7 +197,7 @@ export default function App() {
             <Route path="/gestion/super"  element={<SuperAdminPage />} />
             <Route path="/gestion/orders" element={<AdminOrders />}    />
             <Route path="/gestion/pos"    element={<POSPage />}        />
-            <Route path="/gestion/products/new" element={<AddProductPage />} />
+            <Route path="/gestion/products/new" element={<ProtectedAdminRoute><AddProductPage /></ProtectedAdminRoute>} />
             {/* All public-facing routes get the shell (Header + Footer) */}
             <Route path="/*" element={<PublicShell />} />
           </Routes>

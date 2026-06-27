@@ -1,9 +1,8 @@
 // src/pages/AddProductPage.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CheckCircle, XCircle, Loader2, ImageOff } from "lucide-react";
-import { createProduct, type CreateProductPayload } from "../services/api";
-import { isAdminLoggedIn } from "../services/adminJwt";
+import { ArrowLeft, CheckCircle, XCircle, Loader2, ImageOff, Sparkles } from "lucide-react";
+import { createProduct, apiClient, type CreateProductPayload } from "../services/api";
 
 const CATEGORIES = ["Fruits","Légumes","Volailles","Fromage","Olives","Huile et miel","Épices","Autres"] as const;
 const UNITS       = ["kg","piece","100g","botte","g"] as const;
@@ -49,25 +48,32 @@ function Toggle({ on, onChange, id }: { on: boolean; onChange: (v: boolean) => v
 
 export default function AddProductPage() {
   const [fields, setFields] = useState<Fields>(EMPTY);
-  const [status, setStatus] = useState<Status>("idle");
-  const [errMsg, setErrMsg] = useState("");
-
-  if (!isAdminLoggedIn()) {
-    return (
-      <div className="flex min-h-screen items-center justify-center" style={{ background: "#0a2318" }}>
-        <div className="text-center text-white">
-          <p className="text-lg font-bold mb-4">Session expirée.</p>
-          <Link to="/gestion" className="underline text-[#2E8B57]">Retour à la connexion</Link>
-        </div>
-      </div>
-    );
-  }
+  const [status, setStatus]   = useState<Status>("idle");
+  const [errMsg, setErrMsg]   = useState("");
+  const [genDesc, setGenDesc] = useState(false);
 
   function set<K extends keyof Fields>(k: K, v: Fields[K]) {
     setFields(prev => ({ ...prev, [k]: v }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function generateDescription() {
+    if (!fields.name_fr.trim()) { setErrMsg("Entrez d'abord le nom français."); return; }
+    setGenDesc(true);
+    setErrMsg("");
+    try {
+      const r = await apiClient.post<{ description_fr?: string }>("/admin/auth/generate-description", {
+        product_name: fields.name_fr.trim(),
+        category: fields.category,
+      });
+      if (r.data.description_fr) set("description_fr", r.data.description_fr);
+    } catch {
+      setErrMsg("Génération échouée — réessayez.");
+    } finally {
+      setGenDesc(false);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!fields.name_fr.trim()) { setErrMsg("Le nom français est requis."); return; }
     if (!fields.category)       { setErrMsg("La catégorie est requise.");   return; }
@@ -101,6 +107,8 @@ export default function AddProductPage() {
       setStatus("error");
     }
   }
+
+  const imageReady = fields.image_url.trim().length > 0;
 
   return (
     <div className="min-h-screen px-4 py-8 md:px-8" style={{ background: "#0a2318" }}>
@@ -227,7 +235,6 @@ export default function AddProductPage() {
               </div>
             </div>
 
-            {/* On sale toggle */}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-white font-medium">En promotion</p>
@@ -275,7 +282,19 @@ export default function AddProductPage() {
 
           {/* Description */}
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
-            <h2 className="text-sm font-bold text-white/60 uppercase tracking-widest">Description</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-white/60 uppercase tracking-widest">Description</h2>
+              <button
+                type="button"
+                onClick={generateDescription}
+                disabled={genDesc}
+                className="flex items-center gap-1.5 rounded-xl border border-[#2E8B57]/40 bg-[#2E8B57]/10 px-3 py-1.5 text-xs font-semibold text-[#2E8B57] hover:bg-[#2E8B57]/20 disabled:opacity-50 transition"
+              >
+                {genDesc
+                  ? <><Loader2 size={11} className="animate-spin" /> Génération…</>
+                  : <><Sparkles size={11} /> Générer ✨</>}
+              </button>
+            </div>
             <div>
               <label className={lbl} htmlFor="description_fr">Description (français, optionnel)</label>
               <textarea
@@ -303,6 +322,14 @@ export default function AddProductPage() {
                 value={fields.image_url}
                 onChange={e => set("image_url", e.target.value)}
               />
+            </div>
+
+            {/* Status badge */}
+            <div className="flex items-center gap-2">
+              <span className={`h-2 w-2 rounded-full ${imageReady ? "bg-[#2E8B57]" : "bg-amber-400"}`} />
+              <span className="text-xs text-white/50">
+                Statut image : {imageReady ? "✅ Prête" : "🟡 En attente"}
+              </span>
             </div>
 
             {/* Preview */}
