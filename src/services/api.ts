@@ -241,3 +241,24 @@ export async function getRelatedProducts(category: string, excludeId: string): P
   }
 }
 
+
+
+export interface CreateProductPayload {
+  name_fr:       string;
+  name_ar?:      string;
+  category:      string;
+  price_mad:     number;
+  unit:          string;
+  in_stock:      boolean;
+  description_fr?: string;
+  on_sale:       boolean;
+  discount_pct:  number;
+  image_url?:    string;
+  step?:         number;
+  visible:       boolean;
+}
+
+export async function createProduct(payload: CreateProductPayload): Promise<DBProduct> {
+  const r = await apiClient.post<DBProduct>("/products", payload);
+  return r.data;
+}
