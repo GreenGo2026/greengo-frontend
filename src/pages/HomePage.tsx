@@ -763,9 +763,39 @@ export default function HomePage() {
       </div>
       <SocialProofStrip />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 space-y-5">
+      <div className=”mx-auto max-w-7xl px-4 py-6 space-y-5”>
 
-        {/* â”€â”€ Category pills â”€â”€ */}
+        {/* ── WhatsApp CTA banner ── */}
+        <div style={{
+          background: “#25D366”,
+          padding: “16px 24px”,
+          display: “flex”,
+          alignItems: “center”,
+          justifyContent: “center”,
+          gap: 12,
+          flexWrap: “wrap”,
+          borderRadius: 12,
+          boxShadow: “0 4px 20px rgba(37,211,102,0.3)”,
+        }}>
+          <span style={{ color: “white”, fontWeight: 700, fontSize: “clamp(13px, 3vw, 17px)” }}>
+            📱 Commandez directement sur WhatsApp — Rapide et simple!
+          </span>
+          <a
+            href=”https://wa.me/212664500789?text=Bonjour%20GreenGo%20Market%2C%20je%20voudrais%20commander%20%3A%0A”
+            target=”_blank”
+            rel=”noopener noreferrer”
+            style={{
+              background: “white”, color: “#25D366”,
+              padding: “10px 20px”, borderRadius: 50,
+              fontWeight: 800, fontSize: 14,
+              textDecoration: “none”, whiteSpace: “nowrap”,
+            }}
+          >
+            💬 Commander maintenant
+          </a>
+        </div>
+
+        {/* ── Category pills ── */}
         <div className="relative">
           <div className={"flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide " + (isRTL ? "flex-row-reverse" : "")}>
             {NICHE_CATS.map((cat) => {
@@ -891,47 +921,6 @@ export default function HomePage() {
               ))}
             </div>
           </>
-        )}
-
-        {/* ── WhatsApp CTA ── */}
-        {!loading && !error && filtered.length > 0 && (
-          <div style={{
-            background: “linear-gradient(135deg, #0c3228 0%, #1a5c3a 100%)”,
-            padding: “48px 24px”,
-            textAlign: “center”,
-            borderRadius: “16px”,
-            margin: “8px 0”,
-          }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>📱</div>
-            <h2 style={{ color: “#ffffff”, fontSize: “clamp(18px, 4vw, 26px)”, fontWeight: 800, marginBottom: 8 }}>
-              Commandez directement sur WhatsApp
-            </h2>
-            <p style={{ color: “#C9A96E”, fontSize: “clamp(13px, 3vw, 17px)”, fontWeight: 600, direction: “rtl”, marginBottom: 12 }}>
-              اطلب مباشرة عبر واتساب — سهل وسريع
-            </p>
-            <p style={{ color: “#e0f0e8”, fontSize: “clamp(12px, 2.5vw, 14px)”, maxWidth: 480, margin: “0 auto 24px”, lineHeight: 1.6 }}>
-              Envoyez-nous simplement votre liste de courses sur WhatsApp.
-              Pas besoin de créer un compte — rapide, simple et livré chez vous à Salé et Rabat.
-            </p>
-            <a
-              href={“https://wa.me/212664500789?text=” + encodeURIComponent(“Bonjour GreenGo Market, je voudrais commander :\n”)}
-              target=”_blank”
-              rel=”noopener noreferrer”
-              style={{
-                display: “inline-flex”, alignItems: “center”, gap: 8,
-                background: “#25D366”, color: “white”,
-                padding: “14px 28px”, borderRadius: 50,
-                fontWeight: 700, fontSize: 15,
-                textDecoration: “none”,
-                boxShadow: “0 4px 15px rgba(37,211,102,0.4)”,
-              }}
-            >
-              <span>💬</span> Commander sur WhatsApp
-            </a>
-            <p style={{ color: “#a0c4a8”, fontSize: 11, marginTop: 16 }}>
-              Livraison rapide · Produits frais · Paiement à la livraison
-            </p>
-          </div>
         )}
 
         {/* ── Trust strip ── */}

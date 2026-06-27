@@ -57,7 +57,12 @@ export async function loginAdmin(
       body:        JSON.stringify({ password, totp_code: totpCode }),
     });
     if (res.ok) {
+      const data = await res.json().catch(() => ({})) as { access_token?: string };
       sessionStorage.setItem(LOGGED_IN_KEY, "1");
+      // Store JWT so apiClient can send Bearer token for admin API calls
+      if (data.access_token) {
+        sessionStorage.setItem(LEGACY_JWT_KEY, data.access_token);
+      }
       return { ok: true };
     }
     const err = await res.json().catch(() => ({})) as { detail?: string };
