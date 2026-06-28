@@ -309,7 +309,7 @@ export default function MenuPage() {
             </div>
             <div className="w-px h-8 bg-white/15" />
             <div className="text-center">
-              <p className="text-white font-black text-xl font-latin leading-none">2h</p>
+              <p className="text-white font-black text-xl font-latin leading-none">30 min</p>
               <p className="text-white/50 text-[9px] uppercase tracking-widest mt-0.5">
                 {l === "fr" ? "Livraison" : l === "ar" ? "توصيل" : "Delivery"}
               </p>
@@ -456,7 +456,7 @@ export default function MenuPage() {
           {l === "ar" ? "اطلب الآن عبر واتساب" : l === "fr" ? "Commander via WhatsApp" : "Order via WhatsApp"}
         </a>
         <p className="text-center text-[9px] text-gray-400 mt-1.5 font-latin">
-          Laayayda, Salé · Livraison 2h · 8h–20h
+          Laayayda, Salé · Livraison 30 min · 8h–20h
         </p>
       </div>
 

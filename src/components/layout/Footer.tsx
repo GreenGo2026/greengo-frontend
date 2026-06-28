@@ -162,7 +162,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
           {[
             { emoji: "🌿", fr: "Frais chaque matin",      ar: "طازج كل صباح"       },
-            { emoji: "🛵", fr: "Livraison 2h",             ar: "توصيل خلال ساعتين"  },
+            { emoji: "🛵", fr: "Livraison 30 min",          ar: "توصيل في 30 دقيقة"  },
             { emoji: "✅", fr: "Qualité garantie",         ar: "جودة مضمونة"        },
             { emoji: "💬", fr: "Support WhatsApp",         ar: "دعم عبر واتساب"     },
           ].map((item) => (

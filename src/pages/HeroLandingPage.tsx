@@ -331,7 +331,7 @@ export default function HeroLandingPage() {
               letterSpacing: "0.14em", textTransform: "uppercase",
               color: "#e8c98a",
             }}>
-              Salé & Rabat · Livraison en 2h
+              Salé & Rabat · Livraison en 30 min
             </span>
           </div>
 
@@ -375,14 +375,14 @@ export default function HeroLandingPage() {
             marginBottom: "2.5rem",
           }}>
             Fruits, légumes, viandes fraîches et herbes aromatiques —
-            sélectionnés chaque matin, livrés en moins de 2h à Salé et Rabat.
+            sélectionnés chaque matin, livrés en 30 minutes à Salé et Rabat.
           </p>
 
           {/* Delivery zone trust strip */}
           <div className="r3 flex items-center justify-center gap-4 mb-6 flex-wrap">
             {[
               { icon: "📍", text: "Salé & Rabat" },
-              { icon: "⚡", text: "Livraison 2h" },
+              { icon: "⚡", text: "Livraison 30 min" },
               { icon: "✅", text: "Fraîcheur garantie" },
             ].map((item, i) => (
               <div key={i} className="feat-pill flex items-center gap-1.5">

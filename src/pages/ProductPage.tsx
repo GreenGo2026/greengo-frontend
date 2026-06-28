@@ -38,12 +38,12 @@ function generateDescription(p: DBProduct, l: string): string {
     : unit === "bundle" || unit === "botte" ? (l === "fr" ? "\u00e0 la botte" : l === "ar" ? "\u0628\u0627\u0644\u0631\u0628\u0637\u0629" : "per bunch")
     : `par ${p.unit}`;
   if (l === "ar") {
-    return `${name} \u0637\u0627\u0632\u062c\u0629 \u0645\u0646 ${catLbl} \u2014 \u0645\u062e\u062a\u0627\u0631\u0629 \u0628\u0639\u0646\u0627\u064a\u0629 \u0643\u0644 \u0635\u0628\u0627\u062d \u0645\u0646 \u0623\u0633\u0648\u0627\u0642 \u0627\u0644\u062c\u0645\u0644\u0629. \u062a\u0648\u0635\u064a\u0644 \u0633\u0631\u064a\u0639 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637 \u062e\u0644\u0627\u0644 \u0633\u0627\u0639\u062a\u064a\u0646. \u062c\u0648\u062f\u0629 \u0645\u0636\u0645\u0648\u0646\u0629.`;
+    return `${name} \u0637\u0627\u0632\u062c\u0629 \u0645\u0646 ${catLbl} \u2014 \u0645\u062e\u062a\u0627\u0631\u0629 \u0628\u0639\u0646\u0627\u064a\u0629 \u0643\u0644 \u0635\u0628\u0627\u062d \u0645\u0646 \u0623\u0633\u0648\u0627\u0642 \u0627\u0644\u062c\u0645\u0644\u0629. \u062a\u0648\u0635\u064a\u0644 \u0633\u0631\u064a\u0639 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637 \u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629. \u062c\u0648\u062f\u0629 \u0645\u0636\u0645\u0648\u0646\u0629.`;
   }
   if (l === "fr") {
-    return `${name} fra\u00eeche — ${catLbl} s\u00e9lectionn\u00e9(e) chaque matin sur les march\u00e9s de gros, vendu(e) ${unitLbl}. Livr\u00e9(e) \u00e0 domicile \u00e0 Sal\u00e9 et Rabat en moins de 2h. Qualit\u00e9 garantie par GreenGo Market.`;
+    return `${name} fra\u00eeche — ${catLbl} s\u00e9lectionn\u00e9(e) chaque matin sur les march\u00e9s de gros, vendu(e) ${unitLbl}. Livr\u00e9(e) \u00e0 domicile \u00e0 Sal\u00e9 et Rabat en 30 minutes. Qualit\u00e9 garantie par GreenGo Market.`;
   }
-  return `Fresh ${name} — ${catLbl} selected every morning from wholesale markets, sold ${unitLbl}. Home delivery in Sal\u00e9 & Rabat within 2 hours. Quality guaranteed by GreenGo Market.`;
+  return `Fresh ${name} — ${catLbl} selected every morning from wholesale markets, sold ${unitLbl}. Home delivery in Sal\u00e9 & Rabat in 30 minutes. Quality guaranteed by GreenGo Market.`;
 }
 
 // ── SEO head ──────────────────────────────────────────────────────────────────
@@ -338,7 +338,7 @@ export default function ProductPage() {
 
             {/* Trust badges */}
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <TrustBadge icon="\u26a1" text={l === "fr" ? "Livraison en 2h" : l === "ar" ? "\u062a\u0648\u0635\u064a\u0644 \u062e\u0644\u0627\u0644 \u0633\u0627\u0639\u062a\u064a\u0646" : "2h delivery"} />
+              <TrustBadge icon="\u26a1" text={l === "fr" ? "Livraison en 30 min" : l === "ar" ? "\u062a\u0648\u0635\u064a\u0644 \u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629" : "30 min delivery"} />
               <TrustBadge icon="\u2705" text={l === "fr" ? "Qualit\u00e9 garantie" : l === "ar" ? "\u062c\u0648\u062f\u0629 \u0645\u0636\u0645\u0648\u0646\u0629" : "Quality guaranteed"} />
               <TrustBadge icon="🌿" text={l === "fr" ? "Fra\u00eecheur du matin" : l === "ar" ? "\u0637\u0627\u0632\u062c\u0629 \u0645\u0646 \u0627\u0644\u0635\u0628\u0627\u062d" : "Morning fresh"} />
               <TrustBadge icon="\ud83d\udccd" text={l === "fr" ? "Sal\u00e9 & Rabat" : l === "ar" ? "\u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" : "Sal\u00e9 & Rabat"} />
@@ -361,7 +361,7 @@ export default function ProductPage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { icon: "\u26a1", title: l === "fr" ? "Livraison rapide" : "\u062a\u0648\u0635\u064a\u0644 \u0633\u0631\u064a\u0639", sub: l === "fr" ? "En moins de 2h \u00e0 Sal\u00e9 & Rabat" : "\u062e\u0644\u0627\u0644 \u0633\u0627\u0639\u062a\u064a\u0646 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" },
+              { icon: "\u26a1", title: l === "fr" ? "Livraison rapide" : "\u062a\u0648\u0635\u064a\u0644 \u0633\u0631\u064a\u0639", sub: l === "fr" ? "En 30 min \u00e0 Sal\u00e9 & Rabat" : "\u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" },
               { icon: "\ud83d\udcc5", title: l === "fr" ? "7j/7" : "\u064a\u0648\u0645\u064a\u0627\u064b", sub: l === "fr" ? "De 8h \u00e0 20h" : "\u0645\u0646 8\u0635 \u0625\u0644\u0649 20\u0635" },
               { icon: "\ud83d\udcac", title: l === "fr" ? "Support WhatsApp" : "\u062f\u0639\u0645 \u0648\u0627\u062a\u0633\u0627\u0628", sub: l === "fr" ? "+212 664 500 789" : "+212 664 500 789" },
             ].map((item, i) => (

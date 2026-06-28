@@ -40,7 +40,7 @@ export const LEGAL_PAGES: Record<string, Omit<LegalTemplateProps, "sections"> & 
       },
       {
         heading: "5. Livraison",
-        body: "La livraison est assurée dans les zones de Salé, Rabat et Témara, en moins de 2h, 7j/7 de 8h à 20h. Les frais de livraison varient selon la commande — consultez notre page /livraison.",
+        body: "La livraison est assurée dans les zones de Salé, Rabat et Témara, en 30 minutes, 7j/7 de 8h à 20h. Les frais de livraison varient selon la commande — consultez notre page /livraison.",
       },
       {
         heading: "6. Politique de retour",

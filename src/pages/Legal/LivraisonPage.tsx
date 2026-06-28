@@ -8,7 +8,7 @@ const DARK   = "#0c3228";
 
 const ZONES = [
   { city: "Sale", ar: "\u0633\u0644\u0627", areas: "Laayayda, Hay Salam, Tabriquet, Bettana, Hay Karima", time: "< 1h" },
-  { city: "Rabat", ar: "\u0627\u0644\u0631\u0628\u0627\u0637", areas: "Agdal, Hassan, Les Orangers, Hay Riad, Diour Jamaa", time: "< 2h" },
+  { city: "Rabat", ar: "\u0627\u0644\u0631\u0628\u0627\u0637", areas: "Agdal, Hassan, Les Orangers, Hay Riad, Diour Jamaa", time: "30 min" },
   { city: "Temara", ar: "\u062a\u0645\u0627\u0631\u0629", areas: "Centre-ville, Ouled Mtaa", time: "< 2h30" },
 ];
 
@@ -16,7 +16,7 @@ const STEPS = [
   { n: "1", icon: "\ud83d\uded2", title: "Ajoutez vos produits", body: "Parcourez notre catalogue et ajoutez vos produits frais au panier en quelques clics." },
   { n: "2", icon: "\ud83d\udcdd", title: "Confirmez votre commande", body: "Remplissez le formulaire avec votre adresse et choisissez votre mode de paiement (especes ou carte)." },
   { n: "3", icon: "\ud83d\udcac", title: "Confirmation WhatsApp", body: "Notre equipe confirme votre commande sur WhatsApp dans les 30 minutes et vous donne l'heure de livraison." },
-  { n: "4", icon: "\u26a1", title: "Livraison a domicile", body: "Votre commande arrive fraiche a votre porte en moins de 2h a Sale et Rabat." },
+  { n: "4", icon: "\u26a1", title: "Livraison a domicile", body: "Votre commande arrive fraiche a votre porte en 30 minutes a Sale et Rabat." },
 ];
 
 export default function LivraisonPage() {
@@ -39,13 +39,13 @@ export default function LivraisonPage() {
           </h1>
           <p className="text-white/60 mt-3 text-base max-w-lg mx-auto">
             {language === "ar"
-              ? "\u062a\u0648\u0635\u064a\u0644 \u0633\u0631\u064a\u0639 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637 \u062e\u0644\u0627\u0644 \u0633\u0627\u0639\u062a\u064a\u0646 \u2014 \u0637\u0627\u0632\u062c \u0643\u0644 \u064a\u0648\u0645 \u0645\u0646 \u0627\u0644\u0633\u0627\u0639\u0629 8 \u0625\u0644\u0649 20"
-              : "Produits frais livres en moins de 2h — 7j/7 de 8h a 20h"}
+              ? "\u062a\u0648\u0635\u064a\u0644 \u0633\u0631\u064a\u0639 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637 \u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629 \u2014 \u0637\u0627\u0632\u062c \u0643\u0644 \u064a\u0648\u0645 \u0645\u0646 \u0627\u0644\u0633\u0627\u0639\u0629 8 \u0625\u0644\u0649 20"
+              : "Produits frais livres en 30 minutes — 7j/7 de 8h a 20h"}
           </p>
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mt-10 max-w-lg mx-auto">
             {[
-              { v: "2h",   l: language === "ar" ? "\u062a\u0648\u0635\u064a\u0644" : "Livraison" },
+              { v: "30 min", l: language === "ar" ? "\u062a\u0648\u0635\u064a\u0644" : "Livraison" },
               { v: "7j/7", l: language === "ar" ? "\u0643\u0644 \u064a\u0648\u0645" : "Disponible" },
               { v: "100%", l: language === "ar" ? "\u0637\u0627\u0632\u062c" : "Frais garanti" },
             ].map((s, i) => (
