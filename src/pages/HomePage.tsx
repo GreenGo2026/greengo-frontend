@@ -38,7 +38,7 @@ const NICHE_CATS: NicheCategory[] = [
     key: "all",
     emoji: "âœ¨",
     label_fr: "Tous les produits",
-    label_ar: "ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
+    label_ar: "ÙƒÙ Ø§ÙÙ…Ù†ØªØ¬Ø§Øª",
     label_en: "All",
     db_match: [],
   },
@@ -62,7 +62,7 @@ const NICHE_CATS: NicheCategory[] = [
     key: "White Meats",
     emoji: "ðŸ—",
     label_fr: "Viandes",
-    label_ar: "Ø§Ù„Ù„Ø­ÙˆÙ…",
+    label_ar: "Ø§ÙÙØ­ÙˆÙ…",
     label_en: "White Meats",
     db_match: ["White Meats", "white meats", "Whole Chicken", "Chicken Cuts"],
   },
@@ -78,13 +78,13 @@ const NICHE_CATS: NicheCategory[] = [
     key: "Natural Juices",
     emoji: "ðŸ§ƒ",
     label_fr: "Jus naturels",
-    label_ar: "Ø§Ù„Ø¹ØµØ§Ø¦Ø± Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©",
+    label_ar: "Ø§ÙØ¹ØµØ§Ø¦Ø± Ø§ÙØ·Ø¨ÙŠØ¹ÙŠØ©",
     label_en: "Natural Juices",
     db_match: ["Natural Juices", "Juices", "juices"],
   },
   {
     key: "Olives",
-    emoji: "ðŸ«’",
+    emoji: "ðŸ«'",
     label_fr: "Olives",
     label_ar: "Ø²ÙŠØªÙˆÙ†",
     label_en: "Olives",
@@ -92,17 +92,17 @@ const NICHE_CATS: NicheCategory[] = [
   },
   {
     key: "Epices",
-    emoji: "ðŸ§‚",
+    emoji: "ðŸ§'",
     label_fr: "Epices",
-    label_ar: "ØªÙˆØ§Ø¨Ù„",
+    label_ar: "ØªÙˆØ§Ø¨Ù",
     label_en: "Spices",
     db_match: ["Epices", "Spices", "epices", "spices"],
   },
   {
     key: "Mixed Packs",
-    emoji: "ðŸ›’",
+    emoji: "ðŸ›'",
     label_fr: "Paniers mixtes",
-    label_ar: "Ø¨Ø§Ù‚Ø§Øª Ø§Ù„Ø®Ø¶Ø§Ø± ÙˆØ§Ù„ÙÙˆØ§ÙƒÙ‡ Ù…Ø®Ù„Ø·Ø©",
+    label_ar: "Ø¨Ø§Ù'Ø§Øª Ø§ÙØ®Ø¶Ø§Ø± ÙˆØ§ÙÙÙˆØ§ÙƒÙ‡ Ù…Ø®ÙØ·Ø©",
     label_en: "Mixed Packs",
     db_match: ["Mixed Packs", "Mixed Fruit & Veggie Packs", "mixed packs"],
   },
@@ -124,10 +124,10 @@ const CAT_META: Record<string, { emoji: string; bg: string; text: string; border
   "Chicken Cuts":      { emoji: "ðŸ¥©", bg: "bg-red-50",     text: "text-red-600",     border: "border-red-100"    },
   Eggs:                { emoji: "ðŸ¥š", bg: "bg-yellow-50",  text: "text-yellow-700",  border: "border-yellow-100" },
   "Natural Juices":    { emoji: "ðŸ§ƒ", bg: "bg-cyan-50",    text: "text-cyan-700",    border: "border-cyan-100"   },
-  "Olives":          { emoji: "ðŸ«’", bg: "bg-lime-50",    text: "text-lime-700",   border: "border-lime-100"   },
-  "Epices":          { emoji: "ðŸ§‚", bg: "bg-orange-50",  text: "text-orange-700", border: "border-orange-100" },
-  "Mixed Packs":       { emoji: "ðŸ›’", bg: "bg-purple-50",  text: "text-purple-700",  border: "border-purple-100" },
-  Other:               { emoji: "ðŸ›’", bg: "bg-gray-50",    text: "text-gray-600",    border: "border-gray-100"   },
+  "Olives":          { emoji: "ðŸ«'", bg: "bg-lime-50",    text: "text-lime-700",   border: "border-lime-100"   },
+  "Epices":          { emoji: "ðŸ§'", bg: "bg-orange-50",  text: "text-orange-700", border: "border-orange-100" },
+  "Mixed Packs":       { emoji: "ðŸ›'", bg: "bg-purple-50",  text: "text-purple-700",  border: "border-purple-100" },
+  Other:               { emoji: "ðŸ›'", bg: "bg-gray-50",    text: "text-gray-600",    border: "border-gray-100"   },
 };
 
 function getCatMeta(category: string) {
@@ -149,9 +149,9 @@ interface SortOption {
 
 const SORT_OPTIONS: SortOption[] = [
   { key: "default",   label_fr: "Par dÃ©faut",      label_ar: "Ø§ÙØªØ±Ø§Ø¶ÙŠ",           label_en: "Default"           },
-  { key: "price_asc", label_fr: "Prix croissant",  label_ar: "Ø³Ø¹Ø± ØªØµØ§Ø¹Ø¯ÙŠ",        label_en: "Price: Low â†’ High" },
-  { key: "price_desc",label_fr: "Prix dÃ©croissant",label_ar: "Ø³Ø¹Ø± ØªÙ†Ø§Ø²Ù„ÙŠ",        label_en: "Price: High â†’ Low" },
-  { key: "name_az",   label_fr: "Nom A â†’ Z",       label_ar: "Ø§Ù„Ø§Ø³Ù… Ø£ â†’ ÙŠ",       label_en: "Name A â†’ Z"        },
+  { key: "price_asc", label_fr: "Prix croissant",  label_ar: "Ø³Ø¹Ø± ØªØµØ§Ø¹Ø¯ÙŠ",        label_en: "Price: Low â†' High" },
+  { key: "price_desc",label_fr: "Prix dÃ©croissant",label_ar: "Ø³Ø¹Ø± ØªÙ†Ø§Ø²ÙÙŠ",        label_en: "Price: High â†' Low" },
+  { key: "name_az",   label_fr: "Nom A â†' Z",       label_ar: "Ø§ÙØ§Ø³Ù… Ø£ â†' ÙŠ",       label_en: "Name A â†' Z"        },
 ];
 
 function sortLabel(opt: SortOption, lang: string): string {
@@ -194,7 +194,7 @@ function QtyControl({ product }: { product: DBProduct }) {
         aria-label="Ajouter au panier"
         className={"group flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] text-xs font-extrabold text-white shadow-md shadow-[#2E8B57]/20 transition-all duration-200 hover:bg-[#1F6B40] hover:shadow-lg hover:shadow-[#2E8B57]/25 active:scale-[0.97] " + font}>
         <ShoppingCart size={14} strokeWidth={2.5} className="transition-transform group-hover:-rotate-6" />
-        {language === "ar" ? "Ø£Ø¶Ù Ù„Ù„Ø³Ù„Ø©" : language === "fr" ? "Ajouter" : "Add to cart"}
+        {language === "ar" ? "Ø£Ø¶Ù ÙÙØ³ÙØ©" : language === "fr" ? "Ajouter" : "Add to cart"}
       </button>
     );
   }
@@ -347,7 +347,7 @@ function ProductGalleryModal({
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/>
                     </svg>
-                    {language === "ar" ? "Ø­Ø±Ùƒ Ù„Ù„ØªÙƒØ¨ÙŠØ±" : language === "fr" ? "Survolez pour zoomer" : "Hover to zoom"}
+                    {language === "ar" ? "Ø­Ø±Ùƒ ÙÙØªÙƒØ¨ÙŠØ±" : language === "fr" ? "Survolez pour zoomer" : "Hover to zoom"}
                   </div>
                 )}
               </div>
@@ -409,7 +409,7 @@ function ProductGalleryModal({
           </div>
           <div className="rounded-2xl bg-gradient-to-br from-[#f0f7f3] to-[#e8f4ec] border border-[#2E8B57]/12 px-4 py-3.5">
             <p className="text-[10px] text-[#2E8B57]/70 font-latin font-semibold mb-1 uppercase tracking-wide">
-              {language === "ar" ? "Ø§Ù„Ø³Ø¹Ø±" : language === "fr" ? "Prix" : "Price"}
+              {language === "ar" ? "Ø§ÙØ³Ø¹Ø±" : language === "fr" ? "Prix" : "Price"}
             </p>
             <div className="flex items-baseline gap-1.5">
               <span className="text-3xl font-extrabold text-[#1A6640] font-latin leading-none">
@@ -421,8 +421,8 @@ function ProductGalleryModal({
           <div className="grid grid-cols-2 gap-2">
             {[
               { icon: "ðŸŒ¿", fr: "Produit frais",    ar: "Ù…Ù†ØªØ¬ Ø·Ø§Ø²Ø¬",   en: "Fresh product"   },
-              { icon: "ðŸ›µ", fr: "Livraison rapide", ar: "ØªÙˆØµÙŠÙ„ Ø³Ø±ÙŠØ¹",  en: "Fast delivery"   },
-              { icon: "ðŸ‡²ðŸ‡¦", fr: "Origine Maroc",   ar: "Ù…Ù† Ø§Ù„Ù…ØºØ±Ø¨",   en: "From Morocco"    },
+              { icon: "ðŸ›µ", fr: "Livraison rapide", ar: "ØªÙˆØµÙŠÙ Ø³Ø±ÙŠØ¹",  en: "Fast delivery"   },
+              { icon: "ðŸ‡²ðŸ‡¦", fr: "Origine Maroc",   ar: "Ù…Ù† Ø§ÙÙ…ØºØ±Ø¨",   en: "From Morocco"    },
               { icon: "âœ…", fr: "Qualite garantie", ar: "Ø¬ÙˆØ¯Ø© Ù…Ø¶Ù…ÙˆÙ†Ø©", en: "Quality assured" },
             ].map(f => (
               <div key={f.en} className="flex items-center gap-2 rounded-xl bg-white border border-gray-100 px-2.5 py-2">
@@ -446,7 +446,7 @@ function ProductGalleryModal({
             </svg>
             {inCart
               ? (language === "ar" ? "Ø§Ø¶Ø§ÙØ© Ù…Ø±Ø© Ø§Ø®Ø±Ù‰" : language === "fr" ? "Ajouter encore" : "Add again")
-              : (language === "ar" ? "Ø§Ø¶Ù Ù„Ù„Ø³Ù„Ø©" : language === "fr" ? "Ajouter au panier" : "Add to cart")}
+              : (language === "ar" ? "Ø§Ø¶Ù ÙÙØ³ÙØ©" : language === "fr" ? "Ajouter au panier" : "Add to cart")}
           </button>
         </div>
       </div>
@@ -485,7 +485,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
   const font    = language === "ar" ? "font-arabic" : "font-latin";
   const meta    = getCatMeta(product.category);
   const isFresh = FRESH_CATS.some((c) => product.category?.toLowerCase() === c.toLowerCase());
-  const name    = product.name_ar || product.name_fr || "â€”";
+  const name    = product.name_ar || product.name_fr || "â€";
   const isTop3  = rank < 3;
   const [showModal, setShowModal] = useState(false);
   const [imgError,  setImgError]  = useState(false);
@@ -585,7 +585,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
                 <span className="text-xs font-semibold text-gray-400 font-latin ml-0.5">MAD</span>
               </div>
               <p className={"text-[10px] text-gray-400 font-latin mt-0.5 " + font}>
-                {language === "ar" ? "Ù„ÙƒÙ„ " : language === "fr" ? "par " : "per "}{product.unit || "kg"}
+                {language === "ar" ? "ÙÙƒÙ " : language === "fr" ? "par " : "per "}{product.unit || "kg"}
               </p>
             </div>
             {isFresh && (
@@ -635,19 +635,19 @@ function EmptyState({ onReset, lang }: { onReset: () => void; lang: string }) {
   return (
     <div className={"flex flex-col items-center gap-4 py-24 text-center " + font}>
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-4xl">
-        ðŸ”
+        ðŸ"
       </div>
       <div>
         <p className="text-lg font-bold text-gray-700">
-          {lang === "ar" ? "Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†ØªØ¬Ø§Øª" : lang === "fr" ? "Aucun produit trouvÃ©" : "No products found"}
+          {lang === "ar" ? "ÙØ§ ØªÙˆØ¬Ø¯ Ù…Ù†ØªØ¬Ø§Øª" : lang === "fr" ? "Aucun produit trouvÃ©" : "No products found"}
         </p>
         <p className="mt-1 text-sm text-gray-400">
-          {lang === "ar" ? "Ø¬Ø±Ø¨ ØªØµÙ†ÙŠÙØ§Ù‹ Ø¢Ø®Ø± Ø£Ùˆ Ø§Ø¨Ø­Ø« Ø¨ÙƒÙ„Ù…Ø© Ù…Ø®ØªÙ„ÙØ©" : lang === "fr" ? "Essayez une autre catÃ©gorie ou recherche" : "Try a different category or search term"}
+          {lang === "ar" ? "Ø¬Ø±Ø¨ ØªØµÙ†ÙŠÙØ§Ù‹ Ø¢Ø®Ø± Ø£Ùˆ Ø§Ø¨Ø­Ø« Ø¨ÙƒÙÙ…Ø© Ù…Ø®ØªÙÙØ©" : lang === "fr" ? "Essayez une autre catÃ©gorie ou recherche" : "Try a different category or search term"}
         </p>
       </div>
       <button onClick={onReset}
         className={"mt-1 rounded-xl bg-[#2E8B57] px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#1F6B40] " + font}>
-        {lang === "ar" ? "Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„" : lang === "fr" ? "Voir tout" : "Show all"}
+        {lang === "ar" ? "Ø¹Ø±Ø¶ Ø§ÙÙƒÙ" : lang === "fr" ? "Voir tout" : "Show all"}
       </button>
     </div>
   );
@@ -683,7 +683,7 @@ export default function HomePage() {
     } catch {
       setError(
         language === "ar"
-          ? "ØªØ¹Ø°Ù‘Ø± ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª. Ù‡Ù„ Ø§Ù„Ø®Ø§Ø¯Ù… ÙŠØ¹Ù…Ù„ØŸ"
+          ? "ØªØ¹Ø°Ù'Ø± ØªØ­Ù…ÙŠÙ Ø§ÙÙ…Ù†ØªØ¬Ø§Øª. Ù‡Ù Ø§ÙØ®Ø§Ø¯Ù… ÙŠØ¹Ù…ÙØŸ"
           : language === "fr"
           ? "Impossible de charger les produits. Le serveur est-il actif ?"
           : "Could not load products. Is the server running?"
@@ -750,12 +750,12 @@ export default function HomePage() {
               </span>
             </div>
             <h1 className={"text-2xl md:text-4xl font-black text-white " + font} style={{ letterSpacing: "-0.03em", fontFamily: language !== "ar" ? "var(--font-display)" : undefined }}>
-              {language === "ar" ? "ØªØ³ÙˆÙ‘Ù‚ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø·Ø§Ø²Ø¬Ø©" : language === "fr" ? "Nos Produits Frais" : "Fresh Product Catalog"}
+              {language === "ar" ? "ØªØ³ÙˆÙ'Ù' Ø§ÙÙ…Ù†ØªØ¬Ø§Øª Ø§ÙØ·Ø§Ø²Ø¬Ø©" : language === "fr" ? "Nos Produits Frais" : "Fresh Product Catalog"}
             </h1>
             <p className={"mt-1.5 text-sm text-white/50 " + font}>
               {loading
-                ? (language === "ar" ? "Ø¬Ø§Ø±Ù Ø§Ù„ØªØ­Ù…ÙŠÙ„â€¦" : "Chargementâ€¦")
-                : inStockCount + " " + (language === "ar" ? "Ù…Ù†ØªØ¬ Ù…ØªØ§Ø­ Ù„Ù„Ø·Ù„Ø¨" : language === "fr" ? "produits disponibles" : "products available")}
+                ? (language === "ar" ? "Ø¬Ø§Ø±Ù Ø§ÙØªØ­Ù…ÙŠÙâ€¦" : "Chargementâ€¦")
+                : inStockCount + " " + (language === "ar" ? "Ù…Ù†ØªØ¬ Ù…ØªØ§Ø­ ÙÙØ·ÙØ¨" : language === "fr" ? "produits disponibles" : "products available")}
             </p>
           </div>
         </div>
@@ -763,32 +763,32 @@ export default function HomePage() {
       </div>
       <SocialProofStrip />
 
-      <div className=”mx-auto max-w-7xl px-4 py-6 space-y-5”>
+      <div className="mx-auto max-w-7xl px-4 py-6 space-y-5">
 
         {/* ── WhatsApp CTA banner ── */}
         <div style={{
-          background: “#25D366”,
-          padding: “16px 24px”,
-          display: “flex”,
-          alignItems: “center”,
-          justifyContent: “center”,
+          background: "#25D366",
+          padding: "16px 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           gap: 12,
-          flexWrap: “wrap”,
+          flexWrap: "wrap",
           borderRadius: 12,
-          boxShadow: “0 4px 20px rgba(37,211,102,0.3)”,
+          boxShadow: "0 4px 20px rgba(37,211,102,0.3)",
         }}>
-          <span style={{ color: “white”, fontWeight: 700, fontSize: “clamp(13px, 3vw, 17px)” }}>
+          <span style={{ color: "white", fontWeight: 700, fontSize: "clamp(13px, 3vw, 17px)" }}>
             📱 Commandez directement sur WhatsApp — Rapide et simple!
           </span>
           <a
-            href=”https://wa.me/212664500789?text=Bonjour%20GreenGo%20Market%2C%20je%20voudrais%20commander%20%3A%0A”
-            target=”_blank”
-            rel=”noopener noreferrer”
+            href="https://wa.me/212664500789?text=Bonjour%20GreenGo%20Market%2C%20je%20voudrais%20commander%20%3A%0A"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
-              background: “white”, color: “#25D366”,
-              padding: “10px 20px”, borderRadius: 50,
+              background: "white", color: "#25D366",
+              padding: "10px 20px", borderRadius: 50,
               fontWeight: 800, fontSize: 14,
-              textDecoration: “none”, whiteSpace: “nowrap”,
+              textDecoration: "none", whiteSpace: "nowrap",
             }}
           >
             💬 Commander maintenant
@@ -871,7 +871,7 @@ export default function HomePage() {
             <button
               onClick={resetFilters}
               className={"flex items-center gap-1.5 rounded-2xl border border-[#2E8B57]/25 bg-[#2E8B57]/8 px-3.5 py-2.5 text-xs font-bold text-[#2E8B57] transition-all hover:bg-[#2E8B57]/15 " + font}>
-              âœ• {language === "ar" ? "Ø¥Ø²Ø§Ù„Ø© Ø§Ù„ÙÙ„Ø§ØªØ±" : language === "fr" ? "Effacer" : "Clear filters"}
+              âœ• {language === "ar" ? "Ø¥Ø²Ø§ÙØ© Ø§ÙÙÙØ§ØªØ±" : language === "fr" ? "Effacer" : "Clear filters"}
             </button>
           )}
         </div>
@@ -885,7 +885,7 @@ export default function HomePage() {
               onClick={load}
               className={"flex items-center gap-2 rounded-xl bg-[#2E8B57] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#1F6B40] " + font}>
               <RefreshCw size={13} />
-              {language === "ar" ? "Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø©" : language === "fr" ? "RÃ©essayer" : "Retry"}
+              {language === "ar" ? "Ø¥Ø¹Ø§Ø¯Ø© Ø§ÙÙ…Ø­Ø§ÙˆÙØ©" : language === "fr" ? "RÃ©essayer" : "Retry"}
             </button>
           </div>
         )}
@@ -927,10 +927,10 @@ export default function HomePage() {
         {!loading && !error && (
           <div className="grid grid-cols-2 gap-3 border-t border-gray-200 pt-6 sm:grid-cols-4">
             {[
-              { emoji: "ðŸ›µ", label_fr: "Livraison rapide",     label_ar: "ØªÙˆØµÙŠÙ„ Ø³Ø±ÙŠØ¹",          label_en: "Fast delivery"       },
+              { emoji: "ðŸ›µ", label_fr: "Livraison rapide",     label_ar: "ØªÙˆØµÙŠÙ Ø³Ø±ÙŠØ¹",          label_en: "Fast delivery"       },
               { emoji: "ðŸŒ¿", label_fr: "100% frais",           label_ar: "Ø·Ø§Ø²Ø¬ 100%",            label_en: "100% fresh"          },
-              { emoji: "ðŸ’¬", label_fr: "Support WhatsApp",     label_ar: "Ø¯Ø¹Ù… Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨",       label_en: "WhatsApp support"    },
-              { emoji: "ðŸ”’", label_fr: "Paiement sÃ©curisÃ©",    label_ar: "Ø¯ÙØ¹ Ø¢Ù…Ù†",              label_en: "Secure payment"      },
+              { emoji: "ðŸ'¬", label_fr: "Support WhatsApp",     label_ar: "Ø¯Ø¹Ù… Ø¹Ø¨Ø± ÙˆØ§ØªØ³Ø§Ø¨",       label_en: "WhatsApp support"    },
+              { emoji: "ðŸ'", label_fr: "Paiement sÃ©curisÃ©",    label_ar: "Ø¯ÙØ¹ Ø¢Ù…Ù†",              label_en: "Secure payment"      },
             ].map((item) => (
               <div key={item.label_en}
                 className={"flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/[0.04] p-3.5 transition-colors hover:border-green-700/25 hover:bg-white/[0.07] " + (isRTL ? "flex-row-reverse" : "")}>

@@ -115,6 +115,7 @@ export interface Order {
   customer_phone:   string;
   customer_name?:   string;
   delivery_address?: string;
+  payment_method?:  string;
   items:            OrderItem[];
   total_price:      number;
   status:           OrderStatus;
@@ -261,4 +262,17 @@ export interface CreateProductPayload {
 export async function createProduct(payload: CreateProductPayload): Promise<DBProduct> {
   const r = await apiClient.post<DBProduct>("/products", payload);
   return r.data;
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  await apiClient.delete(`/products/${id}`);
+}
+
+export async function uploadProductImage(file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  const r = await apiClient.post<{ url: string }>("/admin/upload-image", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return r.data.url;
 }

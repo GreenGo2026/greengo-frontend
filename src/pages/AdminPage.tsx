@@ -8,6 +8,7 @@ import {
   ChevronDown, ChevronUp, Bike, RefreshCw,
 } from "lucide-react";
 import PaniersTab from "./PaniersTab";
+import ProductsTab from "./ProductsTab";
 import {
   updateProductById, updateOrderStatus, getOrders, getProducts,
   type DBProduct, type OrderStatus, type Order,
@@ -28,7 +29,7 @@ function normalizeStatus(raw: string | undefined | null): OrderStatus {
     .replace(/-/g, "_")          // "out-for-delivery" -> "out_for_delivery"
     .trim() as OrderStatus;
 }
-type AdminTab = "orders" | "prices" | "paniers";
+type AdminTab = "orders" | "prices" | "paniers" | "produits";
 type Lang     = "fr" | "ar";
 
 interface EditableProduct extends DBProduct {
@@ -272,14 +273,14 @@ function OrderCard({order,lang,isOldest,onStatusChange,showToast,onRefresh}:{ord
   );
 }
 
-function PriceRow({item,rowIndex,totalRows,lang,onChange,onToggle,onSave,inputRef}:{item:EditableProduct;rowIndex:number;totalRows:number;lang:Lang;onChange:(id:string,val:number)=>void;onToggle:(id:string)=>void;onSave:(id:string)=>void;inputRef:(el:HTMLInputElement|null)=>void;}){
+function PriceRow({item,rowIndex,totalRows,lang,onChange,onToggle,onToggleSale,onDiscountChange,onDescriptionChange,onSave,inputRef}:{item:EditableProduct;rowIndex:number;totalRows:number;lang:Lang;onChange:(id:string,val:number)=>void;onToggle:(id:string)=>void;onToggleSale:(id:string)=>void;onDiscountChange:(id:string,val:number)=>void;onDescriptionChange:(id:string,val:string)=>void;onSave:(id:string)=>void;inputRef:(el:HTMLInputElement|null)=>void;}){
   const L=I[lang];const font=lang==="ar"?"font-arabic":"font-latin";
   const cs=CAT_STYLE[item.category]??CAT_STYLE.Other;
   const pct=item.isDirty&&item.price_mad>0?((item.edited_price-item.price_mad)/item.price_mad*100):0;
   return(
     <tr className={"border-b border-gray-100 transition-all "+(item.isDirty?"bg-amber-50/50":"bg-white hover:bg-emerald-50/20")}>
       <td className="px-5 py-3.5"><div className="flex items-center gap-3"><div className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xl "+cs.bg}>{cs.emoji}</div><div><p dir="rtl" className="font-bold text-gray-800 text-sm font-arabic">{item.name_ar}</p>
-                <textarea value={item.edited_description} onChange={e=>handleDescriptionChange(item.id,e.target.value)} rows={1} placeholder="Description..." className={"mt-1 w-full rounded-lg border px-2 py-1 text-[10px] text-gray-600 outline-none resize-none "+(item.isDirty&&item.edited_description!==String((item as any).description_fr??"")?"border-amber-300 bg-amber-50":"border-gray-100 bg-gray-50")} style={{minWidth:160}} />{item.name_fr&&<p className="text-[10px] text-gray-400 font-latin">{item.name_fr}</p>}<span className={"mt-0.5 inline-block rounded-full px-2 py-0.5 text-[9px] font-bold "+cs.bg+" "+cs.text}>{item.category}</span><span className={"ml-1 inline-block h-2 w-2 rounded-full align-middle "+(item.image_status==="ready"?"bg-emerald-400":"bg-amber-300")} title={item.image_status==="ready"?"Image prête":"Image en attente"}/></div></div></td>
+                <textarea value={item.edited_description} onChange={e=>onDescriptionChange(item.id,e.target.value)} rows={1} placeholder="Description..." className={"mt-1 w-full rounded-lg border px-2 py-1 text-[10px] text-gray-600 outline-none resize-none "+(item.isDirty&&item.edited_description!==String((item as any).description_fr??"")?"border-amber-300 bg-amber-50":"border-gray-100 bg-gray-50")} style={{minWidth:160}} />{item.name_fr&&<p className="text-[10px] text-gray-400 font-latin">{item.name_fr}</p>}<span className={"mt-0.5 inline-block rounded-full px-2 py-0.5 text-[9px] font-bold "+cs.bg+" "+cs.text}>{item.category}</span><span className={"ml-1 inline-block h-2 w-2 rounded-full align-middle "+(item.image_status==="ready"?"bg-emerald-400":"bg-amber-300")} title={item.image_status==="ready"?"Image prête":"Image en attente"}/></div></div></td>
       <td className="px-5 py-3.5"><span className="text-sm font-semibold text-gray-400 font-latin">{item.price_mad.toFixed(2)}</span></td>
       <td className="px-5 py-3.5"><div className="flex items-center gap-2"><input ref={inputRef} type="number" min="0" step="0.5" value={item.edited_price} onChange={e=>onChange(item.id,parseFloat(e.target.value)||0)} onKeyDown={e=>{if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();onSave(item.id);const inputs=document.querySelectorAll<HTMLInputElement>(".price-input");const idx=Array.from(inputs).indexOf(e.currentTarget);const nxt=inputs[idx+1];if(nxt){nxt.focus();nxt.select();}}}} className={"price-input w-24 rounded-xl border-2 px-2 py-2 text-center text-sm font-bold outline-none transition-all font-latin "+(item.isDirty?"border-amber-300 bg-amber-50 text-amber-800 focus:border-[#2E8B57] focus:bg-white focus:ring-2 focus:ring-[#2E8B57]/20":"border-gray-200 bg-white text-gray-800 focus:border-[#2E8B57] focus:ring-2 focus:ring-[#2E8B57]/20")}/><span className="text-xs text-gray-400">MAD</span>{item.isDirty&&item.price_mad>0&&item.edited_price!==item.price_mad&&(<span className={"text-[10px] font-bold rounded-full px-1.5 py-0.5 "+(pct>0?"bg-red-100 text-red-600":"bg-emerald-100 text-emerald-700")}>{pct>0?"\u2191":"\u2193"}{Math.abs(pct).toFixed(0)}%</span>)}</div></td>
       <td className="px-5 py-3.5"><span className="text-xs font-semibold text-gray-400 font-latin">{item.unit||"—"}</span></td>
@@ -476,10 +477,10 @@ export default function AdminPage() {
           <div className={"flex items-center gap-3 "+(lang==="ar"?"flex-row-reverse":"")}>
             <LangToggle lang={lang} setLang={setLang}/>
             <div className="flex items-center gap-0.5 rounded-xl border border-white/10 bg-white/5 p-1">
-              {(["orders","prices","paniers"]as AdminTab[]).map(tab=>(
+              {(["orders","prices","paniers","produits"]as AdminTab[]).map(tab=>(
                 <button key={tab} onClick={()=>setActiveTab(tab)} className={"relative flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all "+(activeTab===tab?"bg-[#2E8B57] text-white":"text-white/50 hover:text-white")}>
                   {tab==="orders"?<ShoppingBag size={12}/>:tab==="prices"?<TrendingUp size={12}/>:<Package size={12}/>}
-                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:"Paniers"}
+                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:tab==="paniers"?"Paniers":"🌿 Produits"}
                   {tab==="orders"&&pendingCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-extrabold text-white">{pendingCount}</span>}
                   {tab==="prices"&&dirtyCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-orange-400 px-1 text-[10px] font-extrabold text-white">{dirtyCount}</span>}
                 </button>
@@ -520,13 +521,13 @@ export default function AdminPage() {
                 </button>
               ))}
             </div>
-            <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className={"border-b border-gray-100 bg-gray-50/50 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 "+(lang==="ar"?"text-right":"")} dir={dir}><th className="px-5 py-3">{L.product}</th><th className="px-5 py-3">{L.curr_price}</th><th className="px-5 py-3">{L.new_price}</th><th className="px-5 py-3">{L.unit_lbl}</th><th className="px-5 py-3">{L.stock_lbl}</th><th className="px-5 py-3"><span className="text-amber-400">Promo</span></th><th className="px-3 py-3"><span className="text-amber-400">Remise</span></th><th className="px-5 py-3">{L.action_lbl}</th><th className="px-2 py-3"></th></tr></thead><tbody>{(promoFilter==="promo"?products.filter((p:any)=>p.on_sale):products).map((item,i)=>(<PriceRow key={item.id} item={item} rowIndex={i} totalRows={products.length} lang={lang} onChange={handlePriceChange} onToggle={handleToggleStock} onToggleSale={handleToggleOnSale} onDiscountChange={handleDiscountChange} onSave={handleSave} inputRef={el=>inputRefs.current.set(item.id,el)}/>))}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className={"border-b border-gray-100 bg-gray-50/50 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 "+(lang==="ar"?"text-right":"")} dir={dir}><th className="px-5 py-3">{L.product}</th><th className="px-5 py-3">{L.curr_price}</th><th className="px-5 py-3">{L.new_price}</th><th className="px-5 py-3">{L.unit_lbl}</th><th className="px-5 py-3">{L.stock_lbl}</th><th className="px-5 py-3"><span className="text-amber-400">Promo</span></th><th className="px-3 py-3"><span className="text-amber-400">Remise</span></th><th className="px-5 py-3">{L.action_lbl}</th><th className="px-2 py-3"></th></tr></thead><tbody>{(promoFilter==="promo"?products.filter((p:any)=>p.on_sale):products).map((item,i)=>(<PriceRow key={item.id} item={item} rowIndex={i} totalRows={products.length} lang={lang} onChange={handlePriceChange} onToggle={handleToggleStock} onToggleSale={handleToggleOnSale} onDiscountChange={handleDiscountChange} onDescriptionChange={handleDescriptionChange} onSave={handleSave} inputRef={el=>inputRefs.current.set(item.id,el)}/>))}</tbody></table></div>
               </div>
             )}
-          {activeTab==="paniers"&&<PaniersTab products={products} lang={lang} font={font}/>}
           </div>
-        )
-}
+        )}
+        {activeTab==="paniers"&&<PaniersTab products={products} lang={lang} font={font}/>}
+        {activeTab==="produits"&&<ProductsTab lang={lang} font={font}/>}
       </div>
     </div>
   );

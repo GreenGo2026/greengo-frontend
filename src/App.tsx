@@ -12,6 +12,7 @@ import Header                     from "./components/layout/Header";
 import Footer                     from "./components/layout/Footer";
 import MobileBottomNav            from "./components/layout/MobileBottomNav";
 import NewsletterModal            from "./components/ui/NewsletterModal";
+import WelcomePopup               from "./components/ui/WelcomePopup";
 const HeroLandingPage  = lazy(() => import("./pages/HeroLandingPage"));
 const HomePage         = lazy(() => import("./pages/HomePage"));
 const CartPage         = lazy(() => import("./pages/CartPage"));
@@ -173,6 +174,7 @@ function PublicShell() {
       </main>
       <Footer />
       <MobileBottomNav />
+      <WelcomePopup />
       <NewsletterModal />
       <StickyCartBar />
     </div>
