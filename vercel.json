@@ -1,4 +1,13 @@
 {
+  "_maintenance_mode_instructions": {
+    "TO_ENABLE": "Add the redirect below as the FIRST item in redirects array",
+    "TO_DISABLE": "Remove that redirect and push",
+    "redirect_to_add": {
+      "source": "/((?!maintenance\\.html|api/|sitemap\\.xml|robots\\.txt|assets/).*)",
+      "destination": "/maintenance.html",
+      "permanent": false
+    }
+  },
   "redirects": [
     { "source": "/admin",        "destination": "/", "permanent": false },
     { "source": "/admin/:path*", "destination": "/", "permanent": false },
