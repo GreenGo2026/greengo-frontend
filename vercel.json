@@ -9,6 +9,11 @@
     }
   },
   "redirects": [
+    {
+      "source": "/((?!maintenance\\.html|api/|sitemap\\.xml|robots\\.txt|assets/).*)",
+      "destination": "/maintenance.html",
+      "permanent": false
+    },
     { "source": "/admin",        "destination": "/", "permanent": false },
     { "source": "/admin/:path*", "destination": "/", "permanent": false },
     { "source": "/super-admin",  "destination": "/", "permanent": false }
