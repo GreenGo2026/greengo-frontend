@@ -491,8 +491,8 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
   const [imgError,  setImgError]  = useState(false);
   const add    = useCartStore((s) => s.addToCart);
   const cart   = useCartStore((s) => s.cart);
-  const step   = getUnitStep(proxy.unit, proxy);
   const proxy  = { name: product.name_ar, price_per_unit: product.price_mad, unit: product.unit, available: product.in_stock, step: (product as any).step };
+  const step   = getUnitStep(proxy.unit, proxy);
   const inCart = !!cart.find((i) => i.name === product.name_ar);
 
   return (
@@ -831,9 +831,8 @@ export default function HomePage() {
             <Search size={14} className={"absolute top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none " + (isRTL ? "right-3.5" : "left-3.5")} />
             <input
               type="text"
-              value={search}
               value={searchInput}
-                onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               dir={dir}
               placeholder={language === "ar" ? "Ø§Ø¨Ø­Ø« Ø¹Ù† Ù…Ù†ØªØ¬â€¦" : language === "fr" ? "Rechercher un produitâ€¦" : "Search productsâ€¦"}
               className={"w-full rounded-2xl border border-white/10 bg-white/8 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:bg-white/12 shadow-sm " + (isRTL ? "pr-10 pl-4" : "pl-10 pr-4") + " " + font}
