@@ -1,8 +1,8 @@
 // src/pages/AddProductPage.tsx
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CheckCircle, XCircle, Loader2, ImageOff, Sparkles } from "lucide-react";
-import { createProduct, apiClient, type CreateProductPayload } from "../services/api";
+import { ArrowLeft, CheckCircle, XCircle, Loader2, Sparkles } from "lucide-react";
+import { createProduct, apiClient, type CreateProductPayload, uploadProductImage } from "../services/api";
 
 const CATEGORIES = ["Fruits","Légumes","Volailles","Fromage","Olives","Huile et miel","Épices","Autres"] as const;
 const UNITS       = ["kg","piece","100g","botte","g"] as const;
@@ -51,6 +51,24 @@ export default function AddProductPage() {
   const [status, setStatus]   = useState<Status>("idle");
   const [errMsg, setErrMsg]   = useState("");
   const [genDesc, setGenDesc] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setErrMsg("");
+    try {
+      const url = await uploadProductImage(file);
+      set("image_url", url);
+    } catch {
+      setErrMsg("Upload échoué — réessayez.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   function set<K extends keyof Fields>(k: K, v: Fields[K]) {
     setFields(prev => ({ ...prev, [k]: v }));
@@ -312,8 +330,42 @@ export default function AddProductPage() {
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
             <h2 className="text-sm font-bold text-white/60 uppercase tracking-widest">Image produit</h2>
 
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+
+            {/* Clickable preview / upload trigger */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-white/30 bg-white/5 hover:bg-white/10 transition overflow-hidden disabled:opacity-60"
+              title="Cliquer pour choisir un fichier"
+            >
+              {uploading ? (
+                <Loader2 size={28} className="text-white/40 animate-spin" />
+              ) : fields.image_url ? (
+                <img
+                  src={fields.image_url}
+                  alt="Aperçu"
+                  className="h-full w-full object-cover"
+                  onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              ) : (
+                <span className="text-3xl">📷</span>
+              )}
+            </button>
+
+            {uploading && <p className="text-xs text-white/40">Upload en cours…</p>}
+
+            {/* URL fallback */}
             <div>
-              <label className={lbl} htmlFor="image_url">URL de l'image (optionnel)</label>
+              <label className={lbl} htmlFor="image_url">Ou coller une URL d'image</label>
               <input
                 id="image_url"
                 type="url"
@@ -329,28 +381,6 @@ export default function AddProductPage() {
               <span className={`h-2 w-2 rounded-full ${imageReady ? "bg-[#2E8B57]" : "bg-amber-400"}`} />
               <span className="text-xs text-white/50">
                 Statut image : {imageReady ? "✅ Prête" : "🟡 En attente"}
-              </span>
-            </div>
-
-            {/* Preview */}
-            {fields.image_url ? (
-              <img
-                src={fields.image_url}
-                alt="Aperçu"
-                className="h-32 w-32 rounded-xl object-cover border border-white/10"
-                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            ) : (
-              <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/5">
-                <ImageOff size={28} className="text-white/20" />
-              </div>
-            )}
-
-            <div className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/5 p-3">
-              <span className="text-xs text-white/40">
-                La génération automatique d'images n'est pas encore disponible.
-                Vous pouvez entrer une URL manuellement ou laisser vide —
-                le champ sera complété ultérieurement.
               </span>
             </div>
           </div>
