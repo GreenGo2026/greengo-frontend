@@ -1,7 +1,31 @@
 User-agent: *
+Allow: /
+Allow: /shop
+Allow: /produit/
+Allow: /offres
+Allow: /livraison
+Allow: /faq
+Allow: /legal
+
+Disallow: /gestion
+Disallow: /gestion/
 Disallow: /admin
 Disallow: /super-admin
-Disallow: /gestion
-Disallow: /gestion/super
+Disallow: /api/
+Disallow: /_next/
+Disallow: /maintenance.html
 
 Sitemap: https://www.mygreengoo.com/sitemap.xml
+
+# Block AI training crawlers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
