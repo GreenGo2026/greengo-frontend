@@ -112,7 +112,8 @@ function RelatedCard({ p, lang }: { p: DBProduct; lang: string }) {
       className="flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all">
       <div className="h-28 flex items-center justify-center" style={{ background: isJpg ? "#f9fafb" : "#f0fdf4" }}>
         {img
-          ? <img src={img} alt={name || ""} className={`h-full w-full ${isJpg ? "object-cover" : "object-contain p-2"}`} loading="lazy" />
+          ? <img src={img} alt={name || ""} className={`h-full w-full ${isJpg ? "object-cover" : "object-contain p-2"}`} loading="lazy"
+              onError={e => { const t = e.currentTarget; if (!t.src.includes('placeholder')) { t.src = '/assets/placeholder-product.svg'; t.onerror = null; } }} />
           : <span className="text-4xl">{getCat(p.category).emoji}</span>}
       </div>
       <div className="p-3">

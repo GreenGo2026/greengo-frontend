@@ -1,4 +1,4 @@
-﻿?// src/pages/HomePage.tsx
+// src/pages/HomePage.tsx
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import {
   ShoppingCart, Plus, Minus, Loader2, RefreshCw,

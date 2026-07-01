@@ -186,7 +186,8 @@ export default function ProductsTab({ lang, font }: Props) {
               </label>
               {form.image_url && (
                 <img src={form.image_url.startsWith("/static") ? `${BASE_URL}${form.image_url}` : form.image_url}
-                  alt="" className="h-10 w-10 rounded-lg object-cover border border-gray-200" />
+                  alt="" className="h-10 w-10 rounded-lg object-cover border border-gray-200"
+                  onError={e => { const t = e.currentTarget; if (!t.src.includes('placeholder')) { t.src = '/assets/placeholder-product.svg'; t.onerror = null; } }} />
               )}
             </div>
           </div>
@@ -252,7 +253,8 @@ export default function ProductsTab({ lang, font }: Props) {
                       {/* Image */}
                       <td className="px-3 py-2">
                         {imgSrc
-                          ? <img src={imgSrc} alt="" className="h-10 w-10 rounded-lg object-cover border border-gray-200" />
+                          ? <img src={imgSrc} alt="" className="h-10 w-10 rounded-lg object-cover border border-gray-200"
+                              onError={e => { const t = e.currentTarget; if (!t.src.includes('placeholder')) { t.src = '/assets/placeholder-product.svg'; t.onerror = null; } }} />
                           : <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-300 text-lg">🛒</div>
                         }
                       </td>

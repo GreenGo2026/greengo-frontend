@@ -60,7 +60,8 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
     return (
       <div className="flex items-center gap-3 py-3 px-3 opacity-35">
         <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center">
-          {img ? <img src={img} alt="" width={40} height={40} className="w-full h-full object-cover" loading="lazy" /> : <span className="text-lg">{meta.emoji}</span>}
+          {img ? <img src={img} alt="" width={40} height={40} className="w-full h-full object-cover" loading="lazy"
+              onError={e => { const t = e.currentTarget; if (!t.src.includes('placeholder')) { t.src = '/assets/placeholder-product.svg'; t.onerror = null; } }} /> : <span className="text-lg">{meta.emoji}</span>}
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-[13px] font-semibold text-gray-400 line-through ${l === "ar" ? "font-arabic text-right" : "font-latin"}`}>{name}</p>
@@ -111,7 +112,8 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
           {img
             ? <img src={img} alt={name || ""} width={60} height={60}
                 className={`w-full h-full ${isJpg ? "object-cover" : "object-contain p-1"}`}
-                loading="lazy" />
+                loading="lazy"
+                onError={e => { const t = e.currentTarget; if (!t.src.includes('placeholder')) { t.src = '/assets/placeholder-product.svg'; t.onerror = null; } }} />
             : <div className="w-full h-full flex items-center justify-center text-2xl">{meta.emoji}</div>
           }
         </div>
