@@ -10,8 +10,8 @@ import {
 import PaniersTab from "./PaniersTab";
 import ProductsTab from "./ProductsTab";
 import {
-  updateProductById, updateOrderStatus, getOrders, getProducts,
-  type DBProduct, type OrderStatus, type Order,
+  updateProductById, updateOrderStatus, getOrders, getProducts, sendCatalogToWhatsApp,
+  type DBProduct, type OrderStatus, type Order, type CatalogBroadcastResult,
 } from "../services/api";
 import {
   clearJwt, isAdminLoggedIn, loginAdmin,
@@ -29,7 +29,7 @@ function normalizeStatus(raw: string | undefined | null): OrderStatus {
     .replace(/-/g, "_")          // "out-for-delivery" -> "out_for_delivery"
     .trim() as OrderStatus;
 }
-type AdminTab = "orders" | "prices" | "paniers" | "produits";
+type AdminTab = "orders" | "prices" | "paniers" | "produits" | "whatsapp";
 type Lang     = "fr" | "ar";
 
 interface EditableProduct extends DBProduct {
@@ -480,10 +480,10 @@ export default function AdminPage() {
           <div className={"flex items-center gap-3 "+(lang==="ar"?"flex-row-reverse":"")}>
             <LangToggle lang={lang} setLang={setLang}/>
             <div className="flex items-center gap-0.5 rounded-xl border border-white/10 bg-white/5 p-1">
-              {(["orders","prices","paniers","produits"]as AdminTab[]).map(tab=>(
+              {(["orders","prices","paniers","produits","whatsapp"]as AdminTab[]).map(tab=>(
                 <button key={tab} onClick={()=>setActiveTab(tab)} className={"relative flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all "+(activeTab===tab?"bg-[#2E8B57] text-white":"text-white/50 hover:text-white")}>
-                  {tab==="orders"?<ShoppingBag size={12}/>:tab==="prices"?<TrendingUp size={12}/>:<Package size={12}/>}
-                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:tab==="paniers"?"Paniers":"🌿 Produits"}
+                  {tab==="orders"?<ShoppingBag size={12}/>:tab==="prices"?<TrendingUp size={12}/>:tab==="whatsapp"?<MessageCircle size={12}/>:<Package size={12}/>}
+                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:tab==="paniers"?"Paniers":tab==="whatsapp"?"WhatsApp":"🌿 Produits"}
                   {tab==="orders"&&pendingCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-extrabold text-white">{pendingCount}</span>}
                   {tab==="prices"&&dirtyCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-orange-400 px-1 text-[10px] font-extrabold text-white">{dirtyCount}</span>}
                 </button>
@@ -532,6 +532,115 @@ export default function AdminPage() {
         )}
         {activeTab==="paniers"&&<PaniersTab products={products} lang={lang} font={font}/>}
         {activeTab==="produits"&&<ProductsTab lang={lang} font={font}/>}
+        {activeTab==="whatsapp"&&<WhatsAppCatalogTab lang={lang} font={font} products={products}/>}
+      </div>
+    </div>
+  );
+}
+
+// ── WhatsApp Catalog Tab ──────────────────────────────────────────────────────
+
+function WhatsAppCatalogTab({ lang, font, products }: { lang: Lang; font: string; products: DBProduct[] }) {
+  const [phone,       setPhone]       = useState("0664500789");
+  const [category,    setCategory]    = useState("all");
+  const [inStockOnly, setInStockOnly] = useState(true);
+  const [sending,     setSending]     = useState(false);
+  const [result,      setResult]      = useState<CatalogBroadcastResult | null>(null);
+  const [error,       setError]       = useState("");
+
+  const uniqueCats = ["all", ...Array.from(new Set(products.map(p => p.category))).sort()];
+  const preview    = products.filter(p =>
+    (category === "all" || p.category === category) &&
+    (!inStockOnly || p.in_stock)
+  );
+  const withImg    = preview.filter(p => p.image_url).length;
+
+  async function handleSend() {
+    if (!phone.trim()) { setError("Numéro de téléphone requis."); return; }
+    setSending(true); setResult(null); setError("");
+    try {
+      const r = await sendCatalogToWhatsApp(phone.trim(), category, inStockOnly);
+      setResult(r);
+    } catch {
+      setError("Erreur lors de l'envoi — vérifiez les credentials Green-API dans Railway.");
+    } finally { setSending(false); }
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-5">
+      <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+        <div>
+          <h2 className={"text-base font-extrabold text-gray-800 " + font}>📲 Catalogue WhatsApp</h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Envoie les produits du catalogue directement sur WhatsApp via Green-API
+          </p>
+        </div>
+        <span className="text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-full">
+          {preview.length} produits · {withImg} avec image
+        </span>
+      </div>
+
+      <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6 space-y-4">
+
+        {/* Phone */}
+        <div>
+          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1 block">
+            Numéro destinataire
+          </label>
+          <input
+            value={phone} onChange={e => setPhone(e.target.value)}
+            placeholder="0612345678"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#2E8B57] font-latin"
+          />
+          <p className="text-[10px] text-gray-400 mt-1">Format accepté : 06XXXXXXXX ou +212XXXXXXXXX</p>
+        </div>
+
+        {/* Category + stock filter */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1 block">Catégorie</label>
+            <select value={category} onChange={e => setCategory(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold outline-none focus:border-[#2E8B57] cursor-pointer">
+              {uniqueCats.map(c => <option key={c} value={c}>{c === "all" ? "Toutes les catégories" : c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1 block">Disponibilité</label>
+            <label className="flex items-center gap-2 cursor-pointer mt-2.5">
+              <input type="checkbox" checked={inStockOnly} onChange={e => setInStockOnly(e.target.checked)}
+                className="h-4 w-4 accent-[#2E8B57]" />
+              <span className="text-sm font-semibold text-gray-700">En stock uniquement</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Preview info */}
+        <div className="rounded-xl bg-gray-50 border border-gray-100 px-4 py-3 text-xs text-gray-600 space-y-0.5">
+          <p><span className="font-bold">{preview.length}</span> produits seront envoyés</p>
+          <p><span className="font-bold text-green-700">{withImg}</span> avec image · <span className="font-bold text-amber-600">{preview.length - withImg}</span> texte uniquement</p>
+          <p className="text-gray-400">Durée estimée : ~{Math.round(preview.length * 1.5 / 60 * 10) / 10} min</p>
+        </div>
+
+        {error && <p className="rounded-xl bg-red-50 px-4 py-2.5 text-xs font-semibold text-red-600">{error}</p>}
+
+        {result && (
+          <div className={"rounded-xl px-4 py-3 text-xs font-semibold " + (result.ok ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700")}>
+            {result.ok ? "✅ " : "⚠️ "}{result.message}
+            {result.ok && <p className="mt-1 text-green-500 font-normal">L'envoi tourne en arrière-plan sur Railway — environ {result.estimated_minutes} min.</p>}
+          </div>
+        )}
+
+        <button onClick={handleSend} disabled={sending || preview.length === 0}
+          className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white disabled:opacity-50 transition"
+          style={{ background: "linear-gradient(135deg,#25D366,#128C7E)" }}>
+          {sending
+            ? <><Loader2 size={14} className="animate-spin" /> Envoi en cours…</>
+            : <><MessageCircle size={14} /> Envoyer le catalogue sur WhatsApp</>}
+        </button>
+
+        <p className="text-[10px] text-gray-300 text-center">
+          L'envoi est lancé en arrière-plan. Tu peux fermer cet onglet — les messages continueront à partir.
+        </p>
       </div>
     </div>
   );

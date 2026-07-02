@@ -319,3 +319,23 @@ export async function fixPanierLabels(): Promise<FixLabelsResult> {
   const r = await apiClient.post<FixLabelsResult>("/paniers/fix-labels");
   return r.data;
 }
+
+export interface CatalogBroadcastResult {
+  ok: boolean;
+  count: number;
+  with_images: number;
+  without_images: number;
+  estimated_minutes: number;
+  message: string;
+}
+
+export async function sendCatalogToWhatsApp(
+  phone: string,
+  category = "all",
+  inStockOnly = true,
+): Promise<CatalogBroadcastResult> {
+  const r = await apiClient.post<CatalogBroadcastResult>("/admin/whatsapp/send-catalog", null, {
+    params: { phone, category, in_stock_only: inStockOnly },
+  });
+  return r.data;
+}
