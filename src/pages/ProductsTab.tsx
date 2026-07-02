@@ -41,6 +41,7 @@ export default function ProductsTab({ lang, font }: Props) {
   const [deletingId,setDeletingId]= useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [editUploading, setEditUploading] = useState(false);
+  const [catFilter, setCatFilter] = useState("all");
   const fileRef     = useRef<HTMLInputElement>(null);
   const editFileRef = useRef<HTMLInputElement>(null);
 
@@ -126,6 +127,8 @@ export default function ProductsTab({ lang, font }: Props) {
   }
 
   const inputCls = "rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-[#2E8B57] focus:ring-2 focus:ring-[#2E8B57]/20 w-full";
+  const uniqueCats = ["all", ...Array.from(new Set(products.map(p => p.category))).sort()];
+  const filteredProducts = catFilter === "all" ? products : products.filter(p => p.category === catFilter);
 
   return (
     <div className="space-y-6">
@@ -214,12 +217,18 @@ export default function ProductsTab({ lang, font }: Props) {
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-3">
           <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400">
-            {loading ? "Chargement…" : `${products.length} produits`}
+            {loading ? "Chargement…" : `${filteredProducts.length}/${products.length} produits`}
           </p>
-          <button onClick={load} disabled={loading}
-            className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50">
-            {loading ? <Loader2 size={11} className="animate-spin" /> : <RefreshCw size={11} />} Actualiser
-          </button>
+          <div className="flex items-center gap-2">
+            <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-600 outline-none focus:border-[#2E8B57] cursor-pointer">
+              {uniqueCats.map(c => <option key={c} value={c}>{c === "all" ? "Toutes catégories" : c}</option>)}
+            </select>
+            <button onClick={load} disabled={loading}
+              className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50">
+              {loading ? <Loader2 size={11} className="animate-spin" /> : <RefreshCw size={11} />} Actualiser
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -243,7 +252,7 @@ export default function ProductsTab({ lang, font }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {products.map(p => {
+                {filteredProducts.map(p => {
                   const isEditing = editRow?.id === p.id;
                   const imgSrc = p.image_url
                     ? (p.image_url.startsWith("/static") ? `${BASE_URL}${p.image_url}` : p.image_url)

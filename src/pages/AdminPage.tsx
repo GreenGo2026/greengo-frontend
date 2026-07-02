@@ -388,6 +388,7 @@ export default function AdminPage() {
   const [ordersError,setOrdersError]         = useState("");
   const [promoFilter,setPromoFilter]         = useState<"all"|"promo">("all");
   const [statusFilter,setStatusFilter]       = useState<OrderStatus|"all">("all");
+  const [dateFilter,setDateFilter]           = useState<"today"|"all">("today");
   const [lastSync,setLastSync]               = useState("");
   const [products,setProducts]               = useState<EditableProduct[]>([]);
   const [productsLoading,setProductsLoading] = useState(false);
@@ -465,6 +466,8 @@ export default function AdminPage() {
     {value:"cancelled",label:L.status_cancelled},
   ];
   const pendingCount=orders.filter(o=>normalizeStatus(o.status)==="pending").length;
+  function isToday(s:string){try{const d=new Date(s),t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear();}catch{return false;}}
+  const filteredOrders=orders.filter(o=>dateFilter==="all"||isToday(o.created_at));
   const dirtyCount=products.filter(p=>p.isDirty).length;
   const oldestPendingId=[...orders].filter(o=>normalizeStatus(o.status)==="pending").sort((a,b)=>new Date(a.created_at).getTime()-new Date(b.created_at).getTime())[0]?.id;
 
@@ -495,12 +498,13 @@ export default function AdminPage() {
         </div>
         {activeTab==="orders"&&(
           <div className="space-y-4">
-            <div className={"flex flex-wrap items-center justify-between gap-3 "+(lang==="ar"?"flex-row-reverse":"")}><p className="text-sm text-gray-500">{ordersLoading?L.loading_orders:orders.length+" "+L.tab_orders+(lastSync?" \u00b7 "+L.synced+" "+lastSync:"")}</p><button onClick={fetchOrders} disabled={ordersLoading} className={"flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm hover:bg-gray-50 disabled:opacity-50 "+font}>{ordersLoading?<Loader2 size={13} className="animate-spin"/>:<RefreshCw size={13}/>}{L.refresh}</button></div>
+            <div className={"flex flex-wrap items-center justify-between gap-3 "+(lang==="ar"?"flex-row-reverse":"")}><p className="text-sm text-gray-500">{ordersLoading?L.loading_orders:filteredOrders.length+" "+L.tab_orders+(lastSync?" \u00b7 "+L.synced+" "+lastSync:"")}</p><button onClick={fetchOrders} disabled={ordersLoading} className={"flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm hover:bg-gray-50 disabled:opacity-50 "+font}>{ordersLoading?<Loader2 size={13} className="animate-spin"/>:<RefreshCw size={13}/>}{L.refresh}</button></div>
+            <div className={"flex items-center gap-2 flex-wrap "+(lang==="ar"?"flex-row-reverse":"")}><button onClick={()=>setDateFilter("today")} className={"rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all "+(dateFilter==="today"?"bg-[#0c3228] text-white shadow-sm":"bg-white text-gray-600 ring-1 ring-gray-200 hover:ring-[#0c3228]/40")}>{"📅 "+(lang==="ar"?"اليوم":"Aujourd'hui")}</button><button onClick={()=>setDateFilter("all")} className={"rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all "+(dateFilter==="all"?"bg-[#0c3228] text-white shadow-sm":"bg-white text-gray-600 ring-1 ring-gray-200 hover:ring-[#0c3228]/40")}>{"📋 "+(lang==="ar"?"جميع الطلبات":"Tout voir")}</button>{dateFilter==="all"&&<span className="text-[10px] text-amber-600 font-semibold bg-amber-50 rounded-full px-2.5 py-1">{"⚠️ "+(lang==="ar"?"كل التواريخ":"Toutes les dates")}</span>}</div>
             <div className={"scrollbar-hide flex gap-2 overflow-x-auto pb-1 "+(lang==="ar"?"flex-row-reverse":"")}>{filterOptions.map(({value,label})=>(<button key={value} onClick={()=>setStatusFilter(value)} className={"shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all "+(statusFilter===value?"bg-[#2E8B57] text-white shadow-sm":"bg-white text-gray-600 ring-1 ring-gray-200 hover:ring-[#2E8B57]/40 hover:text-[#2E8B57]")}>{label}</button>))}</div>
             {ordersLoading&&<div className="flex items-center justify-center gap-3 py-16 text-[#2E8B57]"><Loader2 size={28} className="animate-spin"/><p className={"font-semibold "+font}>{L.loading_orders}</p></div>}
             {!ordersLoading&&ordersError&&<div className="flex flex-col items-center gap-3 py-12 text-center"><AlertCircle size={32} className="text-red-400"/><p className={"text-gray-600 "+font}>{ordersError}</p><button onClick={fetchOrders} className={"flex items-center gap-2 rounded-xl bg-[#2E8B57] px-5 py-2 text-sm font-bold text-white "+font}><RefreshCw size={13}/>{L.refresh}</button></div>}
-            {!ordersLoading&&!ordersError&&orders.length===0&&<div className={"flex flex-col items-center gap-3 py-16 text-gray-400 text-center "+font}><ShoppingBag size={44} className="opacity-20"/><p className="font-semibold">{L.no_orders}</p><p className="text-sm">{L.no_orders_sub}</p></div>}
-            {!ordersLoading&&!ordersError&&orders.length>0&&<div className="space-y-4">{orders.map(o=><OrderCard key={o.id} order={o} lang={lang} isOldest={o.id===oldestPendingId} onStatusChange={handleStatusChange} showToast={showToast} onRefresh={fetchOrders}/>)}</div>}
+            {!ordersLoading&&!ordersError&&filteredOrders.length===0&&<div className={"flex flex-col items-center gap-3 py-16 text-gray-400 text-center "+font}><ShoppingBag size={44} className="opacity-20"/><p className="font-semibold">{dateFilter==="today"?(lang==="ar"?"لا طلبات اليوم":"Aucune commande aujourd'hui"):L.no_orders}</p><p className="text-sm">{L.no_orders_sub}</p></div>}
+            {!ordersLoading&&!ordersError&&filteredOrders.length>0&&<div className="space-y-4">{filteredOrders.map(o=><OrderCard key={o.id} order={o} lang={lang} isOldest={o.id===oldestPendingId} onStatusChange={handleStatusChange} showToast={showToast} onRefresh={fetchOrders}/>)}</div>}
           </div>
         )}
         {activeTab==="prices"&&(
