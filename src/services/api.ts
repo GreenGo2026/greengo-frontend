@@ -276,3 +276,34 @@ export async function uploadProductImage(file: File): Promise<string> {
   });
   return r.data.url;
 }
+
+// ── Paniers ────────────────────────────────────────────────────────────────────
+
+export interface PanierItem {
+  label: string;
+  qty:   number;
+  unit:  string;
+}
+
+export interface Panier {
+  id:      string;
+  order?:  number;
+  title:   string;
+  persons: number;
+  accent:  string;
+  items:   PanierItem[];
+}
+
+export async function getPaniers(): Promise<Panier[]> {
+  const r = await apiClient.get<unknown>("/paniers");
+  return toArray<Panier>(r.data);
+}
+
+export async function updatePanier(id: string, data: Omit<Panier, "id" | "order">): Promise<void> {
+  await apiClient.put(`/paniers/${id}`, data);
+}
+
+export async function applyProductCorrections(): Promise<{ changed: number; details: unknown[] }> {
+  const r = await apiClient.post<{ changed: number; details: unknown[] }>("/products/corrections");
+  return r.data;
+}
