@@ -1,7 +1,7 @@
 // src/pages/PaniersTab.tsx — basket compositions stored in MongoDB, editable by admin
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { getPaniers, updatePanier } from "../services/api";
+import { getPaniers, updatePanier, applyProductCorrections, fixPanierLabels } from "../services/api";
 import type { DBProduct, Panier } from "../services/api";
 
 type Lang = "fr" | "ar";
@@ -12,11 +12,13 @@ export default function PaniersTab({ products, lang, font }: {
   lang: Lang;
   font: string;
 }) {
-  const [baskets,  setBaskets]  = useState<Panier[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [draft,    setDraft]    = useState<Panier | null>(null);
-  const [saving,   setSaving]   = useState(false);
-  const [saveErr,  setSaveErr]  = useState("");
+  const [baskets,     setBaskets]     = useState<Panier[]>([]);
+  const [loading,     setLoading]     = useState(true);
+  const [draft,       setDraft]       = useState<Panier | null>(null);
+  const [saving,      setSaving]      = useState(false);
+  const [saveErr,     setSaveErr]     = useState("");
+  const [toolRunning, setToolRunning] = useState<"corrections" | "labels" | null>(null);
+  const [toolResult,  setToolResult]  = useState<string>("");
 
   useEffect(() => {
     getPaniers()
@@ -39,6 +41,29 @@ export default function PaniersTab({ products, lang, font }: {
     } catch {
       setSaveErr(lang === "ar" ? "فشل الحفظ — حاول مجدداً" : "Erreur de sauvegarde — réessayez.");
     } finally { setSaving(false); }
+  }
+
+  async function runCorrections() {
+    setToolRunning("corrections"); setToolResult("");
+    try {
+      const r = await applyProductCorrections();
+      setToolResult(`Corrections: ${r.changed} produit(s) corrigé(s), ${r.skipped} inchangé(s).`);
+    } catch {
+      setToolResult("Erreur lors des corrections produits.");
+    } finally { setToolRunning(null); }
+  }
+
+  async function runFixLabels() {
+    setToolRunning("labels"); setToolResult("");
+    try {
+      const r = await fixPanierLabels();
+      const notFound = r.total_unfixed > 0 ? ` ${r.total_unfixed} label(s) introuvable(s).` : "";
+      setToolResult(`Labels: ${r.total_fixed} corrigé(s).${notFound}`);
+      // Reload paniers so the UI reflects updated labels
+      getPaniers().then(data => setBaskets(data)).catch(() => {});
+    } catch {
+      setToolResult("Erreur lors de la correction des labels.");
+    } finally { setToolRunning(null); }
   }
 
   function setItem(ii: number, field: keyof BasketItem, val: string | number) {
@@ -78,6 +103,26 @@ export default function PaniersTab({ products, lang, font }: {
         <span className="text-xs font-bold text-[#2E8B57] bg-green-50 px-3 py-1.5 rounded-full">
           {baskets.length} paniers
         </span>
+      </div>
+
+      {/* ── Admin Tools ── */}
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3">
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mr-1">
+          Outils admin
+        </span>
+        <button onClick={runCorrections} disabled={toolRunning !== null}
+          className="flex items-center gap-1.5 rounded-lg bg-white border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#2E8B57] hover:text-[#2E8B57] disabled:opacity-50 transition">
+          {toolRunning === "corrections" && <Loader2 size={11} className="animate-spin" />}
+          Corriger unités/catégories
+        </button>
+        <button onClick={runFixLabels} disabled={toolRunning !== null}
+          className="flex items-center gap-1.5 rounded-lg bg-white border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#2E8B57] hover:text-[#2E8B57] disabled:opacity-50 transition">
+          {toolRunning === "labels" && <Loader2 size={11} className="animate-spin" />}
+          Corriger labels paniers
+        </button>
+        {toolResult && (
+          <span className="text-xs font-semibold text-[#2E8B57] ml-1">{toolResult}</span>
+        )}
       </div>
 
       {/* ── Edit Modal ── */}

@@ -303,7 +303,19 @@ export async function updatePanier(id: string, data: Omit<Panier, "id" | "order"
   await apiClient.put(`/paniers/${id}`, data);
 }
 
-export async function applyProductCorrections(): Promise<{ changed: number; details: unknown[] }> {
-  const r = await apiClient.post<{ changed: number; details: unknown[] }>("/products/corrections");
+export async function applyProductCorrections(): Promise<{ changed: number; skipped: number; details: unknown[] }> {
+  const r = await apiClient.post<{ changed: number; skipped: number; details: unknown[] }>("/products/corrections");
+  return r.data;
+}
+
+export interface FixLabelsResult {
+  ok: boolean;
+  total_fixed: number;
+  total_unfixed: number;
+  report: { panier: string; changes: { from?: string; to?: string; label?: string; status?: string }[] }[];
+}
+
+export async function fixPanierLabels(): Promise<FixLabelsResult> {
+  const r = await apiClient.post<FixLabelsResult>("/paniers/fix-labels");
   return r.data;
 }

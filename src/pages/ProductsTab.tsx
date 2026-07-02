@@ -41,8 +41,10 @@ export default function ProductsTab({ lang, font }: Props) {
   const [deletingId,setDeletingId]= useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [editUploading, setEditUploading] = useState(false);
-  const [catFilter, setCatFilter] = useState("all");
+  const [catFilter,    setCatFilter]    = useState("all");
+  const [searchQuery,  setSearchQuery]  = useState("");
   const fileRef     = useRef<HTMLInputElement>(null);
+  const formRef     = useRef<HTMLDivElement>(null);
   const editFileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
@@ -128,12 +130,26 @@ export default function ProductsTab({ lang, font }: Props) {
 
   const inputCls = "rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-[#2E8B57] focus:ring-2 focus:ring-[#2E8B57]/20 w-full";
   const uniqueCats = ["all", ...Array.from(new Set(products.map(p => p.category))).sort()];
-  const filteredProducts = catFilter === "all" ? products : products.filter(p => p.category === catFilter);
+
+  const q = searchQuery.trim().toLowerCase();
+  const filteredProducts = products.filter(p => {
+    const matchesCat = catFilter === "all" || p.category === catFilter;
+    const matchesSearch = !q
+      || (p.name_fr || "").toLowerCase().includes(q)
+      || (p.name_ar || "").toLowerCase().includes(q);
+    return matchesCat && matchesSearch;
+  });
+
+  function prefillAndScrollToForm() {
+    setF("name_fr", searchQuery.trim());
+    if (catFilter !== "all") setF("category", catFilter);
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <div className="space-y-6">
       {/* ── Add product form ── */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div ref={formRef} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className={`mb-5 text-base font-extrabold text-gray-800 ${font}`}>➕ Nouveau produit</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -215,20 +231,53 @@ export default function ProductsTab({ lang, font }: Props) {
 
       {/* ── Product list ── */}
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-3">
-          <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400">
-            {loading ? "Chargement…" : `${filteredProducts.length}/${products.length} produits`}
-          </p>
-          <div className="flex items-center gap-2">
+        <div className="border-b border-gray-100 bg-gray-50 px-5 py-3 space-y-2">
+          {/* Search + controls row */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Search field */}
+            <div className="relative flex-1 min-w-[180px]">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none text-sm">🔍</span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Rechercher par nom FR ou AR…"
+                className="w-full rounded-lg border border-gray-200 bg-white pl-7 pr-7 py-1.5 text-xs font-semibold text-gray-700 outline-none focus:border-[#2E8B57] placeholder:text-gray-300"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 text-xs leading-none">✕</button>
+              )}
+            </div>
+            {/* Category filter */}
             <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
-              className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-600 outline-none focus:border-[#2E8B57] cursor-pointer">
+              className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 outline-none focus:border-[#2E8B57] cursor-pointer">
               {uniqueCats.map(c => <option key={c} value={c}>{c === "all" ? "Toutes catégories" : c}</option>)}
             </select>
+            {/* Refresh */}
             <button onClick={load} disabled={loading}
               className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50">
               {loading ? <Loader2 size={11} className="animate-spin" /> : <RefreshCw size={11} />} Actualiser
             </button>
+            {/* Count */}
+            <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400 shrink-0">
+              {loading ? "Chargement…" : `${filteredProducts.length}/${products.length}`}
+            </p>
           </div>
+
+          {/* "Not found" banner — appears only when search has no match */}
+          {q && filteredProducts.length === 0 && !loading && (
+            <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-100 px-4 py-2.5">
+              <p className="text-xs font-semibold text-amber-700">
+                Aucun produit trouvé pour <span className="font-extrabold">«{searchQuery.trim()}»</span>
+              </p>
+              <button
+                onClick={prefillAndScrollToForm}
+                className="flex items-center gap-1.5 rounded-lg bg-[#2E8B57] px-3 py-1.5 text-xs font-extrabold text-white hover:bg-[#1a6b42] transition shrink-0 ml-3">
+                <Plus size={11} /> Ajouter ce produit
+              </button>
+            </div>
+          )}
         </div>
 
         {error && (
