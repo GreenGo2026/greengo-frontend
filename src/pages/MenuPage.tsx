@@ -24,15 +24,20 @@ const CREAM2 = "#EDE9E0";
 
 // ── Category config ───────────────────────────────────────────────────────────
 const CAT: Record<string, { emoji: string; fr: string; ar: string; en: string; dot: string }> = {
-  "Vegetables":      { emoji: "🥕", fr: "Légumes",          ar: "خضروات",           en: "Vegetables",     dot: "#16a34a" },
-  "Purified Greens": { emoji: "🌿", fr: "Herbes fraîches",  ar: "أعشاب طازجة",      en: "Fresh Herbs",    dot: "#15803d" },
-  "Fruits":          { emoji: "🍊", fr: "Fruits",            ar: "فواكه",             en: "Fruits",         dot: "#ea580c" },
-  "White Meats":     { emoji: "🍗", fr: "Viandes blanches", ar: "لحوم بيضاء",       en: "White Meats",    dot: "#dc2626" },
-  "Eggs":            { emoji: "🥚", fr: "Œufs",             ar: "بيض",               en: "Eggs",           dot: "#ca8a04" },
-  "Olives":          { emoji: "🫒", fr: "Olives",            ar: "زيتون",             en: "Olives",         dot: "#65a30d" },
-  "Epices":          { emoji: "🧂", fr: "Épices",            ar: "توابل",             en: "Spices",         dot: "#9333ea" },
-  "Natural Juices":  { emoji: "🧃", fr: "Jus naturels",     ar: "عصائر طبيعية",     en: "Natural Juices", dot: "#0891b2" },
-  "Mixed Packs":     { emoji: "🛒", fr: "Paniers mixtes",   ar: "سلال مشكلة",       en: "Mixed Packs",    dot: "#7c3aed" },
+  "Vegetables":        { emoji: "🥕", fr: "Légumes",          ar: "خضروات",           en: "Vegetables",     dot: "#16a34a" },
+  "Purified Greens":   { emoji: "🌿", fr: "Herbes fraîches",  ar: "أعشاب طازجة",      en: "Fresh Herbs",    dot: "#15803d" },
+  "Fruits":            { emoji: "🍊", fr: "Fruits",            ar: "فواكه",             en: "Fruits",         dot: "#ea580c" },
+  "White Meats":       { emoji: "🍗", fr: "Viandes blanches", ar: "لحوم بيضاء",       en: "White Meats",    dot: "#dc2626" },
+  "Volailles":         { emoji: "🐓", fr: "Volailles",         ar: "دواجن",             en: "Poultry",        dot: "#b45309" },
+  "Eggs":              { emoji: "🥚", fr: "Œufs",             ar: "بيض",               en: "Eggs",           dot: "#ca8a04" },
+  "Fromage":           { emoji: "🧀", fr: "Fromage",           ar: "الجبن",             en: "Cheese",         dot: "#f59e0b" },
+  "Olives":            { emoji: "🫒", fr: "Olives",            ar: "زيتون",             en: "Olives",         dot: "#65a30d" },
+  "Huile et miel":     { emoji: "🍯", fr: "Huile & Miel",      ar: "زيت وعسل",          en: "Oil & Honey",    dot: "#d97706" },
+  "Produits naturels": { emoji: "🌾", fr: "Produits naturels", ar: "منتجات طبيعية",    en: "Natural Products", dot: "#84cc16" },
+  "Epices":            { emoji: "🧂", fr: "Épices",            ar: "توابل",             en: "Spices",         dot: "#9333ea" },
+  "Épices":            { emoji: "🧂", fr: "Épices",            ar: "توابل",             en: "Spices",         dot: "#9333ea" },
+  "Natural Juices":    { emoji: "🧃", fr: "Jus naturels",     ar: "عصائر طبيعية",     en: "Natural Juices", dot: "#0891b2" },
+  "Mixed Packs":       { emoji: "🛒", fr: "Paniers mixtes",   ar: "سلال مشكلة",       en: "Mixed Packs",    dot: "#7c3aed" },
 };
 const c = (cat: string) => CAT[cat] ?? { emoji: "🛒", fr: cat, ar: cat, en: cat, dot: GREEN };
 
