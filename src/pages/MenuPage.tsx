@@ -54,7 +54,7 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
   const l      = lang as L;
   const meta   = c(p.category);
   const img    = resolveImg(p.image_url);
-  const isJpg  = p.image_url?.endsWith(".jpg") || p.image_url?.endsWith(".jpeg");
+  const isPhoto = !!(p.image_url && (p.image_url.includes("res.cloudinary.com") || p.image_url.endsWith(".jpg") || p.image_url.endsWith(".jpeg")));
   const name   = l === "ar" ? p.name_ar : (p.name_fr || p.name_ar);
   const alt    = l === "ar" ? (p.name_fr || null) : (p.name_ar || null);
   const disc   = (p as any).discount_pct as number | undefined;
@@ -64,9 +64,9 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
   if (!p.in_stock) {
     return (
       <div className="flex items-center gap-3 py-3 px-3 opacity-35">
-        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center">
-          {img ? <img src={img} alt="" width={40} height={40} className="w-full h-full object-cover" loading="lazy"
-              onError={e => { const t = e.currentTarget; if (!t.src.includes('placeholder')) { t.src = '/assets/placeholder-product.svg'; t.onerror = null; } }} /> : <span className="text-lg">{meta.emoji}</span>}
+        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center">
+          {img ? <img src={img} alt="" width={56} height={56} className="w-full h-full object-cover" loading="lazy"
+              onError={e => { const t = e.currentTarget; if (!t.src.includes('placeholder')) { t.src = '/assets/placeholder-product.svg'; t.onerror = null; } }} /> : <span className="text-xl">{meta.emoji}</span>}
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-[13px] font-semibold text-gray-400 line-through ${l === "ar" ? "font-arabic text-right" : "font-latin"}`}>{name}</p>
@@ -112,14 +112,14 @@ function MenuCard({ p, lang }: { p: DBProduct; lang: string }) {
       {/* Right: image + price stacked */}
       <div className="shrink-0 flex flex-col items-end gap-1.5">
         {/* Image */}
-        <div className="w-[60px] h-[60px] rounded-xl overflow-hidden"
-          style={{ background: isJpg ? "#F7F5EF" : "#edf7f0", border: "1px solid rgba(0,0,0,0.05)" }}>
+        <div className="w-[80px] h-[80px] rounded-xl overflow-hidden"
+          style={{ background: "#F7F5EF", border: "1px solid rgba(0,0,0,0.06)" }}>
           {img
-            ? <img src={img} alt={name || ""} width={60} height={60}
-                className={`w-full h-full ${isJpg ? "object-cover" : "object-contain p-1"}`}
+            ? <img src={img} alt={name || ""} width={80} height={80}
+                className={`w-full h-full ${isPhoto ? "object-cover" : "object-contain p-1"}`}
                 loading="lazy"
                 onError={e => { const t = e.currentTarget; if (!t.src.includes('placeholder')) { t.src = '/assets/placeholder-product.svg'; t.onerror = null; } }} />
-            : <div className="w-full h-full flex items-center justify-center text-2xl">{meta.emoji}</div>
+            : <div className="w-full h-full flex items-center justify-center text-3xl">{meta.emoji}</div>
           }
         </div>
         {/* Price */}

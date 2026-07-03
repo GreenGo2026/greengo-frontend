@@ -13,7 +13,7 @@ const SECTIONS: Section[] = [
   { id:"commandes", emoji:"🛒", title:"3. Passation et confirmation des commandes",
     content:["Toute commande est soumise a la disponibilite des produits. GreenGo Market peut annuler ou modifier une commande en cas de rupture de stock, avec notification immediate.","La confirmation est envoyee par WhatsApp dans les 30 minutes. Sans confirmation, contactez-nous au +212 664 500 789.","Les prix sont en Dirhams Marocains (MAD) et peuvent varier selon les cours du marche. Le prix applicable est celui affiche a la confirmation."] },
   { id:"livraison", emoji:"🛵", title:"4. Livraison",
-    content:["GreenGo Market livre a Sale, Rabat et Temara du lundi au samedi de 8h00 a 20h00.","Delai de livraison : 2 a 4 heures apres confirmation, sous reserve de disponibilite des livreurs.","Livraison offerte le premier mois. Ensuite : gratuite au-dessus de 200 MAD, sinon 15 MAD. En cas d absence, le livreur vous contacte. Sans reponse sous 10 minutes, un nouveau creneau est convenu."] },
+    content:["GreenGo Market livre a Sale, Rabat et Temara du lundi au samedi de 8h00 a 20h00.","Delai de livraison : 30 minutes apres confirmation, sous reserve de disponibilite des livreurs.","Livraison offerte le premier mois. Ensuite : gratuite au-dessus de 200 MAD, sinon 15 MAD. En cas d absence, le livreur vous contacte. Sans reponse sous 10 minutes, un nouveau creneau est convenu."] },
   { id:"paiement", emoji:"💳", title:"5. Modalites de paiement",
     content:["Modes acceptes : especes a la livraison (COD), virement bancaire, paiement en ligne par carte via interface securisee.","Tous les paiements en ligne sont chiffres. GreenGo Market ne conserve aucune donnee bancaire.","Pour tout litige de paiement, contactez-nous sous 48h a team@mygreengoo.com."] },
   { id:"qualite", emoji:"🌿", title:"6. Qualite et fraicheur des produits",
@@ -80,7 +80,7 @@ export default function CGUPage() {
         </nav>
         <section aria-label="Resume CGU" className="px-6 mb-8 max-w-3xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[{e:"🛵",t:"Livraison",d:"2 a 4 heures"},{e:"🌿",t:"Qualite",d:"Fraicheur garantie"},{e:"💳",t:"Paiement",d:"Cash ou en ligne"},{e:"📞",t:"Support",d:"WhatsApp 24/7"}].map(x=>(
+            {[{e:"🛵",t:"Livraison",d:"30 minutes"},{e:"🌿",t:"Qualite",d:"Fraicheur garantie"},{e:"💳",t:"Paiement",d:"Cash ou en ligne"},{e:"📞",t:"Support",d:"WhatsApp 24/7"}].map(x=>(
               <div key={x.t} className="bg-white/[0.04] border border-amber-800/15 rounded-xl p-3 text-center">
                 <span className="text-2xl block mb-1">{x.e}</span>
                 <p className="text-white font-bold text-xs">{x.t}</p>

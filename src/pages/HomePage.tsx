@@ -506,8 +506,8 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
         className="gg-product-card group relative flex flex-col overflow-hidden"
         style={{ minHeight: "340px" }}>
         <div
-          className={"relative overflow-hidden cursor-pointer " + (product.image_url?.endsWith('.jpg') || product.image_url?.endsWith('.jpeg') ? "bg-white" : meta.bg)}
-          style={{ aspectRatio: "1 / 1", width: "100%" }}
+          className="relative overflow-hidden cursor-pointer bg-white"
+          style={{ aspectRatio: "4 / 3", width: "100%" }}
           onClick={() => product.image_url && !imgError && setShowModal(true)}>
           <div className="absolute inset-0 bg-gradient-to-t from-black/6 via-transparent to-transparent pointer-events-none z-10" />
           {product.image_url && !imgError ? (
@@ -516,8 +516,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
               alt={product.name_fr || product.name_ar || "product"}
               width={400}
               height={400}
-              className={`absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-[1.07] select-none pointer-events-none ${product.image_url?.endsWith('.jpg') || product.image_url?.endsWith('.jpeg') ? 'object-cover' : 'object-contain'}`}
-              style={product.image_url?.endsWith('.jpg') || product.image_url?.endsWith('.jpeg') ? {} : { padding: "8%", filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.09))" }}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.07] select-none pointer-events-none"
               onError={() => setImgError(true)}
             />
           ) : (

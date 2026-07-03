@@ -94,7 +94,7 @@ export const LEGAL_PAGES: Record<string, Omit<LegalTemplateProps, "sections"> & 
       },
       {
         heading: "Livraison et délais",
-        body: "Les livraisons sont effectuées entre 8h et 20h, du lundi au samedi. Le délai moyen est de 2 à 4 heures. GreenGo s'engage à vous informer en temps réel de l'avancement de votre livraison.",
+        body: "Les livraisons sont effectuées entre 8h et 20h, du lundi au samedi. Le délai moyen est de 30 minutes. GreenGo s'engage à vous informer en temps réel de l'avancement de votre livraison.",
       },
     ],
   },
