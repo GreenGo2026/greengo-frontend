@@ -2,9 +2,14 @@
 import { Leaf, Truck, ShieldCheck, Users, Heart, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useSeo } from "../hooks/useSeo";
 
 export default function AboutPage() {
   const { dir, language, isRTL } = useLanguage();
+  useSeo({
+    title: "À propos — GreenGo Market | Épicerie locale Salé & Rabat",
+    description: "GreenGo Market, votre épicerie fraîche et locale à Salé et Rabat. Produits marocains authentiques livrés en 30 minutes.",
+  });
   const font = language === "ar" ? "font-arabic" : "font-latin";
   const ar = language === "ar";
   const fr = language === "fr";

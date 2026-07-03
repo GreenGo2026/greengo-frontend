@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useSeo } from "../hooks/useSeo";
 
 // ── Niche category definitions ───────────────────────────────────────────────
 interface NicheCategory {
@@ -601,6 +602,10 @@ export default function HomePage() {
   const { language, isRTL } = useLanguage();
   const font = language === "ar" ? "font-arabic" : "font-latin";
   const dir  = isRTL ? "rtl" : "ltr";
+  useSeo({
+    title: "Catalogue Produits Frais — GreenGo Market Salé & Rabat",
+    description: "Découvrez nos produits frais : légumes, fruits, volailles, miel, amlou, olives, fromages. Livraison 30 min à Salé et Rabat. منتجات طازجة بسلا والرباط.",
+  });
 
   const [products,  setProducts]  = useState<DBProduct[]>([]);
   const [loading,   setLoading]   = useState(true);
@@ -693,13 +698,13 @@ export default function HomePage() {
               </span>
             </div>
             <h1 className={"text-2xl md:text-4xl font-black text-white " + font} style={{ letterSpacing: "-0.03em", fontFamily: language !== "ar" ? "var(--font-display)" : undefined }}>
-              {language === "ar" ? "تسوّق المنتجات الطازجة" : language === "fr" ? "Nos Produits Frais" : "Fresh Product Catalog"}
+              {language === "ar" ? "تسوّق المنتجات الطازجة — سلا والرباط" : language === "fr" ? "Nos Produits Frais — Salé & Rabat" : "Fresh Product Catalog — Salé & Rabat"}
             </h1>
-            <p className={"mt-1.5 text-sm text-white/50 " + font}>
+            <h2 className={"mt-1.5 text-sm text-white/50 font-normal " + font}>
               {loading
                 ? (language === "ar" ? "جارٍ التحميل…" : "Chargement…")
-                : inStockCount + " " + (language === "ar" ? "منتج متاح للطلب" : language === "fr" ? "produits disponibles" : "products available")}
-            </p>
+                : inStockCount + " " + (language === "ar" ? "منتج يوصل في 30 دقيقة" : language === "fr" ? "produits livrés en 30 minutes" : "products delivered in 30 minutes")}
+            </h2>
           </div>
         </div>
         <div className="zellige-border" />

@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSeo } from "../hooks/useSeo";
 
 // ── Animated counter ───────────────────────────────────────────────────────
 function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -24,6 +25,12 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 }
 
 export default function HeroLandingPage() {
+  useSeo({
+    title: "GreenGo Market — Épicerie Fraîche Livrée en 30 min | Salé & Rabat",
+    description: "Commandez vos fruits, légumes, volailles et produits naturels en ligne. Livraison fraîche en 30 minutes à Salé, Rabat et Témara. 7j/7 de 8h à 20h. خضر وفواكه طازجة.",
+    ogTitle: "GreenGo Market 🌿 — Livraison Fraîche en 30 min à Salé & Rabat",
+    ogDescription: "Épicerie locale livrée chez vous en 30 minutes. Fruits, légumes, miel, amlou, volailles. Commandez sur mygreengoo.com",
+  });
   return (
     <div className="relative min-h-screen overflow-hidden font-sans">
 
@@ -343,21 +350,12 @@ export default function HeroLandingPage() {
             letterSpacing: "-0.03em",
             color: "#ffffff",
             textShadow: "0 2px 40px rgba(46,139,87,0.25)",
-            marginBottom: "0.5rem",
-          }}>
-            Produits Frais,
-          </h1>
-          <h1 className="r2 font-display" style={{
-            fontSize: "clamp(2.4rem,7vw,5.8rem)",
-            fontWeight: 700,
-            lineHeight: 1.02,
-            letterSpacing: "-0.03em",
-            color: "#C9A96E",
-            fontStyle: "italic",
-            textShadow: "0 2px 40px rgba(201,169,110,0.20)",
             marginBottom: "1.5rem",
           }}>
-            Livrés chez vous.
+            Épicerie Fraîche Livrée en 30 min{" "}
+            <span style={{ color: "#C9A96E", fontStyle: "italic", textShadow: "0 2px 40px rgba(201,169,110,0.20)" }}>
+              à Salé & Rabat
+            </span>
           </h1>
 
           {/* Animated zellige divider */}
@@ -366,7 +364,7 @@ export default function HeroLandingPage() {
           </div>
 
           {/* Subtext */}
-          <p className="r3 font-body mx-auto" style={{
+          <h2 className="r3 font-body mx-auto" style={{
             fontSize: "clamp(0.9rem,1.8vw,1.05rem)",
             fontWeight: 300,
             lineHeight: 1.75,
@@ -374,9 +372,9 @@ export default function HeroLandingPage() {
             maxWidth: 480,
             marginBottom: "2.5rem",
           }}>
-            Fruits, légumes, viandes fraîches et herbes aromatiques —
-            sélectionnés chaque matin, livrés en 30 minutes à Salé et Rabat.
-          </p>
+            Fruits, légumes, volailles, miel et produits naturels —
+            livrés chez vous en 30 minutes.
+          </h2>
 
           {/* Delivery zone trust strip */}
           <div className="r3 flex items-center justify-center gap-4 mb-6 flex-wrap">

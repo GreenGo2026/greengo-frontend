@@ -2,6 +2,7 @@
 // Design: Moroccan Fresh Market — warm light theme, editorial typography
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useSeo } from "../hooks/useSeo";
 import { getProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
 import QRCode from "qrcode";
@@ -189,6 +190,10 @@ function CategorySection({ catKey, items, lang, activeCat }: {
 export default function MenuPage() {
   const { language, isRTL } = useLanguage();
   const l = language as L;
+  useSeo({
+    title: "Catalogue Produits Frais — GreenGo Market Salé & Rabat",
+    description: "Découvrez nos produits frais : légumes, fruits, volailles, miel, amlou, olives, fromages. Livraison 30 min à Salé et Rabat. منتجات طازجة بسلا والرباط.",
+  });
 
   const [products,   setProducts]   = useState<DBProduct[]>([]);
   const [loading,    setLoading]    = useState(true);
@@ -295,8 +300,12 @@ export default function MenuPage() {
             onError={e => { e.currentTarget.style.display = "none"; }} />
 
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.6rem,6vw,2.2rem)", fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", fontStyle: "italic", lineHeight: 1.1 }}>
-            {l === "ar" ? "قائمة منتجاتنا الطازجة" : l === "fr" ? "Nos Produits Frais" : "Our Fresh Products"}
+            {l === "ar" ? "قائمة منتجاتنا الطازجة — سلا والرباط" : l === "fr" ? "Nos Produits Frais — Salé & Rabat" : "Our Fresh Products — Salé & Rabat"}
           </h1>
+
+          <h2 className="mt-2 mb-1 font-normal" style={{ color: GOLD, fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+            {loading ? "" : `${inStockCount} ${l === "ar" ? "منتج يوصل في 30 دقيقة" : l === "fr" ? "produits livrés en 30 minutes" : "products delivered in 30 minutes"}`}
+          </h2>
 
           <div className="flex items-center justify-center gap-2 mt-2 mb-4">
             <div className="h-px flex-1 max-w-[60px] opacity-30" style={{ background: GOLD }} />

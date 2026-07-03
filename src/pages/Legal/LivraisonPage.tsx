@@ -1,6 +1,7 @@
 // src/pages/Legal/LivraisonPage.tsx
 import { Link } from "react-router-dom";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useSeo } from "../../hooks/useSeo";
 
 const GREEN  = "#2E8B57";
 const GOLD   = "#C9A96E";
@@ -60,6 +61,10 @@ export default function LivraisonPage() {
   const ar   = language === "ar";
   const font = ar ? "font-arabic" : "font-latin";
   const dir  = isRTL ? "rtl" : "ltr";
+  useSeo({
+    title: "Livraison Épicerie en 30 min — Salé, Rabat, Témara | GreenGo",
+    description: "GreenGo Market livre vos courses fraîches en 30 minutes à Salé (Laayayda, Hay Salam, Tabriquet), Rabat (Agdal, Hay Riad, Hassan) et Témara. 7j/7.",
+  });
 
   return (
     <div className={font} dir={dir} style={{ background: "#FAF7F2", minHeight: "100vh" }}>
@@ -80,7 +85,7 @@ export default function LivraisonPage() {
               fontWeight: 700, color: "#fff", fontStyle: "italic", lineHeight: 1.1,
             }}
           >
-            {ar ? "التوصيل إلى بابك" : "Livraison à votre porte"}
+            {ar ? "التوصيل إلى بابك" : "Livraison Épicerie en 30 min à Salé & Rabat"}
           </h1>
           <p className="text-white/60 mt-3 text-base max-w-lg mx-auto">
             {ar

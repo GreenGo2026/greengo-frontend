@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useSeo } from "../../hooks/useSeo";
 import { ChevronDown } from "lucide-react";
 
 const GREEN = "#2E8B57";
@@ -124,6 +125,10 @@ export default function FAQPage() {
   const l    = language as "fr" | "ar" | "en";
   const font = l === "ar" ? "font-arabic" : "font-latin";
   const [openItem, setOpenItem] = useState<string | null>("0-0");
+  useSeo({
+    title: "FAQ — Questions fréquentes | GreenGo Market Salé & Rabat",
+    description: "Tout sur la livraison GreenGo : délais, zones, paiement, produits frais. Livraison en 30 minutes à Salé et Rabat.",
+  });
 
   return (
     <div className={font} dir={isRTL ? "rtl" : "ltr"} style={{ background: "#FAF7F2", minHeight: "100vh" }}>
