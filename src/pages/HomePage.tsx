@@ -10,6 +10,7 @@ import type { DBProduct } from "../services/api";
 import { Link } from "react-router-dom";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import SocialProofStrip from "../components/ui/SocialProofStrip";
+import TestimonialsSection from "../components/TestimonialsSection";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useSeo } from "../hooks/useSeo";
 
@@ -31,6 +32,18 @@ function resolveImg(url: string | null | undefined): string {
   if (url.startsWith("/")) return _API + url;
   return _API + "/" + url;
 }
+
+// Real customer testimonials go here once collected (name, neighborhood, quote).
+// Empty on purpose — TestimonialsSection renders nothing until this has entries,
+// so no placeholder/fake review is ever shown on the live site.
+const TESTIMONIALS: Array<{
+  id: number;
+  name: string;
+  neighborhood: string;
+  text: string;
+  rating: number;
+  product?: string;
+}> = [];
 
 const NICHE_CATS: NicheCategory[] = [
   { key: "all",               emoji: "✨", label_fr: "Tous les produits", label_ar: "كل المنتجات",          label_en: "All",              db_match: [] },
@@ -742,6 +755,8 @@ export default function HomePage() {
             ? Commander maintenant
           </a>
         </div>
+
+        <TestimonialsSection testimonials={TESTIMONIALS} />
 
         {/* ?? Category pills ?? */}
         <div className="relative">
