@@ -1,7 +1,7 @@
 // src/components/TestimonialsSection.tsx
 import React from "react";
 
-interface Testimonial {
+export interface Testimonial {
   id: number;
   name: string;
   neighborhood: string;
