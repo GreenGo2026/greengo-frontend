@@ -13,10 +13,8 @@ import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
 
 // ── Niche category definitions ───────────────────────────────────────────────
-type NicheKey = "all" | "Fruits" | "Vegetables" | "Whole Chicken" | "Chicken Cuts";
-
 interface NicheCategory {
-  key:      NicheKey;
+  key:      string;
   emoji:    string;
   label_fr: string;
   label_ar: string;
@@ -34,78 +32,19 @@ function resolveImg(url: string | null | undefined): string {
 }
 
 const NICHE_CATS: NicheCategory[] = [
-  {
-    key: "all",
-    emoji: "✨",
-    label_fr: "Tous les produits",
-    label_ar: "كل المنتجات",
-    label_en: "All",
-    db_match: [],
-  },
-  {
-    key: "Fruits",
-    emoji: "🍎",
-    label_fr: "Fruits",
-    label_ar: "فواكه",
-    label_en: "Fruits",
-    db_match: ["Fruits", "fruits", "fruit"],
-  },
-  {
-    key: "Vegetables",
-    emoji: "🥕",
-    label_fr: "Légumes",
-    label_ar: "خضروات",
-    label_en: "Vegetables",
-    db_match: ["Vegetables", "vegetables", "Purified Greens", "purified greens"],
-  },
-  {
-    key: "White Meats",
-    emoji: "🍗",
-    label_fr: "Viandes",
-    label_ar: "اللحوم",
-    label_en: "White Meats",
-    db_match: ["White Meats", "white meats", "Whole Chicken", "Chicken Cuts"],
-  },
-  {
-    key: "Eggs",
-    emoji: "🥚",
-    label_fr: "Oeufs",
-    label_ar: "بيض",
-    label_en: "Eggs",
-    db_match: ["Eggs", "eggs"],
-  },
-  {
-    key: "Natural Juices",
-    emoji: "🧃",
-    label_fr: "Jus naturels",
-    label_ar: "العصائر الطبيعية",
-    label_en: "Natural Juices",
-    db_match: ["Natural Juices", "Juices", "juices"],
-  },
-  {
-    key: "Olives",
-    emoji: "🫒",
-    label_fr: "Olives",
-    label_ar: "زيتون",
-    label_en: "Olives",
-    db_match: ["Olives", "olives"],
-  },
-  {
-    key: "Epices",
-    emoji: "🌿",
-    label_fr: "Epices",
-    label_ar: "توابل",
-    label_en: "Spices",
-    db_match: ["Epices", "Spices", "epices", "spices"],
-  },
-  {
-    key: "Mixed Packs",
-    emoji: "🛒",
-    label_fr: "Paniers mixtes",
-    label_ar: "باقات الخضار والفواكه مختلطة",
-    label_en: "Mixed Packs",
-    db_match: ["Mixed Packs", "Mixed Fruit & Veggie Packs", "mixed packs"],
-  },
+  { key: "all",               emoji: "✨", label_fr: "Tous les produits", label_ar: "كل المنتجات",          label_en: "All",              db_match: [] },
+  { key: "Fruits",            emoji: "🍎", label_fr: "Fruits",            label_ar: "فواكه",                 label_en: "Fruits",           db_match: ["Fruits", "fruits", "fruit"] },
+  { key: "Vegetables",        emoji: "🥕", label_fr: "Légumes",           label_ar: "خضروات",                label_en: "Vegetables",       db_match: ["Vegetables", "vegetables", "Purified Greens", "purified greens"] },
+  { key: "White Meats",       emoji: "🍗", label_fr: "Viandes blanches",  label_ar: "لحوم بيضاء",            label_en: "White Meats",      db_match: ["White Meats", "white meats", "Whole Chicken", "Chicken Cuts"] },
+  { key: "Volailles",         emoji: "🐓", label_fr: "Volailles",         label_ar: "دواجن",                 label_en: "Poultry",          db_match: ["Volailles", "volailles"] },
+  { key: "Eggs",              emoji: "🥚", label_fr: "Œufs",              label_ar: "بيض",                   label_en: "Eggs",             db_match: ["Eggs", "eggs"] },
+  { key: "Fromage",           emoji: "🧀", label_fr: "Fromage",           label_ar: "الجبن",                 label_en: "Cheese",           db_match: ["Fromage", "fromage"] },
+  { key: "Olives",            emoji: "🫒", label_fr: "Olives",            label_ar: "زيتون",                 label_en: "Olives",           db_match: ["Olives", "olives"] },
+  { key: "Huile et miel",     emoji: "🍯", label_fr: "Huile & Miel",      label_ar: "زيت وعسل",              label_en: "Oil & Honey",      db_match: ["Huile et miel", "Huile", "Miel"] },
+  { key: "Produits naturels", emoji: "🌾", label_fr: "Produits naturels", label_ar: "منتجات طبيعية",         label_en: "Natural Products", db_match: ["Produits naturels", "produits naturels"] },
+  { key: "Epices",            emoji: "🧂", label_fr: "Épices",            label_ar: "توابل",                 label_en: "Spices",           db_match: ["Epices", "Épices", "epices", "spices", "Spices"] },
+  { key: "Natural Juices",    emoji: "🧃", label_fr: "Jus naturels",      label_ar: "العصائر الطبيعية",      label_en: "Natural Juices",   db_match: ["Natural Juices", "Juices", "juices"] },
+  { key: "Mixed Packs",       emoji: "🛒", label_fr: "Paniers mixtes",    label_ar: "باقات الخضار والفواكه", label_en: "Mixed Packs",      db_match: ["Mixed Packs", "Mixed Fruit & Veggie Packs", "mixed packs"] },
 ];
 
 function catLabel(cat: NicheCategory, lang: string): string {
@@ -666,7 +605,7 @@ export default function HomePage() {
   const [products,  setProducts]  = useState<DBProduct[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState("");
-  const [activeKey, setActiveKey] = useState<NicheKey>("all");
+  const [activeKey, setActiveKey] = useState<string>("all");
   const [search,       setSearch]       = useState("");
   const [searchInput,  setSearchInput]  = useState(""); // raw input value
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
