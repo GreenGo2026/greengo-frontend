@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, CheckCircle, XCircle, Loader2, Sparkles } from "lucide-react";
 import { createProduct, apiClient, type CreateProductPayload, uploadProductImage } from "../services/api";
 
-const CATEGORIES = ["Fruits","Légumes","Volailles","Fromage","Olives","Huile et miel","Épices","Autres"] as const;
+const CATEGORIES = ["Fruits","Légumes","Vegetables","Volailles","White Meats","Eggs","Fromage","Olives","Huile et miel","Produits naturels","Épices","Natural Juices","Mixed Packs","Autres"] as const;
 const UNITS       = ["kg","piece","100g","botte","g"] as const;
 
 type Status = "idle" | "saving" | "success" | "error";

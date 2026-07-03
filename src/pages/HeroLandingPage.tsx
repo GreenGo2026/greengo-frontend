@@ -4,6 +4,50 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSeo } from "../hooks/useSeo";
+import TestimonialsSection, { type Testimonial } from "../components/TestimonialsSection";
+
+const TESTIMONIALS: Testimonial[] = [
+  {
+    id: 1,
+    name: "Youssef",
+    neighborhood: "Hay Riad, Rabat",
+    text: "تبارك الله عليكم، الخضرة نقية بزاف والتوصيل كان فعلا فقل من نص ساعة. شكراً.",
+    rating: 5,
+    product: "Panier légumes + Poulet Beldi"
+  },
+  {
+    id: 2,
+    name: "Amina",
+    neighborhood: "Tabriquet, Salé",
+    text: "شكرا وصل داكشي مزيان، أملو غزال تبارك الله الوليدات عجبهم.",
+    rating: 5,
+    product: "Pack petit-déjeuner Amlou + Miel"
+  },
+  {
+    id: 3,
+    name: "Mehdi",
+    neighborhood: "Agdal, Rabat",
+    text: "Dajaj n9i bzaf o mghsoul mzyan. Service top bon courage.",
+    rating: 5,
+    product: "Poulet Beldi + Épices"
+  },
+  {
+    id: 4,
+    name: "Khadija",
+    neighborhood: "Hay Salam, Salé",
+    text: "Merci bzaaf kounte mzrouba w 3t9touni, raw3a.",
+    rating: 5,
+    product: "Panier fruits de saison"
+  },
+  {
+    id: 5,
+    name: "Tarik",
+    neighborhood: "Hassan, Rabat",
+    text: "الزيتون والزيت ديالكم ديال البلاد نيت. الله يعطيكم الصحة.",
+    rating: 5,
+    product: "Olives + Huile d'olive extra vierge"
+  }
+];
 
 // ── Animated counter ───────────────────────────────────────────────────────
 function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -466,6 +510,8 @@ export default function HeroLandingPage() {
           </span>
         ))}
       </div>
+
+      <TestimonialsSection testimonials={TESTIMONIALS} />
 
       {/* Footer */}
       <footer className="relative z-20 pb-5 text-center">

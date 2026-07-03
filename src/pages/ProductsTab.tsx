@@ -9,7 +9,7 @@ import { getJwt } from "../services/adminJwt";
 
 type Lang = "fr" | "ar";
 
-const CATEGORIES = ["Fruits", "Légumes", "Volailles", "Fromage", "Olives", "Huile et miel", "Épices", "Paniers", "Autres"];
+const CATEGORIES = ["Fruits", "Légumes", "Vegetables", "Volailles", "White Meats", "Eggs", "Fromage", "Olives", "Huile et miel", "Produits naturels", "Épices", "Natural Juices", "Mixed Packs", "Paniers", "Autres"];
 const UNITS       = ["kg", "piece", "100g", "botte", "g", "litre"];
 
 const BASE_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");

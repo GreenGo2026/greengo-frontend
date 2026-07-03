@@ -10,7 +10,6 @@ import type { DBProduct } from "../services/api";
 import { Link } from "react-router-dom";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import SocialProofStrip from "../components/ui/SocialProofStrip";
-import TestimonialsSection, { type Testimonial } from "../components/TestimonialsSection";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useSeo } from "../hooks/useSeo";
 
@@ -32,49 +31,6 @@ function resolveImg(url: string | null | undefined): string {
   if (url.startsWith("/")) return _API + url;
   return _API + "/" + url;
 }
-
-const TESTIMONIALS: Testimonial[] = [
-  {
-    id: 1,
-    name: "Youssef",
-    neighborhood: "Hay Riad, Rabat",
-    text: "تبارك الله عليكم، الخضرة نقية بزاف والتوصيل كان فعلا فقل من نص ساعة. شكراً.",
-    rating: 5,
-    product: "Panier légumes + Poulet Beldi"
-  },
-  {
-    id: 2,
-    name: "Amina",
-    neighborhood: "Tabriquet, Salé",
-    text: "شكرا وصل داكشي مزيان، أملو غزال تبارك الله الوليدات عجبهم.",
-    rating: 5,
-    product: "Pack petit-déjeuner Amlou + Miel"
-  },
-  {
-    id: 3,
-    name: "Mehdi",
-    neighborhood: "Agdal, Rabat",
-    text: "Dajaj n9i bzaf o mghsoul mzyan. Service top bon courage.",
-    rating: 5,
-    product: "Poulet Beldi + Épices"
-  },
-  {
-    id: 4,
-    name: "Khadija",
-    neighborhood: "Hay Salam, Salé",
-    text: "Merci bzaaf kounte mzrouba w 3t9touni, raw3a.",
-    rating: 5,
-    product: "Panier fruits de saison"
-  },
-  {
-    id: 5,
-    name: "Tarik",
-    neighborhood: "Hassan, Rabat",
-    text: "الزيتون والزيت ديالكم ديال البلاد نيت. الله يعطيكم الصحة.",
-    rating: 5,
-    product: "Olives + Huile d'olive extra vierge"
-  }
-];
 
 const NICHE_CATS: NicheCategory[] = [
   { key: "all",               emoji: "✨", label_fr: "Tous les produits", label_ar: "كل المنتجات",          label_en: "All",              db_match: [] },
@@ -786,8 +742,6 @@ export default function HomePage() {
             ? Commander maintenant
           </a>
         </div>
-
-        <TestimonialsSection testimonials={TESTIMONIALS} />
 
         {/* ?? Category pills ?? */}
         <div className="relative">
