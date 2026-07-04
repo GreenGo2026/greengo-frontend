@@ -456,6 +456,8 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
               alt={product.name_fr || product.name_ar || "product"}
               width={400}
               height={400}
+              loading={rank < 4 ? "eager" : "lazy"}
+              fetchPriority={rank < 4 ? "high" : "auto"}
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.07] select-none pointer-events-none"
               onError={() => setImgError(true)}
             />

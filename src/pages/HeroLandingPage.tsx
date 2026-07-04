@@ -4,50 +4,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSeo } from "../hooks/useSeo";
-import TestimonialsSection, { type Testimonial } from "../components/TestimonialsSection";
-
-const TESTIMONIALS: Testimonial[] = [
-  {
-    id: 1,
-    name: "Youssef",
-    neighborhood: "Hay Riad, Rabat",
-    text: "تبارك الله عليكم، الخضرة نقية بزاف والتوصيل كان فعلا فقل من نص ساعة. شكراً.",
-    rating: 5,
-    product: "Panier légumes + Poulet Beldi"
-  },
-  {
-    id: 2,
-    name: "Amina",
-    neighborhood: "Tabriquet, Salé",
-    text: "شكرا وصل داكشي مزيان، أملو غزال تبارك الله الوليدات عجبهم.",
-    rating: 5,
-    product: "Pack petit-déjeuner Amlou + Miel"
-  },
-  {
-    id: 3,
-    name: "Mehdi",
-    neighborhood: "Agdal, Rabat",
-    text: "Dajaj n9i bzaf o mghsoul mzyan. Service top bon courage.",
-    rating: 5,
-    product: "Poulet Beldi + Épices"
-  },
-  {
-    id: 4,
-    name: "Khadija",
-    neighborhood: "Hay Salam, Salé",
-    text: "Merci bzaaf kounte mzrouba w 3t9touni, raw3a.",
-    rating: 5,
-    product: "Panier fruits de saison"
-  },
-  {
-    id: 5,
-    name: "Tarik",
-    neighborhood: "Hassan, Rabat",
-    text: "الزيتون والزيت ديالكم ديال البلاد نيت. الله يعطيكم الصحة.",
-    rating: 5,
-    product: "Olives + Huile d'olive extra vierge"
-  }
-];
 
 // ── Animated counter ───────────────────────────────────────────────────────
 function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -366,103 +322,161 @@ export default function HeroLandingPage() {
       {/* ════════════════════════════════════
           HERO CONTENT
           ════════════════════════════════════ */}
-      <main className="relative z-20 flex min-h-[calc(100vh-80px)] items-center justify-center px-4 pb-4 sm:pb-12">
-        <div className="glass w-full max-w-3xl px-5 py-8 sm:px-8 sm:py-12 md:px-14 md:py-14 text-center">
+      <main className="relative z-20 flex items-center justify-center px-4 py-12 sm:py-16">
+        <div className="glass w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-12 md:px-14 md:py-14">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-10 items-center">
 
-          {/* Badge */}
-          <div className="r1 inline-flex items-center gap-2 mb-7" style={{
-            background: "rgba(201,169,110,0.10)",
-            border: "1px solid rgba(201,169,110,0.24)",
-            borderRadius: 9999,
-            padding: "0.28rem 1rem",
-          }}>
-            <span style={{ fontSize: 13 }}>🇲🇦</span>
-            <span className="font-body" style={{
-              fontSize: "0.70rem", fontWeight: 700,
-              letterSpacing: "0.14em", textTransform: "uppercase",
-              color: "#e8c98a",
-            }}>
-              Salé & Rabat · Livraison en 30 min
-            </span>
-          </div>
+            {/* LEFT — text content */}
+            <div className="text-center lg:text-left">
 
-          {/* Headline */}
-          <h1 className="r2 font-display" style={{
-            fontSize: "clamp(2.4rem,7vw,5.8rem)",
-            fontWeight: 700,
-            lineHeight: 1.02,
-            letterSpacing: "-0.03em",
-            color: "#ffffff",
-            textShadow: "0 2px 40px rgba(46,139,87,0.25)",
-            marginBottom: "1.5rem",
-          }}>
-            Épicerie Fraîche Livrée en 30 min{" "}
-            <span style={{ color: "#C9A96E", fontStyle: "italic", textShadow: "0 2px 40px rgba(201,169,110,0.20)" }}>
-              à Salé & Rabat
-            </span>
-          </h1>
-
-          {/* Animated zellige divider */}
-          <div className="r2 flex justify-center mb-6">
-            <div className="zstripe" style={{ width: 160 }} />
-          </div>
-
-          {/* Subtext */}
-          <h2 className="r3 font-body mx-auto" style={{
-            fontSize: "clamp(0.9rem,1.8vw,1.05rem)",
-            fontWeight: 300,
-            lineHeight: 1.75,
-            color: "rgba(255,255,255,0.58)",
-            maxWidth: 480,
-            marginBottom: "2.5rem",
-          }}>
-            Fruits, légumes, volailles, miel et produits naturels —
-            livrés chez vous en 30 minutes.
-          </h2>
-
-          {/* Delivery zone trust strip */}
-          <div className="r3 flex items-center justify-center gap-4 mb-6 flex-wrap">
-            {[
-              { icon: "📍", text: "Salé & Rabat" },
-              { icon: "⚡", text: "Livraison 30 min" },
-              { icon: "✅", text: "Fraîcheur garantie" },
-            ].map((item, i) => (
-              <div key={i} className="feat-pill flex items-center gap-1.5">
-                <span>{item.icon}</span>
-                <span>{item.text}</span>
+              {/* Badge */}
+              <div className="r1 inline-flex items-center gap-2 mb-7" style={{
+                background: "rgba(201,169,110,0.10)",
+                border: "1px solid rgba(201,169,110,0.24)",
+                borderRadius: 9999,
+                padding: "0.28rem 1rem",
+              }}>
+                <span style={{ fontSize: 13 }}>🇲🇦</span>
+                <span className="font-body" style={{
+                  fontSize: "0.70rem", fontWeight: 700,
+                  letterSpacing: "0.14em", textTransform: "uppercase",
+                  color: "#e8c98a",
+                }}>
+                  Salé & Rabat · Livraison en 30 min
+                </span>
               </div>
-            ))}
-          </div>
-          {/* CTA buttons */}
-          <div className="r4 flex flex-wrap items-center justify-center gap-4 mb-10">
-            <Link to="/shop" className="cta-primary inline-flex items-center gap-3 px-9 py-4"
-              style={{ fontSize: "0.95rem", fontWeight: 700, letterSpacing: "0.02em" }}>
-              <span>🛒</span>
-              <span>Découvrir nos produits</span>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </Link>
-            <a href="https://wa.me/212664500789" target="_blank" rel="noopener noreferrer"
-              className="cta-wa inline-flex items-center gap-2.5 px-6 py-3.5"
-              style={{ fontSize: "0.83rem", textDecoration: "none" }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-              Commander via WhatsApp
-            </a>
+
+              {/* Headline */}
+              <h1 className="r2 font-display" style={{
+                fontSize: "clamp(2.4rem,6vw,4.6rem)",
+                fontWeight: 700,
+                lineHeight: 1.05,
+                letterSpacing: "-0.03em",
+                color: "#ffffff",
+                textShadow: "0 2px 40px rgba(46,139,87,0.25)",
+                marginBottom: "1.5rem",
+              }}>
+                Épicerie Fraîche Livrée en 30 min{" "}
+                <span style={{ color: "#C9A96E", fontStyle: "italic", textShadow: "0 2px 40px rgba(201,169,110,0.20)" }}>
+                  à Salé & Rabat
+                </span>
+              </h1>
+
+              {/* Animated zellige divider */}
+              <div className="r2 flex justify-center lg:justify-start mb-6">
+                <div className="zstripe" style={{ width: 160 }} />
+              </div>
+
+              {/* Subtext */}
+              <h2 className="r3 font-body mx-auto lg:mx-0" style={{
+                fontSize: "clamp(0.9rem,1.8vw,1.05rem)",
+                fontWeight: 300,
+                lineHeight: 1.75,
+                color: "rgba(255,255,255,0.58)",
+                maxWidth: 480,
+                marginBottom: "2rem",
+              }}>
+                Fruits, légumes, volailles, miel et produits naturels —
+                livrés chez vous en 30 minutes.
+              </h2>
+
+              {/* Delivery zone trust strip */}
+              <div className="r3 flex items-center justify-center lg:justify-start gap-4 mb-6 flex-wrap">
+                {[
+                  { icon: "📍", text: "Salé & Rabat" },
+                  { icon: "⚡", text: "Livraison 30 min" },
+                  { icon: "✅", text: "Fraîcheur garantie" },
+                ].map((item, i) => (
+                  <div key={i} className="feat-pill flex items-center gap-1.5">
+                    <span>{item.icon}</span>
+                    <span>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA buttons */}
+              <div className="r4 flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-6">
+                <Link to="/shop" className="cta-primary inline-flex items-center gap-3 px-9 py-4"
+                  style={{ fontSize: "0.95rem", fontWeight: 700, letterSpacing: "0.02em" }}>
+                  <span>🛒</span>
+                  <span>Commander maintenant</span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </Link>
+                <a href="https://wa.me/212664500789" target="_blank" rel="noopener noreferrer"
+                  className="cta-wa inline-flex items-center gap-2.5 px-6 py-3.5"
+                  style={{ fontSize: "0.83rem", textDecoration: "none" }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                  WhatsApp
+                </a>
+              </div>
+
+              {/* Arabic tagline */}
+              <p className="r4 font-body" dir="rtl" style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.45)" }}>
+                طازج • محلي • يوصلك لباب الدار 🌿
+              </p>
+            </div>
+
+            {/* RIGHT — floating stat cards (desktop only) */}
+            <div className="r5 hidden lg:flex flex-col gap-4 items-end">
+              <div className="stat-glass flex items-center gap-4 w-64 px-5 py-4">
+                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl" style={{ background: "rgba(46,139,87,0.14)" }}>
+                  ⚡
+                  <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full" style={{ background: "#4ade80", animation: "pulse-dot 1.8s ease-in-out infinite" }} />
+                </div>
+                <div>
+                  <p className="font-display" style={{ fontSize: "1.7rem", fontWeight: 700, color: "#C9A96E", lineHeight: 1 }}>
+                    <Counter target={30} suffix=" min" />
+                  </p>
+                  <p className="font-body mt-1" style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>
+                    Délai de livraison
+                  </p>
+                </div>
+              </div>
+
+              <div className="stat-glass flex items-center gap-4 w-64 px-5 py-4" style={{ marginRight: 28 }}>
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl" style={{ background: "rgba(201,169,110,0.16)" }}>
+                  🌿
+                </div>
+                <div>
+                  <p className="font-display" style={{ fontSize: "1.7rem", fontWeight: 700, color: "#C9A96E", lineHeight: 1 }}>
+                    <Counter target={100} suffix="%" />
+                  </p>
+                  <p className="font-body mt-1" style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>
+                    Produits frais & locaux
+                  </p>
+                </div>
+              </div>
+
+              <div className="stat-glass flex items-center gap-4 w-64 px-5 py-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl" style={{ background: "rgba(59,130,246,0.16)" }}>
+                  📦
+                </div>
+                <div>
+                  <p className="font-display" style={{ fontSize: "1.7rem", fontWeight: 700, color: "#C9A96E", lineHeight: 1 }}>
+                    7j/7
+                  </p>
+                  <p className="font-body mt-1" style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>
+                    Disponible 8h–20h
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Stats row */}
-          <div className="r5 grid grid-cols-3 gap-3">
+          {/* Mobile-only compact stats row (floating cards are desktop-only) */}
+          <div className="lg:hidden r5 grid grid-cols-3 gap-3 mt-8">
             {[
-              { n: 64,  s: "+",  label: "Produits frais"      },
-              { n: 2,   s: "h",  label: "Délai de livraison"  },
-              { n: 100, s: "%",  label: "Qualité garantie"    },
+              { n: 30,  s: " min", label: "Livraison"       },
+              { n: 100, s: "%",    label: "Frais & locaux"  },
+              { n: 7,   s: "j/7",  label: "Disponible"      },
             ].map((stat, i) => (
               <div key={i} className="stat-glass py-4 px-3 text-center">
                 <p className="font-display" style={{
-                  fontSize: "clamp(1.8rem,3.5vw,2.6rem)",
+                  fontSize: "clamp(1.4rem,3.5vw,1.9rem)",
                   fontWeight: 700,
                   color: "#C9A96E",
                   lineHeight: 1,
@@ -471,9 +485,9 @@ export default function HeroLandingPage() {
                   <Counter target={stat.n} suffix={stat.s} />
                 </p>
                 <p className="font-body mt-1.5" style={{
-                  fontSize: "0.65rem",
+                  fontSize: "0.62rem",
                   fontWeight: 500,
-                  letterSpacing: "0.08em",
+                  letterSpacing: "0.06em",
                   textTransform: "uppercase",
                   color: "rgba(255,255,255,0.50)",
                 }}>
@@ -484,7 +498,7 @@ export default function HeroLandingPage() {
           </div>
 
           {/* Quick nav links below stats */}
-          <div className="r5 flex flex-wrap justify-center gap-3 mt-6">
+          <div className="r5 flex flex-wrap justify-center gap-3 mt-8">
             {[
               { to:"/offres",      emoji:"🔥", fr:"Offres flash"    },
               { to:"/panier-type", emoji:"🛒", fr:"Paniers prêts"   },
@@ -510,8 +524,6 @@ export default function HeroLandingPage() {
           </span>
         ))}
       </div>
-
-      <TestimonialsSection testimonials={TESTIMONIALS} />
 
       {/* Footer */}
       <footer className="relative z-20 pb-5 text-center">

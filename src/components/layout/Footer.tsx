@@ -287,6 +287,7 @@ export default function Footer() {
                 { to: "/about",         fr: "Engagements GreenGo",    ar: "التزامات GreenGo" },
                 { to: "/livraison", fr: "Livraison",  ar: "التوصيل" },
                 { to: "/faq",       fr: "FAQ",        ar: "أسئلة شائعة" },
+                { to: "/testimonials",  fr: "Avis clients",           ar: "آراء العملاء" },
                 { to: "/fidelite",      fr: "Programme Fidélité",     ar: "برنامج الولاء" },
                 { to: "/about#story",   fr: "À propos de nous",       ar: "من نحن" },
                 { to: "/recrutement",   fr: "Recrutement",            ar: "التوظيف" },

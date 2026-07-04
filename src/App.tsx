@@ -40,6 +40,7 @@ const FidelitePage     = lazy(() => import("./pages/FidelitePage"));
 import LegalTemplate, { LEGAL_PAGES } from "./pages/Legal/LegalTemplate";
 const LivraisonPage  = lazy(() => import("./pages/Legal/LivraisonPage"));
 const FAQPage        = lazy(() => import("./pages/Legal/FAQPage"));
+const TestimonialsPage = lazy(() => import("./pages/TestimonialsPage"));
 
 // ── Anti-scraping / anti-inspect protection ──────────────────────────────────
 function useAntiScraping() {
@@ -170,6 +171,7 @@ function PublicShell() {
           <Route path="/fidelite"   element={<FidelitePage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/livraison" element={<LivraisonPage />} />
+          <Route path="/testimonials" element={<TestimonialsPage />} />
         </Routes>
       </main>
       <Footer />
