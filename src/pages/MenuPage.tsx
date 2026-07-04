@@ -472,7 +472,7 @@ export default function MenuPage() {
           {l === "ar" ? "اطلب الآن عبر واتساب" : l === "fr" ? "Commander via WhatsApp" : "Order via WhatsApp"}
         </a>
         <p className="text-center text-[9px] text-gray-400 mt-1.5 font-latin">
-          Laayayda, Salé · Livraison 30 min · 8h–20h
+          Laayayda, Salé · Livraison 30 min · 8h–21h
         </p>
       </div>
 

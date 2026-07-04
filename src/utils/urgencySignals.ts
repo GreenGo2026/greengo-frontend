@@ -64,14 +64,13 @@ export function getDiscountedPrice(priceMad: number, discountPct: number): numbe
 
 /**
  * Delivery time copy based on current hour. Real urgency: order now to get
- * it today, tied to the actual 8h-20h delivery window.
+ * it today, tied to the actual 8h-21h delivery window.
  */
 export function getDeliveryUrgency(): string {
   const hour = new Date().getHours();
 
   if (hour < 8)  return "Livraison dès 8h ce matin ⚡";
-  if (hour < 17) return "Livraison en 30 min ⚡";
-  if (hour < 19) return "⏰ Commandez avant 20h — livraison aujourd'hui";
-  if (hour < 20) return "⚠️ Dernière heure de livraison aujourd'hui !";
+  if (hour < 20) return "Livraison en 30 min ⚡";
+  if (hour < 21) return "⏰ Commandez avant 21h — livraison aujourd'hui";
   return "🌙 Livraison demain dès 8h";
 }

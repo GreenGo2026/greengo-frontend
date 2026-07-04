@@ -48,19 +48,19 @@ export default function SocialProofStrip() {
   const hour = new Date().getHours();
   const messages: Record<L, string[]> = {
     fr: [
-      `🛵 Livraison rapide à ${city} — commandez avant 18h pour livraison aujourd'hui`,
+      `🛵 Livraison rapide à ${city} — commandez avant 21h pour livraison aujourd'hui`,
       `✅ ${data?.total_orders ?? 31}+ commandes livrées avec succès au Maroc`,
       `🌿 Produits frais sélectionnés ce matin dans les marchés de gros`,
       `⭐ Qualité garantie — remboursement sous 24h si non conforme`,
     ],
     ar: [
-      `🛵 توصيل سريع في ${city} — اطلب قبل 6 مساءً للتوصيل اليوم`,
+      `🛵 توصيل سريع في ${city} — اطلب قبل 9 مساءً للتوصيل اليوم`,
       `✅ أكثر من ${data?.total_orders ?? 31} طلبية موصلة بنجاح في المغرب`,
       `🌿 منتجات طازجة مختارة هذا الصباح من أسواق الجملة`,
       `⭐ جودة مضمونة — استرداد خلال 24 ساعة إذا لم تطابق المواصفات`,
     ],
     en: [
-      `🛵 Fast delivery in ${city} — order before 6pm for today's delivery`,
+      `🛵 Fast delivery in ${city} — order before 9pm for today's delivery`,
       `✅ ${data?.total_orders ?? 31}+ orders delivered successfully in Morocco`,
       `🌿 Fresh products selected this morning from wholesale markets`,
       `⭐ Quality guaranteed — refund within 24h if non-conforming`,

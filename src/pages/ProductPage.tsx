@@ -387,7 +387,7 @@ export default function ProductPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { icon: "\u26a1", title: l === "fr" ? "Livraison rapide" : "\u062a\u0648\u0635\u064a\u0644 \u0633\u0631\u064a\u0639", sub: l === "fr" ? "En 30 min \u00e0 Sal\u00e9 & Rabat" : "\u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" },
-              { icon: "\ud83d\udcc5", title: l === "fr" ? "7j/7" : "\u064a\u0648\u0645\u064a\u0627\u064b", sub: l === "fr" ? "De 8h \u00e0 20h" : "\u0645\u0646 8\u0635 \u0625\u0644\u0649 20\u0635" },
+              { icon: "\ud83d\udcc5", title: l === "fr" ? "7j/7" : "\u064a\u0648\u0645\u064a\u0627\u064b", sub: l === "fr" ? "De 8h \u00e0 21h" : "\u0645\u0646 8\u0635 \u0625\u0644\u0649 21\u0635" },
               { icon: "\ud83d\udcac", title: l === "fr" ? "Support WhatsApp" : "\u062f\u0639\u0645 \u0648\u0627\u062a\u0633\u0627\u0628", sub: l === "fr" ? "+212 664 500 789" : "+212 664 500 789" },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3">

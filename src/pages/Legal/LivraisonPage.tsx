@@ -89,8 +89,8 @@ export default function LivraisonPage() {
           </h1>
           <p className="text-white/60 mt-3 text-base max-w-lg mx-auto">
             {ar
-              ? "توصيل سريع في سلا والرباط في 30 دقيقة — طازج كل يوم من الساعة 8 إلى 20"
-              : "Produits frais livrés en 30 minutes — 7j/7 de 8h à 20h"}
+              ? "توصيل سريع في سلا والرباط في 30 دقيقة — طازج كل يوم من الساعة 8 إلى 21"
+              : "Produits frais livrés en 30 minutes — 7j/7 de 8h à 21h"}
           </p>
           <div className="grid grid-cols-3 gap-4 mt-10 max-w-lg mx-auto">
             {[

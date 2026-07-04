@@ -393,7 +393,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                     </span>
                   </div>
                   <p className="flex items-center gap-1.5 text-xs font-semibold text-[#2E8B57]">
-                    🛵 Livraison gratuite à Casablanca pendant tout le premier mois !
+                    🛵 Livraison express 30 min à Salé & Rabat
                   </p>
                 </>
               )}
@@ -557,7 +557,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
             )}
 
             <p className="text-center text-[10px] text-gray-400">
-              🔒 Commande sécurisée · Paiement à la livraison · Livraison gratuite à Casablanca
+              🔒 Commande sécurisée · Paiement à la livraison · Livraison express 30 min
             </p>
           </div>
         )}

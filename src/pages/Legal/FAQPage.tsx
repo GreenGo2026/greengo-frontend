@@ -43,8 +43,8 @@ const FAQS = [
       {
         q_fr: "Quels sont les delais de livraison ?",
         q_ar: "\u0645\u0627 \u0647\u064a \u0645\u062f\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644\u061f",
-        a_fr: "La livraison est effectuee en 30 minutes a Sale et Rabat, 7 jours sur 7 de 8h a 20h.",
-        a_ar: "\u0646\u0648\u0635\u0644 \u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637\u060c 7 \u0623\u064a\u0627\u0645 \u0641\u064a \u0627\u0644\u0623\u0633\u0628\u0648\u0639 \u0645\u0646 8\u0635 \u0625\u0644\u0649 20\u0635.",
+        a_fr: "La livraison est effectuee en 30 minutes a Sale et Rabat, 7 jours sur 7 de 8h a 21h.",
+        a_ar: "\u0646\u0648\u0635\u0644 \u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637\u060c 7 \u0623\u064a\u0627\u0645 \u0641\u064a \u0627\u0644\u0623\u0633\u0628\u0648\u0639 \u0645\u0646 8\u0635 \u0625\u0644\u0649 21\u0635.",
       },
       {
         q_fr: "Livrez-vous dans toute la region ?",
@@ -184,8 +184,8 @@ export default function FAQPage() {
           </h2>
           <p className="text-white/60 text-sm mb-6">
             {l === "ar"
-              ? "\u0641\u0631\u064a\u0642\u0646\u0627 \u0645\u062a\u0648\u0641\u0631 7 \u0623\u064a\u0627\u0645 \u0645\u0646 8\u0635 \u0625\u0644\u0649 20\u0635"
-              : "Notre equipe est disponible 7j/7 de 8h a 20h"}
+              ? "\u0641\u0631\u064a\u0642\u0646\u0627 \u0645\u062a\u0648\u0641\u0631 7 \u0623\u064a\u0627\u0645 \u0645\u0646 8\u0635 \u0625\u0644\u0649 21\u0635"
+              : "Notre equipe est disponible 7j/7 de 8h a 21h"}
           </p>
           <a href="https://wa.me/212664500789" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-extrabold text-white transition-all hover:scale-105"

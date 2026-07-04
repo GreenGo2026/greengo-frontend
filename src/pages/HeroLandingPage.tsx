@@ -27,7 +27,7 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 export default function HeroLandingPage() {
   useSeo({
     title: "GreenGo Market — Épicerie Fraîche Livrée en 30 min | Salé & Rabat",
-    description: "Commandez vos fruits, légumes, volailles et produits naturels en ligne. Livraison fraîche en 30 minutes à Salé, Rabat et Témara. 7j/7 de 8h à 20h. خضر وفواكه طازجة.",
+    description: "Commandez vos fruits, légumes, volailles et produits naturels en ligne. Livraison fraîche en 30 minutes à Salé, Rabat et Témara. 7j/7 de 8h à 21h. خضر وفواكه طازجة.",
     ogTitle: "GreenGo Market 🌿 — Livraison Fraîche en 30 min à Salé & Rabat",
     ogDescription: "Épicerie locale livrée chez vous en 30 minutes. Fruits, légumes, miel, amlou, volailles. Commandez sur mygreengoo.com",
   });
@@ -460,7 +460,7 @@ export default function HeroLandingPage() {
                     7j/7
                   </p>
                   <p className="font-body mt-1" style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>
-                    Disponible 8h–20h
+                    Disponible 8h–21h
                   </p>
                 </div>
               </div>

@@ -33,7 +33,7 @@ export default function ContactPage() {
     addrArCity: "لعيايدة، سلا — المغرب",
     phoneTitle: ar ? "الهاتف"            : fr ? "Téléphone"                     : "Phone",
     hoursTitle: ar ? "أوقات العمل"       : fr ? "Horaires"                      : "Working hours",
-    hours:      ar ? "الإثنين — السبت: 8ص — 8م" : fr ? "Lun — Sam : 8h — 20h"  : "Mon — Sat: 8am — 8pm",
+    hours:      ar ? "الإثنين — السبت: 8ص — 9م" : fr ? "Lun — Sam : 8h — 21h"  : "Mon — Sat: 8am — 9pm",
     formTitle:  ar ? "أرسل رسالة"        : fr ? "Envoyer un message"            : "Send a message",
     formSub:    ar ? "سنرد عليك في أقرب وقت." : fr ? "Nous vous répondrons rapidement." : "We will get back to you soon.",
     nameLbl:    ar ? "الاسم الكامل"      : fr ? "Nom complet"                   : "Full name",

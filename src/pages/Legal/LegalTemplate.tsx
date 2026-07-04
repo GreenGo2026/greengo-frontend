@@ -40,7 +40,7 @@ export const LEGAL_PAGES: Record<string, Omit<LegalTemplateProps, "sections"> & 
       },
       {
         heading: "5. Livraison",
-        body: "La livraison est assurée dans les zones de Salé, Rabat et Témara, en 30 minutes, 7j/7 de 8h à 20h. Les frais de livraison varient selon la commande — consultez notre page /livraison.",
+        body: "La livraison est assurée dans les zones de Salé, Rabat et Témara, en 30 minutes, 7j/7 de 8h à 21h. Les frais de livraison varient selon la commande — consultez notre page /livraison.",
       },
       {
         heading: "6. Politique de retour",
@@ -94,7 +94,7 @@ export const LEGAL_PAGES: Record<string, Omit<LegalTemplateProps, "sections"> & 
       },
       {
         heading: "Livraison et délais",
-        body: "Les livraisons sont effectuées entre 8h et 20h, du lundi au samedi. Le délai moyen est de 30 minutes. GreenGo s'engage à vous informer en temps réel de l'avancement de votre livraison.",
+        body: "Les livraisons sont effectuées entre 8h et 21h, du lundi au samedi. Le délai moyen est de 30 minutes. GreenGo s'engage à vous informer en temps réel de l'avancement de votre livraison.",
       },
     ],
   },
