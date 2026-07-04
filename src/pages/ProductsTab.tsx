@@ -18,7 +18,7 @@ const EMPTY_FORM: CreateProductPayload = {
   name_fr: "", name_ar: "", category: "Fruits",
   price_mad: 0, unit: "kg", in_stock: true,
   visible: true, on_sale: false, discount_pct: 0,
-  description_fr: "", image_url: "",
+  description_fr: "", image_url: "", stock_qty: undefined,
 };
 
 interface InlineEdit {
@@ -191,6 +191,15 @@ export default function ProductsTab({ lang, font }: Props) {
                 <input type="checkbox" checked={form.visible} onChange={e => setF("visible", e.target.checked)} className="h-4 w-4 accent-[#2E8B57]" />
                 <span className="text-sm font-semibold text-gray-700">Visible</span>
               </label>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div>
+              <label className="mb-1 block text-xs font-bold text-gray-500">Stock restant (optionnel)</label>
+              <input type="number" min="0" step="1" placeholder="Laisser vide = illimité"
+                value={form.stock_qty ?? ""}
+                onChange={e => setF("stock_qty", e.target.value === "" ? undefined : parseInt(e.target.value, 10) || 0)}
+                className={inputCls} />
             </div>
           </div>
           <div>

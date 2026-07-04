@@ -6,6 +6,7 @@ import { fetchProductById, getRelatedProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import { computeLineTotal } from "../utils/pricing";
+import { getDeliveryUrgency } from "../utils/urgencySignals";
 
 type L = "fr" | "ar" | "en";
 const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
@@ -273,6 +274,12 @@ export default function ProductPage() {
                   {l === "ar" ? product.name_fr : product.name_ar}
                 </p>
               )}
+              <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                <span>✅</span>
+                <span>
+                  {l === "fr" ? "Produit vérifié — livré à Salé & Rabat" : l === "ar" ? "منتج موثوق — يوصل إلى سلا والرباط" : "Verified product — delivered in Salé & Rabat"}
+                </span>
+              </p>
             </div>
 
             {/* Price */}
@@ -296,6 +303,23 @@ export default function ProductPage() {
                 </p>
               )}
             </div>
+
+            {/* Delivery urgency */}
+            {product.in_stock && (
+              <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-800 font-medium">
+                <span className="text-lg">🚚</span>
+                <span>{getDeliveryUrgency()}</span>
+              </div>
+            )}
+
+            {/* Low stock signal */}
+            {product.in_stock && product.stock_qty != null && product.stock_qty > 0 && product.stock_qty <= 5 && (
+              <div className="px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 text-amber-700 w-fit">
+                {l === "fr" ? `Plus que ${product.stock_qty} disponible${product.stock_qty > 1 ? "s" : ""}`
+                  : l === "ar" ? `باقي ${product.stock_qty} فقط`
+                  : `Only ${product.stock_qty} left`}
+              </div>
+            )}
 
             {/* Quantity + Add to cart */}
             {product.in_stock && (

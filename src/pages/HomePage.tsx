@@ -12,6 +12,7 @@ import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useSeo } from "../hooks/useSeo";
+import { getUrgencySignal, getDiscountedPrice } from "../utils/urgencySignals";
 
 // ── Niche category definitions ───────────────────────────────────────────────
 interface NicheCategory {
@@ -112,10 +113,13 @@ function QtyControl({ product }: { product: DBProduct }) {
   const remove     = useCartStore((s) => s.removeFromCart);
   const { language } = useLanguage();
   const font = language === "ar" ? "font-arabic" : "font-latin";
+  const salePrice = (product.on_sale && product.discount_pct)
+    ? getDiscountedPrice(product.price_mad, product.discount_pct)
+    : product.price_mad;
 
   const proxy = {
     name:           product.name_ar,
-    price_per_unit: product.price_mad,
+    price_per_unit: salePrice,
     unit:           product.unit,
     available:      product.in_stock,
     step:           (product as any).step,
@@ -135,7 +139,7 @@ function QtyControl({ product }: { product: DBProduct }) {
   if (qty === 0) {
     return (
       <button
-        onClick={() => { add(proxy, step); try { if ((window as any).gtag) { (window as any).gtag("event","add_to_cart",{currency:"MAD",value:product.price_mad,items:[{item_id:(product as any).sku||product.id,item_name:product.name_fr||product.name_ar,price:product.price_mad,quantity:step}]}); } } catch {} }}
+        onClick={() => { add(proxy, step); try { if ((window as any).gtag) { (window as any).gtag("event","add_to_cart",{currency:"MAD",value:salePrice,items:[{item_id:(product as any).sku||product.id,item_name:product.name_fr||product.name_ar,price:salePrice,quantity:step}]}); } } catch {} }}
         aria-label="Ajouter au panier"
         className={"group flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] text-xs font-extrabold text-white shadow-md shadow-[#2E8B57]/20 transition-all duration-200 hover:bg-[#1F6B40] hover:shadow-lg hover:shadow-[#2E8B57]/25 active:scale-[0.97] " + font}>
         <ShoppingCart size={14} strokeWidth={2.5} className="transition-transform group-hover:-rotate-6" />
@@ -356,12 +360,22 @@ function ProductGalleryModal({
             <p className="text-[10px] text-[#2E8B57]/70 font-latin font-semibold mb-1 uppercase tracking-wide">
               {language === "ar" ? "السعر" : language === "fr" ? "Prix" : "Price"}
             </p>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-extrabold text-[#1A6640] font-latin leading-none">
-                {product.price_mad.toFixed(2)}
-              </span>
-              <span className="text-sm font-semibold text-[#2E8B57]/60 font-latin">MAD / {product.unit}</span>
-            </div>
+            {product.on_sale && product.discount_pct ? (
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-3xl font-extrabold text-[#F97316] font-latin leading-none">
+                  {getDiscountedPrice(product.price_mad, product.discount_pct).toFixed(2)}
+                </span>
+                <span className="text-sm font-semibold text-[#2E8B57]/60 font-latin">MAD / {product.unit}</span>
+                <span className="text-sm text-gray-400 line-through font-latin">{product.price_mad.toFixed(2)} MAD</span>
+              </div>
+            ) : (
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-3xl font-extrabold text-[#1A6640] font-latin leading-none">
+                  {product.price_mad.toFixed(2)}
+                </span>
+                <span className="text-sm font-semibold text-[#2E8B57]/60 font-latin">MAD / {product.unit}</span>
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-2">
             {[
@@ -436,7 +450,14 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
   const [imgError,  setImgError]  = useState(false);
   const add    = useCartStore((s) => s.addToCart);
   const cart   = useCartStore((s) => s.cart);
-  const proxy  = { name: product.name_ar, price_per_unit: product.price_mad, unit: product.unit, available: product.in_stock, step: (product as any).step };
+  const signal = getUrgencySignal(product);
+  // "Rupture de stock" and "Frais du jour" already have dedicated badges on this
+  // card (top-right stock pill, bottom-right Maroc/fresh pill) — only surface the
+  // discount and low-stock signals here to avoid showing the same thing twice.
+  const showUrgencyBadge = product.in_stock && (signal.level === "high" || signal.level === "medium");
+  const hasDiscount = !!(product.on_sale && product.discount_pct);
+  const salePrice = hasDiscount ? getDiscountedPrice(product.price_mad, product.discount_pct!) : product.price_mad;
+  const proxy  = { name: product.name_ar, price_per_unit: salePrice, unit: product.unit, available: product.in_stock, step: (product as any).step };
   const step   = getUnitStep(proxy.unit, proxy);
   const inCart = !!cart.find((i) => i.name === product.name_ar);
 
@@ -484,6 +505,13 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
               <span className="text-[9px] font-extrabold text-white tracking-wide">TOP</span>
             </div>
           )}
+          {showUrgencyBadge && (
+            <div
+              className={`absolute left-2.5 z-20 rounded-full px-2.5 py-1 text-[9px] font-bold shadow-sm ${signal.color}`}
+              style={{ top: rank === 0 ? "2.35rem" : "0.625rem" }}>
+              {signal.badge}
+            </div>
+          )}
           <div className="absolute right-2.5 top-2.5 z-20">
             {product.in_stock ? (
               <span className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-[#2E8B57] shadow-sm backdrop-blur-sm border border-[#2E8B57]/12">
@@ -524,9 +552,14 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
           </div>
           <div className={"flex items-end justify-between " + (language === "ar" ? "flex-row-reverse" : "")}>
             <div className={language === "ar" ? "text-right" : "text-left"}>
+              {hasDiscount && (
+                <span className="block text-[11px] font-semibold text-gray-400 font-latin line-through leading-none mb-0.5">
+                  {product.price_mad.toFixed(2)} MAD
+                </span>
+              )}
               <div className="flex items-baseline gap-0.5">
-                <span className="text-[22px] font-black text-[#1A6640] font-latin leading-none tracking-tight">
-                  {product.price_mad.toFixed(2)}
+                <span className={"text-[22px] font-black font-latin leading-none tracking-tight " + (hasDiscount ? "text-[#F97316]" : "text-[#1A6640]")}>
+                  {salePrice.toFixed(2)}
                 </span>
                 <span className="text-xs font-semibold text-gray-400 font-latin ml-0.5">MAD</span>
               </div>

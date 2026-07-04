@@ -21,12 +21,14 @@ interface Fields {
   discount_pct:  string;
   image_url:     string;
   visible:       boolean;
+  stock_qty:     string;
 }
 
 const EMPTY: Fields = {
   name_fr:"", name_ar:"", category:"Légumes", price_mad:"",
   unit:"kg", in_stock:true, description_fr:"",
   on_sale:false, discount_pct:"0", image_url:"", visible:true,
+  stock_qty:"",
 };
 
 /* ── style helpers ─────────────────────────────────────────────────────────── */
@@ -113,6 +115,7 @@ export default function AddProductPage() {
       discount_pct:  parseInt(fields.discount_pct, 10) || 0,
       image_url:     fields.image_url.trim() || undefined,
       visible:       fields.visible,
+      stock_qty:     fields.stock_qty.trim() === "" ? undefined : parseInt(fields.stock_qty, 10),
     };
 
     try {

@@ -51,6 +51,7 @@ export interface DBProduct {
   discount_pct?: number;
   description_fr?: string;
   step?: 0.25 | 0.5 | 1;
+  stock_qty?: number | null;
 }
 
 export interface DBProductUpdate {
@@ -257,6 +258,7 @@ export interface CreateProductPayload {
   image_url?:    string;
   step?:         number;
   visible:       boolean;
+  stock_qty?:    number;
 }
 
 export async function createProduct(payload: CreateProductPayload): Promise<DBProduct> {
