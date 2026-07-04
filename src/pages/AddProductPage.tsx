@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, CheckCircle, XCircle, Loader2, Sparkles } from "lucide-react";
 import { createProduct, apiClient, type CreateProductPayload, uploadProductImage } from "../services/api";
+import { categoryLabel } from "../utils/categoryLabels";
 
 const CATEGORIES = ["Fruits","Légumes","Vegetables","Volailles","White Meats","Eggs","Fromage","Olives","Huile et miel","Produits naturels","Épices","Natural Juices","Mixed Packs","Autres"] as const;
 const UNITS       = ["kg","piece","100g","botte","g"] as const;
@@ -216,7 +217,7 @@ export default function AddProductPage() {
                   onChange={e => set("category", e.target.value)}
                   required
                 >
-                  {CATEGORIES.map(c => <option key={c} value={c} style={{ background: "#0a2318" }}>{c}</option>)}
+                  {CATEGORIES.map(c => <option key={c} value={c} style={{ background: "#0a2318" }}>{categoryLabel(c)}</option>)}
                 </select>
               </div>
               <div>

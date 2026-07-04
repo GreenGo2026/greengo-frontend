@@ -536,6 +536,13 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
               </span>
             </div>
           )}
+          {!product.in_stock && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-30">
+              <span className="bg-gray-800 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                {language === "ar" ? "غير متوفر" : language === "fr" ? "Indisponible" : "Unavailable"}
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex flex-1 flex-col gap-2 p-3 sm:p-3.5">
           <div>

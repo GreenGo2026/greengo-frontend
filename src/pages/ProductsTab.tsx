@@ -6,6 +6,7 @@ import {
   type CreateProductPayload, type DBProduct,
 } from "../services/api";
 import { getJwt } from "../services/adminJwt";
+import { categoryLabel } from "../utils/categoryLabels";
 
 type Lang = "fr" | "ar";
 
@@ -168,7 +169,7 @@ export default function ProductsTab({ lang, font }: Props) {
             <div>
               <label className="mb-1 block text-xs font-bold text-gray-500">Catégorie</label>
               <select value={form.category} onChange={e => setF("category", e.target.value)} className={inputCls}>
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                {CATEGORIES.map(c => <option key={c} value={c}>{categoryLabel(c)}</option>)}
               </select>
             </div>
             <div>
@@ -261,7 +262,7 @@ export default function ProductsTab({ lang, font }: Props) {
             {/* Category filter */}
             <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
               className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs font-semibold text-gray-600 outline-none focus:border-[#2E8B57] cursor-pointer">
-              {uniqueCats.map(c => <option key={c} value={c}>{c === "all" ? "Toutes catégories" : c}</option>)}
+              {uniqueCats.map(c => <option key={c} value={c}>{c === "all" ? "Toutes catégories" : categoryLabel(c)}</option>)}
             </select>
             {/* Refresh */}
             <button onClick={load} disabled={loading}
@@ -346,7 +347,7 @@ export default function ProductsTab({ lang, font }: Props) {
                         {isEditing
                           ? <select value={editRow.category} onChange={e => setEditRow(r => r ? { ...r, category: e.target.value } : r)}
                               className="rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs outline-none">
-                              {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                              {CATEGORIES.map(c => <option key={c} value={c}>{categoryLabel(c)}</option>)}
                             </select>
                           : <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-600">{p.category}</span>
                         }

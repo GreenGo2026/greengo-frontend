@@ -8,6 +8,7 @@ import {
   ChevronDown, ChevronUp, Bike, RefreshCw,
 } from "lucide-react";
 import PaniersTab from "./PaniersTab";
+import { categoryLabel } from "../utils/categoryLabels";
 import ProductsTab from "./ProductsTab";
 import {
   updateProductById, updateOrderStatus, getOrders, getProducts, sendCatalogToWhatsApp,
@@ -601,7 +602,7 @@ function WhatsAppCatalogTab({ lang, font, products }: { lang: Lang; font: string
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1 block">Catégorie</label>
             <select value={category} onChange={e => setCategory(e.target.value)}
               className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold outline-none focus:border-[#2E8B57] cursor-pointer">
-              {uniqueCats.map(c => <option key={c} value={c}>{c === "all" ? "Toutes les catégories" : c}</option>)}
+              {uniqueCats.map(c => <option key={c} value={c}>{c === "all" ? "Toutes les catégories" : categoryLabel(c)}</option>)}
             </select>
           </div>
           <div>
