@@ -12,17 +12,17 @@ const ZONES = [
   {
     city: "Salé", ar: "سلا",
     areas: "Laayayda, Hay Salam, Tabriquet, Bettana, Hay Karima",
-    time: "30 min", bg: GREEN,
+    time: "30 min", bg: GREEN, link: "/livraison-sale",
   },
   {
     city: "Rabat", ar: "الرباط",
     areas: "Agdal, Hassan, Les Orangers, Hay Riad, Diour Jamaa",
-    time: "30 min", bg: GREEN,
+    time: "30 min", bg: GREEN, link: "/livraison-rabat",
   },
   {
     city: "Témara", ar: "تمارة",
     areas: "Centre-ville, Ouled Mtaa",
-    time: "< 1h", bg: ORANGE,
+    time: "< 1h", bg: ORANGE, link: null,
   },
 ];
 
@@ -145,6 +145,11 @@ export default function LivraisonPage() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed">{z.areas}</p>
+                {z.link && (
+                  <Link to={z.link} className="mt-3 inline-flex items-center gap-1 text-xs font-bold" style={{ color: GREEN }}>
+                    {ar ? "المزيد" : "En savoir plus"} →
+                  </Link>
+                )}
               </div>
             ))}
           </div>

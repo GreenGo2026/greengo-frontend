@@ -36,3 +36,18 @@ export function useSeo({ title, description, ogTitle, ogDescription, ogType = "w
     };
   }, [title, description, ogTitle, ogDescription, ogType]);
 }
+
+/** Injects a JSON-LD <script> tag into <head>, keyed by id, updated on data change. */
+export function useJsonLd(id: string, data: object) {
+  useEffect(() => {
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement("script");
+      el.id = id;
+      el.setAttribute("type", "application/ld+json");
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(data);
+    return () => { el?.remove(); };
+  }, [id, JSON.stringify(data)]);
+}
