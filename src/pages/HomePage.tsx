@@ -169,6 +169,93 @@ function QtyControl({ product }: { product: DBProduct }) {
   );
 }
 
+// ── VariantCardControl ─────────────────────────────────────────────────────────
+// Weight-tier products (250g/500g/1kg) don't fit the continuous kg stepper --
+// each variant is a discrete pack, so this shows weight tabs + a per-pack
+// add/quantity control instead of QtyControl's fractional-kg +/-.
+function VariantCardControl({ product }: { product: DBProduct }) {
+  const cart   = useCartStore((s) => s.cart);
+  const add    = useCartStore((s) => s.addToCart);
+  const remove = useCartStore((s) => s.removeFromCart);
+  const { language } = useLanguage();
+  const font = language === "ar" ? "font-arabic" : "font-latin";
+  const variants = product.variants!;
+
+  const [selected, setSelected] = useState(() => {
+    const firstInStock = variants.findIndex((v) => v.in_stock);
+    return firstInStock >= 0 ? firstInStock : 0;
+  });
+  const activeVariant = variants[selected];
+
+  const proxy = {
+    name:           product.name_ar,
+    price_per_unit: activeVariant.price_mad,
+    unit:           product.unit,
+    available:      activeVariant.in_stock,
+    variant_label:  activeVariant.label,
+  };
+  const item = cart.find((i) => i.name === product.name_ar && (i.variant_label ?? null) === activeVariant.label);
+  const qty  = item?.cartQuantity ?? 0;
+
+  if (!product.in_stock) {
+    return (
+      <div className={"flex h-10 w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-xs font-semibold text-gray-400 " + font}>
+        {language === "ar" ? "غير متوفر" : language === "fr" ? "Épuisé" : "Out of stock"}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex gap-1 flex-wrap">
+        {variants.map((v, i) => (
+          <button
+            key={i}
+            type="button"
+            disabled={!v.in_stock}
+            onClick={() => setSelected(i)}
+            className={"px-2 py-1 rounded-full text-[10px] font-bold border transition-all " +
+              (!v.in_stock
+                ? "opacity-40 cursor-not-allowed border-gray-200 text-gray-300"
+                : selected === i
+                  ? "bg-[#0c3228] text-white border-[#0c3228]"
+                  : "border-gray-200 text-gray-600 hover:border-[#0c3228]")}>
+            {v.label}
+          </button>
+        ))}
+      </div>
+
+      {qty === 0 ? (
+        <button
+          onClick={() => { add(proxy, 1); try { if ((window as any).gtag) { (window as any).gtag("event","add_to_cart",{currency:"MAD",value:activeVariant.price_mad,items:[{item_id:(product as any).sku||product.id,item_name:product.name_fr||product.name_ar,price:activeVariant.price_mad,quantity:1}]}); } } catch {} }}
+          aria-label="Ajouter au panier"
+          className={"group flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-[#2E8B57] text-xs font-extrabold text-white shadow-md shadow-[#2E8B57]/20 transition-all duration-200 hover:bg-[#1F6B40] hover:shadow-lg hover:shadow-[#2E8B57]/25 active:scale-[0.97] " + font}>
+          <ShoppingCart size={13} strokeWidth={2.5} className="transition-transform group-hover:-rotate-6" />
+          {activeVariant.price_mad.toFixed(2)} MAD
+        </button>
+      ) : (
+        <div className="flex h-9 items-center overflow-hidden rounded-xl border-2 border-[#2E8B57]/25 bg-[#2E8B57]/6">
+          <button
+            onClick={() => remove(product.name_ar, 1, activeVariant.label)}
+            aria-label="Réduire la quantité"
+            className="flex h-full w-9 shrink-0 items-center justify-center text-[#2E8B57] transition-colors hover:bg-[#2E8B57]/12 active:scale-90">
+            <Minus size={13} strokeWidth={2.5} />
+          </button>
+          <span className="flex flex-1 items-center justify-center text-xs font-extrabold text-[#2E8B57] font-latin">
+            {qty} × {activeVariant.label}
+          </span>
+          <button
+            onClick={() => add(proxy, 1)}
+            aria-label="Augmenter la quantité"
+            className="flex h-full w-9 shrink-0 items-center justify-center text-[#2E8B57] transition-colors hover:bg-[#2E8B57]/12 active:scale-90">
+            <Plus size={13} strokeWidth={2.5} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Magnifier hook ───────────────────────────────────────────────────────────
 function useMagnifier(zoomFactor: number = 2.8) {
   const imgRef = useRef<HTMLImageElement>(null);
@@ -564,20 +651,32 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
           </div>
           <div className={"flex items-end justify-between " + (language === "ar" ? "flex-row-reverse" : "")}>
             <div className={language === "ar" ? "text-right" : "text-left"}>
-              {hasDiscount && (
-                <span className="block text-[11px] font-semibold text-gray-400 font-latin line-through leading-none mb-0.5">
-                  {product.price_mad.toFixed(2)} MAD
-                </span>
+              {product.variants && product.variants.length > 0 ? (
+                <p className="text-[11px] text-gray-400 font-latin">
+                  {language === "ar" ? "ابتداءً من " : language === "fr" ? "À partir de " : "From "}
+                  <span className="text-sm font-black text-[#1A6640]">
+                    {Math.min(...product.variants.map(v => v.price_mad)).toFixed(2)}
+                  </span>
+                  {" MAD"}
+                </p>
+              ) : (
+                <>
+                  {hasDiscount && (
+                    <span className="block text-[11px] font-semibold text-gray-400 font-latin line-through leading-none mb-0.5">
+                      {product.price_mad.toFixed(2)} MAD
+                    </span>
+                  )}
+                  <div className="flex items-baseline gap-0.5">
+                    <span className={"text-[22px] font-black font-latin leading-none tracking-tight " + (hasDiscount ? "text-[#F97316]" : "text-[#1A6640]")}>
+                      {salePrice.toFixed(2)}
+                    </span>
+                    <span className="text-xs font-semibold text-gray-400 font-latin ml-0.5">MAD</span>
+                  </div>
+                  <p className={"text-[10px] text-gray-400 font-latin mt-0.5 " + font}>
+                    {language === "ar" ? "لكل " : language === "fr" ? "par " : "per "}{product.unit || "kg"}
+                  </p>
+                </>
               )}
-              <div className="flex items-baseline gap-0.5">
-                <span className={"text-[22px] font-black font-latin leading-none tracking-tight " + (hasDiscount ? "text-[#F97316]" : "text-[#1A6640]")}>
-                  {salePrice.toFixed(2)}
-                </span>
-                <span className="text-xs font-semibold text-gray-400 font-latin ml-0.5">MAD</span>
-              </div>
-              <p className={"text-[10px] text-gray-400 font-latin mt-0.5 " + font}>
-                {language === "ar" ? "لكل " : language === "fr" ? "par " : "per "}{product.unit || "kg"}
-              </p>
             </div>
             {isFresh && (
               <div className="flex items-center gap-1 rounded-xl bg-emerald-50 border border-emerald-100 px-2 py-1">
@@ -589,7 +688,9 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
             )}
           </div>
           <div className="mt-auto">
-            <QtyControl product={product} />
+            {product.variants && product.variants.length > 0
+              ? <VariantCardControl product={product} />
+              : <QtyControl product={product} />}
           </div>
         </div>
       </article>
