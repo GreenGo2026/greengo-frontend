@@ -53,7 +53,9 @@ function SeoHead({ product, lang }: { product: DBProduct; lang: string }) {
   const l    = lang as L;
   const name = product.name_fr || product.name_ar || "Produit";
   const title = `${name} \u2014 GreenGo Market | Livraison fra\u00eeche \u00e0 Sal\u00e9 & Rabat`;
-  const desc  = generateDescription(product, "fr");
+  // Prefer the real stored description (all 176 products have one) over the
+  // generic generated fallback -- matches the same precedence the page body uses.
+  const desc  = (product as any).description_fr?.trim() || generateDescription(product, "fr");
   const img   = resolveImg(product.image_url);
 
   useEffect(() => {
@@ -155,6 +157,7 @@ export default function ProductPage() {
   const [imgError, setImgError] = useState(false);
   const [added,    setAdded]    = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"desc" | "info">("desc");
 
   const addToCart = useCartStore(s => s.addToCart);
   const cart      = useCartStore(s => s.cart);
@@ -441,34 +444,58 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* Description */}
+        {/* Description / Informations tabs */}
         <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6 mb-8">
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.2rem", fontWeight: 700, color: "#0c3228", fontStyle: "italic", marginBottom: "0.75rem" }}>
-            {l === "fr" ? "Description" : l === "ar" ? "\u0627\u0644\u0648\u0635\u0641" : "Description"}
-          </h2>
-          <p className="text-gray-600 text-sm leading-relaxed">{desc}</p>
-        </div>
-
-        {/* Delivery info */}
-        <div className="rounded-2xl p-5 mb-8" style={{ background: "linear-gradient(135deg,#f0fdf4,#fafff7)", border: "1px solid #bbf7d0" }}>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", fontWeight: 700, color: "#0c3228", fontStyle: "italic", marginBottom: "0.75rem" }}>
-            {l === "fr" ? "Livraison" : l === "ar" ? "\u0627\u0644\u062a\u0648\u0635\u064a\u0644" : "Delivery"}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { icon: "\u26a1", title: l === "fr" ? "Livraison rapide" : "\u062a\u0648\u0635\u064a\u0644 \u0633\u0631\u064a\u0639", sub: l === "fr" ? "En 30 min \u00e0 Sal\u00e9 & Rabat" : "\u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629 \u0641\u064a \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" },
-              { icon: "\ud83d\udcc5", title: l === "fr" ? "7j/7" : "\u064a\u0648\u0645\u064a\u0627\u064b", sub: l === "fr" ? "De 8h \u00e0 21h" : "\u0645\u0646 8\u0635 \u0625\u0644\u0649 21\u0635" },
-              { icon: "\ud83d\udcac", title: l === "fr" ? "Support WhatsApp" : "\u062f\u0639\u0645 \u0648\u0627\u062a\u0633\u0627\u0628", sub: l === "fr" ? "+212 664 500 789" : "+212 664 500 789" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="text-xl shrink-0">{item.icon}</span>
-                <div>
-                  <p className="text-sm font-bold text-gray-700">{item.title}</p>
-                  <p className="text-xs text-gray-500">{item.sub}</p>
-                </div>
-              </div>
-            ))}
+          <div className={`flex gap-6 border-b border-gray-200 mb-6 ${isRTL ? "flex-row-reverse" : ""}`}>
+            <button type="button" onClick={() => setActiveTab("desc")}
+              className={"pb-3 text-sm font-semibold -mb-px transition-colors " + (activeTab === "desc" ? "text-[#0c3228] border-b-2 border-[#0c3228]" : "text-gray-400 hover:text-[#0c3228]")}>
+              {l === "fr" ? "Description" : l === "ar" ? "\u0627\u0644\u0648\u0635\u0641" : "Description"}
+            </button>
+            <button type="button" onClick={() => setActiveTab("info")}
+              className={"pb-3 text-sm font-semibold -mb-px transition-colors " + (activeTab === "info" ? "text-[#0c3228] border-b-2 border-[#0c3228]" : "text-gray-400 hover:text-[#0c3228]")}>
+              {l === "fr" ? "Informations" : l === "ar" ? "\u0645\u0639\u0644\u0648\u0645\u0627\u062a" : "Information"}
+            </button>
           </div>
+
+          {activeTab === "desc" ? (
+            <>
+              <div className="prose prose-sm max-w-none text-gray-600 leading-relaxed">
+                {desc.split("\n").filter(Boolean).map((paragraph: string, i: number) => (
+                  <p key={i} className="mb-3">{paragraph}</p>
+                ))}
+              </div>
+              <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  { icon: "\ud83c\udf3f", label: l === "fr" ? "100% Naturel" : l === "ar" ? "100% \u0637\u0628\u064a\u0639\u064a" : "100% Natural" },
+                  { icon: "\ud83d\udccd", label: l === "fr" ? "Sal\u00e9 & Rabat" : "\u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" },
+                  { icon: "\u26a1", label: l === "fr" ? "Livraison 30 min" : l === "ar" ? "\u062a\u0648\u0635\u064a\u0644 30 \u062f\u0642\u064a\u0642\u0629" : "30 min delivery" },
+                  { icon: "\u2705", label: l === "fr" ? "Qualit\u00e9 garantie" : l === "ar" ? "\u062c\u0648\u062f\u0629 \u0645\u0636\u0645\u0648\u0646\u0629" : "Quality guaranteed" },
+                  { icon: "\ud83d\udd04", label: l === "fr" ? "Retour facile" : l === "ar" ? "\u0627\u0633\u062a\u0631\u062c\u0627\u0639 \u0633\u0647\u0644" : "Easy return" },
+                  { icon: "\ud83d\udcac", label: l === "fr" ? "Support WhatsApp" : l === "ar" ? "\u062f\u0639\u0645 \u0648\u0627\u062a\u0633\u0627\u0628" : "WhatsApp support" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="text-xs font-medium text-gray-600">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="space-y-3">
+              {[
+                { label: l === "fr" ? "Cat\u00e9gorie" : l === "ar" ? "\u0627\u0644\u0641\u0626\u0629" : "Category", value: product.category },
+                { label: l === "fr" ? "Unit\u00e9" : l === "ar" ? "\u0627\u0644\u0648\u062d\u062f\u0629" : "Unit", value: product.unit === "kg" ? (l === "fr" ? "Vendu au kilo" : l === "ar" ? "\u064a\u0628\u0627\u0639 \u0628\u0627\u0644\u0643\u064a\u0644\u0648" : "Sold by the kilo") : (l === "fr" ? "Vendu \u00e0 la pi\u00e8ce" : l === "ar" ? "\u064a\u0628\u0627\u0639 \u0628\u0627\u0644\u0642\u0637\u0639\u0629" : "Sold by the piece") },
+                { label: l === "fr" ? "Disponibilit\u00e9" : l === "ar" ? "\u0627\u0644\u062a\u0648\u0641\u0631" : "Availability", value: product.in_stock ? (l === "fr" ? "\u2705 En stock" : l === "ar" ? "\u2705 \u0645\u062a\u0648\u0641\u0631" : "\u2705 In stock") : (l === "fr" ? "\u274c Indisponible" : l === "ar" ? "\u274c \u063a\u064a\u0631 \u0645\u062a\u0648\u0641\u0631" : "\u274c Unavailable") },
+                { label: l === "fr" ? "Livraison" : l === "ar" ? "\u0627\u0644\u062a\u0648\u0635\u064a\u0644" : "Delivery", value: l === "fr" ? "30 min \u2014 Sal\u00e9 & Rabat" : l === "ar" ? "30 \u062f\u0642\u064a\u0642\u0629 \u2014 \u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" : "30 min \u2014 Sal\u00e9 & Rabat" },
+                { label: l === "fr" ? "Paiement" : l === "ar" ? "\u0627\u0644\u062f\u0641\u0639" : "Payment", value: l === "fr" ? "\u00c0 la livraison" : l === "ar" ? "\u0639\u0646\u062f \u0627\u0644\u062a\u0648\u0635\u064a\u0644" : "Cash on delivery" },
+              ].filter((row) => row.value).map((row) => (
+                <div key={row.label} className="flex justify-between py-2.5 border-b border-gray-100 text-sm">
+                  <span className="text-gray-400 font-medium">{row.label}</span>
+                  <span className="text-gray-700">{row.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Related products */}
