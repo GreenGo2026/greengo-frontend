@@ -46,10 +46,18 @@ export function formatQuantity(qty: number, unit: string | undefined): string {
   return qty % 1 === 0 ? String(qty) : qty.toFixed(2).replace(/\.?0+$/, "");
 }
 
+// A product can have multiple weight variants (250g/500g/1kg) that are the
+// same DB document but must occupy separate cart lines -- key on product
+// identity *and* the selected variant, not just id/name.
+function cartKey(item: { id?: string; name: string; variant_label?: string | null }): string {
+  const base = item.id || item.name;
+  return item.variant_label ? `${base}::${item.variant_label}` : base;
+}
+
 interface CartState {
   cart: CartItem[];
   addToCart: (product: Product, step?: number) => void;
-  removeFromCart: (productName: string, step?: number) => void;
+  removeFromCart: (productName: string, step?: number, variantLabel?: string | null) => void;
   clearCart: () => void;
   totalPrice: () => number;
 }
@@ -61,22 +69,17 @@ export const useCartStore = create<CartState>()(
 
       addToCart: (product: Product, step?: number) => {
         const s = step ?? getUnitStep(product.unit, product);
-        const key = (product as any).id || product.name;
+        const key = cartKey(product as any);
 
         set((state) => {
-          const existing = state.cart.find((i) =>
-            ((i as any).id && (product as any).id)
-              ? (i as any).id === (product as any).id
-              : i.name === product.name
-          );
+          const existing = state.cart.find((i) => cartKey(i as any) === key);
 
           if (existing) {
             const next = Math.round((existing.cartQuantity + s) * 1000) / 1000;
             return {
-              cart: state.cart.map((i) => {
-                const iKey = (i as any).id || i.name;
-                return iKey === key ? { ...i, cartQuantity: next } : i;
-              })
+              cart: state.cart.map((i) =>
+                cartKey(i as any) === key ? { ...i, cartQuantity: next } : i
+              )
             };
           }
 
@@ -84,21 +87,22 @@ export const useCartStore = create<CartState>()(
         });
       },
 
-      removeFromCart: (productName: string, step?: number) => {
+      removeFromCart: (productName: string, step?: number, variantLabel?: string | null) => {
         set((state) => {
-          const existing = state.cart.find((i) => i.name === productName);
+          const key = cartKey({ name: productName, variant_label: variantLabel });
+          const existing = state.cart.find((i) => cartKey(i as any) === key);
           if (!existing) return state;
 
           const s = step ?? getUnitStep(existing.unit, existing);
           const next = Math.round((existing.cartQuantity - s) * 1000) / 1000;
 
           if (next <= 0) {
-            return { cart: state.cart.filter((i) => i.name !== productName) };
+            return { cart: state.cart.filter((i) => cartKey(i as any) !== key) };
           }
 
           return {
             cart: state.cart.map((i) =>
-              i.name === productName ? { ...i, cartQuantity: next } : i
+              cartKey(i as any) === key ? { ...i, cartQuantity: next } : i
             )
           };
         });

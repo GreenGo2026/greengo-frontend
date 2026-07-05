@@ -107,14 +107,14 @@ function QuantityControl({ item }: { item: CartItem }) {
 
   return (
     <div className="flex items-center gap-2 shrink-0">
-      <button onClick={() => remove(item.name, step)} className={decCls}>
+      <button onClick={() => remove(item.name, step, item.variant_label)} className={decCls}>
         {qty <= step ? <Trash2 size={12} /> : <Minus size={12} />}
       </button>
       <span className="min-w-[3.5rem] text-center text-sm font-bold text-gray-700">
         {formatQuantity(qty, item.unit)}
       </span>
       <button
-        onClick={() => add({ name: item.name, price_per_unit: item.price_per_unit, unit: item.unit, available: true }, step)}
+        onClick={() => add({ name: item.name, price_per_unit: item.price_per_unit, unit: item.unit, available: true, variant_label: item.variant_label }, step)}
         className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 transition-all hover:border-[#2E8B57]/40 hover:bg-[#2E8B57]/6 hover:text-[#2E8B57] active:scale-90">
         <Plus size={12} />
       </button>
@@ -137,6 +137,9 @@ function CartRow({ item }: { item: CartItem }) {
       </div>
       <div className="flex-1 min-w-0">
         <p dir={dir} className={nameCls}>{item.name || "\u2014"}</p>
+        {item.variant_label && (
+          <p className="text-[11px] text-gray-400 font-latin">{item.variant_label}</p>
+        )}
         <p className="text-xs text-gray-400 font-latin">
           {unitPrice.toFixed(2)} MAD / {item.unit || "unité"}
         </p>

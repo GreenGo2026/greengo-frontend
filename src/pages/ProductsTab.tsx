@@ -351,6 +351,11 @@ export default function ProductsTab({ lang, font }: Props) {
                             </select>
                           : <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-600">{p.category}</span>
                         }
+                        {!!p.variants?.length && (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-1">
+                            {p.variants.length} variants
+                          </span>
+                        )}
                       </td>
                       {/* Price */}
                       <td className="px-3 py-2 text-right">

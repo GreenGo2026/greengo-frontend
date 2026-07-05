@@ -34,6 +34,9 @@ function CartRow({ item }: { item: CartItem }) {
         <p dir="rtl" className="truncate text-sm font-bold text-gray-800 font-arabic text-right">
           {item.name}
         </p>
+        {item.variant_label && (
+          <p className="text-[11px] text-gray-400 font-latin">{item.variant_label}</p>
+        )}
         <p className="text-xs text-gray-400 font-latin">
           {(item.price_per_unit ?? 0).toFixed(2)} MAD / {item.unit}
         </p>
@@ -42,7 +45,7 @@ function CartRow({ item }: { item: CartItem }) {
         <p className="text-sm font-extrabold text-gray-800 font-latin">{line} MAD</p>
         <div className="flex items-center overflow-hidden rounded-xl border-2 border-[#2E8B57]/20 bg-[#2E8B57]/6">
           <button
-            onClick={() => remove(item.name, step)}
+            onClick={() => remove(item.name, step, item.variant_label)}
             className="flex h-7 w-7 items-center justify-center text-[#2E8B57] transition-colors hover:bg-[#2E8B57]/12 active:scale-90">
             {qty <= step ? <Trash2 size={11} /> : <Minus size={11} />}
           </button>
@@ -51,7 +54,7 @@ function CartRow({ item }: { item: CartItem }) {
           </span>
           <button
             onClick={() => add(
-              { name: item.name, price_per_unit: item.price_per_unit, unit: item.unit, available: true },
+              { name: item.name, price_per_unit: item.price_per_unit, unit: item.unit, available: true, variant_label: item.variant_label },
               step
             )}
             className="flex h-7 w-7 items-center justify-center text-[#2E8B57] transition-colors hover:bg-[#2E8B57]/12 active:scale-90">
@@ -264,7 +267,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
       address:         address.trim(),
       gps_coordinates: location ?? undefined,
       items: cart.map((i) => ({
-        name:           i.name,
+        name:           i.variant_label ? `${i.name} (${i.variant_label})` : i.name,
         quantity:       i.cartQuantity,
         unit:           i.unit ?? "kg",
         price_per_unit: i.price_per_unit ?? 0,
@@ -494,7 +497,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                   {cart.map((item, i) => (
                     <li key={item.name + i} className="flex items-center justify-between text-xs">
                       <span dir="rtl" className="text-gray-600 font-arabic">
-                        {item.name} × {formatQuantity(item.cartQuantity, item.unit)}
+                        {item.name}{item.variant_label ? ` (${item.variant_label})` : ""} × {formatQuantity(item.cartQuantity, item.unit)}
                       </span>
                       <span className="font-bold text-gray-800 font-latin">
                         {((item.price_per_unit ?? 0) * item.cartQuantity).toFixed(2)} MAD

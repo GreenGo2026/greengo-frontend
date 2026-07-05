@@ -556,6 +556,11 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
                 {product.name_fr}
               </p>
             )}
+            {product.variants && product.variants.length > 0 && (
+              <p className="text-[10px] text-gray-400 mt-0.5">
+                {language === "ar" ? `${product.variants.length} أحجام متوفرة` : language === "fr" ? `${product.variants.length} tailles disponibles` : `${product.variants.length} sizes available`}
+              </p>
+            )}
           </div>
           <div className={"flex items-end justify-between " + (language === "ar" ? "flex-row-reverse" : "")}>
             <div className={language === "ar" ? "text-right" : "text-left"}>

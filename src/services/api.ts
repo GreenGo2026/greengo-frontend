@@ -33,6 +33,15 @@ export interface Product {
   price_per_unit: number;
   unit:           string;
   available:      boolean;
+  variant_label?: string | null;
+}
+
+export interface ProductVariant {
+  label:     string;
+  price_mad: number;
+  weight_g?: number | null;
+  sku?:      string | null;
+  in_stock:  boolean;
 }
 
 export interface DBProduct {
@@ -52,6 +61,7 @@ export interface DBProduct {
   description_fr?: string;
   step?: 0.25 | 0.5 | 1;
   stock_qty?: number | null;
+  variants?: ProductVariant[] | null;
 }
 
 export interface DBProductUpdate {

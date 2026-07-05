@@ -138,6 +138,7 @@ export default function ProductPage() {
   const [loading,  setLoading]  = useState(true);
   const [imgError, setImgError] = useState(false);
   const [added,    setAdded]    = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
 
   const addToCart = useCartStore(s => s.addToCart);
   const cart      = useCartStore(s => s.cart);
@@ -148,6 +149,7 @@ export default function ProductPage() {
     setImgError(false);
     fetchProductById(id).then(p => {
       setProduct(p);
+      setSelectedVariant(p?.variants?.length ? 0 : null);
       setLoading(false);
       if (p) getRelatedProducts(p.category, p.id).then(setRelated);
     });
@@ -176,10 +178,16 @@ export default function ProductPage() {
   const img      = imgError ? "" : resolveImg(product.image_url);
   const isJpg    = product.image_url?.endsWith(".jpg") || product.image_url?.endsWith(".jpeg");
   const step     = getUnitStep(product.unit);
-  const cartItem = cart.find(i => i.name === product.name_ar || i.name === product.name_fr);
+  const hasVariants = !!(product.variants && product.variants.length > 0);
+  const activeVariant = hasVariants && selectedVariant !== null ? product.variants![selectedVariant] : null;
+  const cartItem = cart.find(i =>
+    (i.name === product.name_ar || i.name === product.name_fr) &&
+    (i.variant_label ?? null) === (activeVariant?.label ?? null)
+  );
   const qty      = cartItem?.cartQuantity ?? 0;
   const disc     = (product as any).discount_pct as number | undefined;
   const dealPrice = disc ? Math.round(product.price_mad * (1 - disc / 100) * 100) / 100 : null;
+  const activePrice = activeVariant ? activeVariant.price_mad : (dealPrice ?? product.price_mad);
   // Use DB description when available, fall back to generated
   const desc = (
     (product as any).description_fr?.trim()
@@ -190,9 +198,10 @@ export default function ProductPage() {
   function handleAdd() {
     addToCart({
       name:           product!.name_ar || product!.name_fr || "",
-      price_per_unit: dealPrice ?? product!.price_mad,
+      price_per_unit: activePrice,
       unit:           product!.unit,
       available:      product!.in_stock,
+      variant_label:  activeVariant?.label ?? null,
     }, step);
     setAdded(true);
     // GA4 add_to_cart event
@@ -200,8 +209,8 @@ export default function ProductPage() {
       if ((window as any).gtag) {
         (window as any).gtag("event", "add_to_cart", {
           currency: "MAD",
-          value:    dealPrice ?? product!.price_mad,
-          items: [{ item_id: (product as any).sku || product!.id, item_name: product!.name_fr || product!.name_ar, price: dealPrice ?? product!.price_mad, quantity: step }],
+          value:    activePrice,
+          items: [{ item_id: (product as any).sku || product!.id, item_name: product!.name_fr || product!.name_ar, price: activePrice, quantity: step }],
         });
       }
     } catch { /* ignore */ }
@@ -282,9 +291,41 @@ export default function ProductPage() {
               </p>
             </div>
 
+            {/* Variant selector */}
+            {hasVariants && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600">
+                  {l === "fr" ? "Choisir le poids :" : l === "ar" ? "\u0627\u062e\u062a\u0631 \u0627\u0644\u0648\u0632\u0646:" : "Choose the weight:"}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {product.variants!.map((v, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      disabled={!v.in_stock}
+                      onClick={() => setSelectedVariant(i)}
+                      className={`px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all
+                        ${!v.in_stock ? "opacity-40 cursor-not-allowed border-gray-200 text-gray-400" :
+                          selectedVariant === i
+                            ? "border-[#0c3228] bg-[#0c3228] text-white"
+                            : "border-gray-200 text-gray-700 hover:border-[#0c3228]"}`}
+                    >
+                      {v.label}
+                      <span className="ml-1 text-xs opacity-75">{v.price_mad.toFixed(2)} MAD</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Price */}
             <div className="rounded-2xl p-4" style={{ background: "linear-gradient(135deg,#fdf8ef,#f9efda)", border: "1px solid rgba(201,169,110,0.2)" }}>
-              {dealPrice ? (
+              {activeVariant ? (
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-black font-latin text-[#0c3228]">{activeVariant.price_mad.toFixed(2)}</span>
+                  <span className="text-gray-500 text-sm font-latin">MAD \u2014 {activeVariant.label}</span>
+                </div>
+              ) : dealPrice ? (
                 <div className="flex items-baseline gap-3">
                   <span className="text-3xl font-black font-latin text-[#2E8B57]">{dealPrice.toFixed(2)}</span>
                   <span className="text-gray-400 text-sm font-latin line-through">{product.price_mad.toFixed(2)}</span>
@@ -297,7 +338,7 @@ export default function ProductPage() {
                   <span className="text-gray-500 text-sm font-latin">MAD / {product.unit}</span>
                 </div>
               )}
-              {product.unit?.toLowerCase() === "kg" && (
+              {!hasVariants && product.unit?.toLowerCase() === "kg" && (
                 <p className="text-xs text-gray-500 mt-1">
                   {l === "fr" ? "Disponible au demi-kilo (500g minimum)" : l === "ar" ? "\u0645\u062a\u0627\u062d \u0628\u0646\u0635\u0641 \u0643\u064a\u0644\u0648 (500\u063a \u0643\u062d\u062f \u0623\u062f\u0646\u0649)" : "Available per 500g minimum"}
                 </p>
@@ -326,7 +367,7 @@ export default function ProductPage() {
               <div className="flex flex-col gap-3">
                 {qty > 0 && (
                   <div className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}>
-                    <button onClick={() => { addToCart({ name: product!.name_ar || product!.name_fr || "", price_per_unit: dealPrice ?? product!.price_mad, unit: product!.unit, available: true }, -step); }}
+                    <button onClick={() => { addToCart({ name: product!.name_ar || product!.name_fr || "", price_per_unit: activePrice, unit: product!.unit, available: true, variant_label: activeVariant?.label ?? null }, -step); }}
                       className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-black text-lg transition-colors flex items-center justify-center">-</button>
                     <span className="font-bold text-gray-800 font-latin min-w-[60px] text-center">
                       {formatQuantity(qty, product.unit)}
@@ -334,7 +375,7 @@ export default function ProductPage() {
                     <button onClick={handleAdd}
                       className="w-10 h-10 rounded-xl bg-[#2E8B57]/10 hover:bg-[#2E8B57]/20 text-[#2E8B57] font-black text-lg transition-colors flex items-center justify-center">+</button>
                     <span className="ml-auto font-black text-[#2E8B57] font-latin text-lg">
-                      {computeLineTotal(dealPrice ?? product.price_mad, qty, product.unit).toFixed(2)} MAD
+                      {computeLineTotal(activePrice, qty, product.unit).toFixed(2)} MAD
                     </span>
                   </div>
                 )}
@@ -348,8 +389,8 @@ export default function ProductPage() {
                     : (l === "fr" ? "\ud83d\uded2 Ajouter au panier" : l === "ar" ? "\ud83d\uded2 \u0623\u0636\u0641 \u0644\u0644\u0633\u0644\u0629" : "\ud83d\uded2 Add to cart")}
                 </button>
                 <a href={"https://wa.me/212664500789?text=" + encodeURIComponent(
-                  l === "fr" ? `Commander: ${product.name_fr || product.name_ar} - ${(dealPrice ?? product.price_mad).toFixed(2)} MAD/${product.unit}`
-                  : `\u0628\u063a\u064a\u062a \u0646\u0637\u0644\u0628: ${product.name_ar} - ${(dealPrice ?? product.price_mad).toFixed(2)} \u062f\u0631\u0647\u0645/${product.unit}`
+                  l === "fr" ? `Commander: ${product.name_fr || product.name_ar}${activeVariant ? ` (${activeVariant.label})` : ""} - ${activePrice.toFixed(2)} MAD/${product.unit}`
+                  : `\u0628\u063a\u064a\u062a \u0646\u0637\u0644\u0628: ${product.name_ar}${activeVariant ? ` (${activeVariant.label})` : ""} - ${activePrice.toFixed(2)} \u062f\u0631\u0647\u0645/${product.unit}`
                 )}
                   target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full rounded-2xl py-3 text-sm font-bold border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors">
