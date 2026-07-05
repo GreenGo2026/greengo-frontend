@@ -357,13 +357,22 @@ export default function ProductsTab({ lang, font }: Props) {
                           </span>
                         )}
                       </td>
-                      {/* Price */}
+                      {/* Price + Unit */}
                       <td className="px-3 py-2 text-right">
                         {isEditing
-                          ? <input type="number" min="0" step="0.5" value={editRow.price_mad}
-                              onChange={e => setEditRow(r => r ? { ...r, price_mad: parseFloat(e.target.value) || 0 } : r)}
-                              className="w-20 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-right outline-none" />
-                          : <span className="font-bold text-gray-800 font-latin">{p.price_mad.toFixed(2)} MAD</span>
+                          ? <div className="flex flex-col items-end gap-1">
+                              <input type="number" min="0" step="0.5" value={editRow.price_mad}
+                                onChange={e => setEditRow(r => r ? { ...r, price_mad: parseFloat(e.target.value) || 0 } : r)}
+                                className="w-20 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-right outline-none" />
+                              <select value={editRow.unit} onChange={e => setEditRow(r => r ? { ...r, unit: e.target.value } : r)}
+                                className="w-20 rounded-lg border border-amber-300 bg-amber-50 px-1.5 py-1 text-xs outline-none">
+                                {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                              </select>
+                            </div>
+                          : <>
+                              <span className="font-bold text-gray-800 font-latin">{p.price_mad.toFixed(2)} MAD</span>
+                              <span className="block text-[10px] text-gray-400 font-latin">/ {p.unit}</span>
+                            </>
                         }
                       </td>
                       {/* Stock */}
