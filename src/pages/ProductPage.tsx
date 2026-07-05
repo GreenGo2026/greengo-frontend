@@ -7,6 +7,7 @@ import type { DBProduct } from "../services/api";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import { computeLineTotal } from "../utils/pricing";
 import { getDeliveryUrgency } from "../utils/urgencySignals";
+import { useJsonLd } from "../hooks/useSeo";
 
 type L = "fr" | "ar" | "en";
 const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
@@ -89,6 +90,21 @@ function SeoHead({ product, lang }: { product: DBProduct; lang: string }) {
     });
     return () => { document.title = "GreenGo Market"; };
   }, [product.id]);
+
+  const breadcrumbItems = [
+    { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.mygreengoo.com" },
+    { "@type": "ListItem", position: 2, name: "Catalogue", item: "https://www.mygreengoo.com/shop" },
+    ...(product.category ? [{
+      "@type": "ListItem", position: 3, name: product.category,
+      item: `https://www.mygreengoo.com/shop?category=${encodeURIComponent(product.category)}`,
+    }] : []),
+    {
+      "@type": "ListItem", position: product.category ? 4 : 3, name,
+      item: `https://www.mygreengoo.com/produit/${product.id}`,
+    },
+  ];
+  useJsonLd("breadcrumb-ld", { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: breadcrumbItems });
+
   return null;
 }
 
@@ -224,7 +240,7 @@ export default function ProductPage() {
       <main className="max-w-4xl mx-auto px-4 py-6">
 
         {/* Breadcrumb */}
-        <nav className={`flex items-center gap-2 text-xs text-gray-400 mb-6 ${isRTL ? "flex-row-reverse" : ""}`}>
+        <nav aria-label="Breadcrumb" className={`flex items-center gap-2 text-xs text-gray-400 mb-6 flex-wrap ${isRTL ? "flex-row-reverse" : ""}`}>
           <Link to="/" className="hover:text-[#2E8B57] transition-colors">
             {l === "fr" ? "Accueil" : l === "ar" ? "\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629" : "Home"}
           </Link>
@@ -232,6 +248,14 @@ export default function ProductPage() {
           <Link to="/shop" className="hover:text-[#2E8B57] transition-colors">
             {l === "fr" ? "Catalogue" : l === "ar" ? "\u0627\u0644\u0643\u062a\u0627\u0644\u0648\u062c" : "Catalog"}
           </Link>
+          {product.category && (
+            <>
+              <span>/</span>
+              <Link to={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-[#2E8B57] transition-colors">
+                {product.category}
+              </Link>
+            </>
+          )}
           <span>/</span>
           <span className="text-gray-600 font-semibold truncate max-w-[120px]">
             {l === "ar" ? product.name_ar : product.name_fr || product.name_ar}
@@ -242,7 +266,7 @@ export default function ProductPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
 
           {/* Image */}
-          <div className="rounded-3xl overflow-hidden flex items-center justify-center aspect-square"
+          <div className="relative rounded-3xl overflow-hidden flex items-center justify-center aspect-square"
             style={{ background: isJpg ? "#f9fafb" : "#f0fdf4", border: "1px solid rgba(0,0,0,0.06)" }}>
             {img
               ? <img src={img} alt={l === "ar" ? product.name_ar : product.name_fr || product.name_ar}
@@ -250,6 +274,11 @@ export default function ProductPage() {
                   loading="lazy"
                   onError={() => setImgError(true)} />
               : <span className="text-8xl">{cat.emoji}</span>}
+            {!!disc && (
+              <div className="absolute top-3 left-3 z-10 w-12 h-12 rounded-full bg-[#F97316] text-white flex items-center justify-center text-sm font-bold shadow-md leading-tight text-center">
+                -{disc}%
+              </div>
+            )}
           </div>
 
           {/* Info panel */}

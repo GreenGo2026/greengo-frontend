@@ -343,37 +343,41 @@ function PinGate({onUnlock,lang,setLang}:{onUnlock:()=>void;lang:Lang;setLang:(l
   }
 
   return(
-    <div className="relative flex min-h-screen flex-col items-center justify-center" style={{background:"linear-gradient(160deg,#0d3b36 0%,#0a2318 50%,#1a3a0d 100%)"}}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 flex items-center justify-center p-4 relative">
       <div className="absolute top-4 right-4"><LangToggle lang={lang} setLang={setLang}/></div>
-      <div className={"flex flex-col items-center gap-5 rounded-3xl bg-white/95 p-10 shadow-2xl w-full max-w-sm "+font}>
-        <div className="flex h-20 w-20 items-center justify-center rounded-2xl shadow-xl" style={{background:"linear-gradient(135deg,#2E8B57,#0d3b36)"}}><Lock size={32} className="text-white"/></div>
-        <div className="text-center">
-          <h1 className="text-2xl font-extrabold text-gray-800">{L.pin_title}</h1>
-          <p className="mt-1 text-sm text-gray-500">Connexion administrateur sécurisée</p>
+      <div className={"bg-white rounded-2xl shadow-xl p-8 w-full max-w-md border border-gray-100 "+font}>
+
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-[#0c3228] rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl">
+            🌿
+          </div>
+          <h1 className="text-2xl font-bold text-[#0c3228]">{L.pin_title}</h1>
+          <p className="text-sm text-gray-400 mt-1">Connexion administrateur sécurisée</p>
         </div>
+
         <div className="w-full space-y-3">
           <input
             type="password" value={password} autoFocus
             onChange={e=>setPassword(e.target.value)}
             onKeyDown={e=>e.key==="Enter"&&document.getElementById("totp-input")?.focus()}
             placeholder="Mot de passe" dir="ltr" autoComplete="current-password"
-            className={"w-full rounded-2xl border-2 bg-gray-50 px-4 py-3.5 text-sm outline-none transition-all "+(err?"border-red-400":"border-gray-200 focus:border-[#2E8B57] focus:bg-white focus:ring-4 focus:ring-[#2E8B57]/10")}
+            className={"w-full border rounded-xl px-4 py-3 text-sm outline-none transition-all "+(err?"border-red-400":"border-gray-200 focus:border-[#0c3228] focus:ring-1 focus:ring-[#0c3228]")}
           />
           <input
             id="totp-input" type="text" inputMode="numeric" maxLength={6}
             value={totp} onChange={e=>setTotp(e.target.value.replace(/\D/g,""))}
             onKeyDown={e=>e.key==="Enter"&&submit()}
             placeholder="Code de vérification" dir="ltr" autoComplete="one-time-code"
-            className={"w-full rounded-2xl border-2 bg-gray-50 px-4 py-3.5 text-center text-xl font-mono tracking-[0.4em] outline-none transition-all "+(err?"border-red-400 text-red-500":"border-gray-200 text-gray-800 focus:border-[#2E8B57] focus:bg-white focus:ring-4 focus:ring-[#2E8B57]/10")}
+            className={"w-full border rounded-xl px-4 py-3 text-center text-xl font-mono tracking-[0.4em] outline-none transition-all "+(err?"border-red-400 text-red-500":"border-gray-200 text-gray-800 focus:border-[#0c3228] focus:ring-1 focus:ring-[#0c3228]")}
           />
           {err&&<p className={"text-center text-sm font-semibold text-red-500 "+font}>{err}</p>}
           <button onClick={submit} disabled={loading}
-            className={"w-full rounded-2xl py-3.5 text-sm font-bold text-white shadow-lg active:scale-95 disabled:opacity-60 "+font}
-            style={{background:"linear-gradient(135deg,#2E8B57,#1a6b42)"}}>
+            className={"w-full bg-[#0c3228] text-white py-3 rounded-xl font-bold text-sm hover:bg-green-900 transition-all shadow-sm active:scale-95 disabled:opacity-60 "+font}>
             {loading?<Loader2 size={16} className="animate-spin mx-auto"/>:L.pin_btn}
           </button>
         </div>
-        <p className="text-xs text-gray-400 text-center">Session fermée à la fermeture de l'onglet</p>
+
+        <p className="text-center text-xs text-gray-400 mt-6">Session fermée à la fermeture de l'onglet</p>
       </div>
     </div>
   );

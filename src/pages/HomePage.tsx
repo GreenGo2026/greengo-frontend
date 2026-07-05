@@ -541,7 +541,10 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
   // "Rupture de stock" and "Frais du jour" already have dedicated badges on this
   // card (top-right stock pill, bottom-right Maroc/fresh pill) — only surface the
   // discount and low-stock signals here to avoid showing the same thing twice.
-  const showUrgencyBadge = product.in_stock && (signal.level === "high" || signal.level === "medium");
+  // Discount gets its own circular badge (below); this pill now only covers
+  // the low-stock signal, since discount already takes priority in
+  // getUrgencySignal and would otherwise show in both places at once.
+  const showUrgencyBadge = product.in_stock && signal.level === "medium";
   const hasDiscount = !!(product.on_sale && product.discount_pct);
   const salePrice = hasDiscount ? getDiscountedPrice(product.price_mad, product.discount_pct!) : product.price_mad;
   const proxy  = { name: product.name_ar, price_per_unit: salePrice, unit: product.unit, available: product.in_stock, step: (product as any).step };
@@ -590,6 +593,13 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
             <div className="absolute left-2.5 top-2.5 z-20 flex items-center gap-1 rounded-full bg-[#FF9800] px-2.5 py-1 shadow-lg shadow-[#FF9800]/30">
               <Star size={9} className="fill-white text-white" />
               <span className="text-[9px] font-extrabold text-white tracking-wide">TOP</span>
+            </div>
+          )}
+          {hasDiscount && (
+            <div
+              className="absolute left-2 z-20 w-11 h-11 rounded-full bg-[#F97316] text-white flex items-center justify-center text-xs font-bold shadow-md leading-tight text-center"
+              style={{ top: rank === 0 ? "2.75rem" : "0.5rem" }}>
+              -{product.discount_pct}%
             </div>
           )}
           {showUrgencyBadge && (
@@ -642,6 +652,16 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
               <p className={"mt-0.5 text-[11px] text-gray-400 font-latin truncate " + (language === "ar" ? "text-right" : "text-left")}>
                 {product.name_fr}
               </p>
+            )}
+            {product.image_url && (
+              <div className="flex items-center gap-0.5 mt-1" title={language === "ar" ? "علامة جودة GreenGo — ليست تقييمات عملاء" : language === "fr" ? "Repère qualité GreenGo — pas des avis clients" : "GreenGo quality mark — not a customer review"}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <span key={i} className="text-yellow-400 text-xs leading-none">★</span>
+                ))}
+                <span className="text-[9px] text-gray-400 ml-1 font-latin">
+                  {language === "ar" ? "جودة GreenGo" : language === "fr" ? "Qualité GreenGo" : "GreenGo quality"}
+                </span>
+              </div>
             )}
             {product.variants && product.variants.length > 0 && (
               <p className="text-[10px] text-gray-400 mt-0.5">
