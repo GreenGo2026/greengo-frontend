@@ -622,10 +622,12 @@ export default function AdminOrders() {
                     const totalLabel: string = (order.total_price ?? 0).toFixed(2);
 
                     const dateLabel: string = order.created_at
-                      ? new Date(order.created_at).toLocaleDateString("fr-MA", {
-                          day:   "2-digit",
-                          month: "short",
-                          year:  "numeric",
+                      ? new Date(order.created_at).toLocaleString("fr-MA", {
+                          day:    "2-digit",
+                          month:  "short",
+                          year:   "numeric",
+                          hour:   "2-digit",
+                          minute: "2-digit",
                         })
                       : "—";
 
