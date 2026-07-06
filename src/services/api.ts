@@ -218,11 +218,19 @@ export async function getOrders(status?: OrderStatus, limit = 50): Promise<Order
   const params: Record<string, string | number> = { limit };
   if (status) params.status = status;
   const r = await apiClient.get<unknown>("/orders", { params });
-  return toArray<Order>(r.data).map((o: Order) => ({
-    ...o,
-    id: o.id || (o as unknown as Record<string,string>)["_id"] || "",
-    status: (o.status?.toLowerCase() as OrderStatus) || "pending",
-  }));
+  return toArray<Order>(r.data).map((o: Order) => {
+    const raw = o as unknown as Record<string, string>;
+    return {
+      ...o,
+      id: o.id || raw["_id"] || "",
+      // The backend stores/returns "phone" and "address" (see app/routes/orders.py),
+      // not "customer_phone"/"delivery_address" — normalize here so the rest of the
+      // admin UI can rely on the Order type's field names.
+      customer_phone: o.customer_phone || raw["phone"] || "",
+      delivery_address: o.delivery_address || raw["address"] || "",
+      status: (o.status?.toLowerCase() as OrderStatus) || "pending",
+    };
+  });
 }
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<OrderStatusUpdateResponse> {
   const r = await apiClient.patch<OrderStatusUpdateResponse>(`/orders/${orderId}/status`, null, { params: { status } });

@@ -252,7 +252,18 @@ export default function AdminOrders() {
         throw new Error("HTTP " + res.status.toString());
       }
       const data: Order[] = await res.json();
-      setOrders(data);
+      // Backend stores/returns "phone" and "address" (see app/routes/orders.py),
+      // not "customer_phone"/"delivery_address" — normalize so the UI below,
+      // which reads the latter, actually has values to show.
+      const normalized = data.map((o) => {
+        const raw = o as unknown as Record<string, string>;
+        return {
+          ...o,
+          customer_phone: o.customer_phone || raw["phone"] || "",
+          delivery_address: o.delivery_address || raw["address"] || "",
+        };
+      });
+      setOrders(normalized);
     } catch (err) {
       console.error("[AdminOrders] fetchOrders:", err);
       setError("Impossible de charger les commandes.");
