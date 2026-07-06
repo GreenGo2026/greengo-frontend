@@ -436,10 +436,10 @@ export default function ProductPage() {
 
             {/* Trust badges */}
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <TrustBadge icon="\u26a1" text={l === "fr" ? "Livraison en 30 min" : l === "ar" ? "\u062a\u0648\u0635\u064a\u0644 \u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629" : "30 min delivery"} />
-              <TrustBadge icon="\u2705" text={l === "fr" ? "Qualit\u00e9 garantie" : l === "ar" ? "\u062c\u0648\u062f\u0629 \u0645\u0636\u0645\u0648\u0646\u0629" : "Quality guaranteed"} />
+              <TrustBadge icon="⚡" text={l === "fr" ? "Livraison en 30 min" : l === "ar" ? "\u062a\u0648\u0635\u064a\u0644 \u0641\u064a 30 \u062f\u0642\u064a\u0642\u0629" : "30 min delivery"} />
+              <TrustBadge icon="✅" text={l === "fr" ? "Qualit\u00e9 garantie" : l === "ar" ? "\u062c\u0648\u062f\u0629 \u0645\u0636\u0645\u0648\u0646\u0629" : "Quality guaranteed"} />
               <TrustBadge icon="🌿" text={l === "fr" ? "Fra\u00eecheur du matin" : l === "ar" ? "\u0637\u0627\u0632\u062c\u0629 \u0645\u0646 \u0627\u0644\u0635\u0628\u0627\u062d" : "Morning fresh"} />
-              <TrustBadge icon="\ud83d\udccd" text={l === "fr" ? "Sal\u00e9 & Rabat" : l === "ar" ? "\u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" : "Sal\u00e9 & Rabat"} />
+              <TrustBadge icon="📍" text={l === "fr" ? "Sal\u00e9 & Rabat" : l === "ar" ? "\u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" : "Sal\u00e9 & Rabat"} />
             </div>
           </div>
         </div>
@@ -466,12 +466,12 @@ export default function ProductPage() {
               </div>
               <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
                 {[
-                  { icon: "\ud83c\udf3f", label: l === "fr" ? "100% Naturel" : l === "ar" ? "100% \u0637\u0628\u064a\u0639\u064a" : "100% Natural" },
-                  { icon: "\ud83d\udccd", label: l === "fr" ? "Sal\u00e9 & Rabat" : "\u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" },
-                  { icon: "\u26a1", label: l === "fr" ? "Livraison 30 min" : l === "ar" ? "\u062a\u0648\u0635\u064a\u0644 30 \u062f\u0642\u064a\u0642\u0629" : "30 min delivery" },
-                  { icon: "\u2705", label: l === "fr" ? "Qualit\u00e9 garantie" : l === "ar" ? "\u062c\u0648\u062f\u0629 \u0645\u0636\u0645\u0648\u0646\u0629" : "Quality guaranteed" },
-                  { icon: "\ud83d\udd04", label: l === "fr" ? "Retour facile" : l === "ar" ? "\u0627\u0633\u062a\u0631\u062c\u0627\u0639 \u0633\u0647\u0644" : "Easy return" },
-                  { icon: "\ud83d\udcac", label: l === "fr" ? "Support WhatsApp" : l === "ar" ? "\u062f\u0639\u0645 \u0648\u0627\u062a\u0633\u0627\u0628" : "WhatsApp support" },
+                  { icon: "🌿", label: l === "fr" ? "100% Naturel" : l === "ar" ? "100% \u0637\u0628\u064a\u0639\u064a" : "100% Natural" },
+                  { icon: "📍", label: l === "fr" ? "Sal\u00e9 & Rabat" : "\u0633\u0644\u0627 \u0648\u0627\u0644\u0631\u0628\u0627\u0637" },
+                  { icon: "⚡", label: l === "fr" ? "Livraison 30 min" : l === "ar" ? "\u062a\u0648\u0635\u064a\u0644 30 \u062f\u0642\u064a\u0642\u0629" : "30 min delivery" },
+                  { icon: "✅", label: l === "fr" ? "Qualit\u00e9 garantie" : l === "ar" ? "\u062c\u0648\u062f\u0629 \u0645\u0636\u0645\u0648\u0646\u0629" : "Quality guaranteed" },
+                  { icon: "🔄", label: l === "fr" ? "Retour facile" : l === "ar" ? "\u0627\u0633\u062a\u0631\u062c\u0627\u0639 \u0633\u0647\u0644" : "Easy return" },
+                  { icon: "💬", label: l === "fr" ? "Support WhatsApp" : l === "ar" ? "\u062f\u0639\u0645 \u0648\u0627\u062a\u0633\u0627\u0628" : "WhatsApp support" },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
                     <span className="text-lg">{item.icon}</span>

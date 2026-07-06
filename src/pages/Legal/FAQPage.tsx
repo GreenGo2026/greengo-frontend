@@ -13,7 +13,7 @@ const FAQS = [
   {
     cat: "Commande",
     cat_ar: "\u0627\u0644\u0637\u0644\u0628",
-    emoji: "\ud83d\uded2",
+    emoji: "🛒",
     items: [
       {
         q_fr: "Comment passer une commande ?",
@@ -38,7 +38,7 @@ const FAQS = [
   {
     cat: "Livraison",
     cat_ar: "\u0627\u0644\u062a\u0648\u0635\u064a\u0644",
-    emoji: "\ud83d\ude9a",
+    emoji: "🚚",
     items: [
       {
         q_fr: "Quels sont les delais de livraison ?",
@@ -63,7 +63,7 @@ const FAQS = [
   {
     cat: "Produits",
     cat_ar: "\u0627\u0644\u0645\u0646\u062a\u062c\u0627\u062a",
-    emoji: "\ud83e\udd57",
+    emoji: "🥗",
     items: [
       {
         q_fr: "Les produits sont-ils garantis frais ?",
@@ -82,7 +82,7 @@ const FAQS = [
   {
     cat: "Paiement",
     cat_ar: "\u0627\u0644\u062f\u0641\u0639",
-    emoji: "\ud83d\udcb3",
+    emoji: "💳",
     items: [
       {
         q_fr: "Quels modes de paiement acceptez-vous ?",

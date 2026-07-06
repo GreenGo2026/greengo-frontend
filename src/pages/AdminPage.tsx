@@ -72,7 +72,7 @@ const I: Record<Lang, Record<string,string>> = {
     product:"Produit", curr_price:"Prix actuel", new_price:"Nouveau prix",
     unit_lbl:"Unit\u00e9", stock_lbl:"Stock", action_lbl:"Action",
     in_stock:"En stock", out_stock:"Rupture",
-    save_btn:"Sauver", saving_btn:"\u2026", saved_lbl:"Sauvegard\u00e9", failed_lbl:"\u00c9chec",
+    save_btn:"Sauver", saving_btn:"…", saved_lbl:"Sauvegard\u00e9", failed_lbl:"\u00c9chec",
     synced:"sync", total_orders:"Commandes", pending_lbl:"En attente",
     products_lbl:"Produits", unsaved_lbl:"Modifs",
     loading_orders:"Chargement des commandes\u2026",
@@ -151,10 +151,10 @@ const NEXT_STATES: Record<OrderStatus,OrderStatus[]> = {
 };
 
 const CAT_STYLE: Record<string,{emoji:string;bg:string;text:string}> = {
-  Vegetables:{emoji:"\ud83e\udd55",bg:"bg-emerald-50",text:"text-emerald-700"},
-  Fruits:    {emoji:"\ud83c\udf4e",bg:"bg-orange-50", text:"text-orange-700"},
-  "White Meats":{emoji:"\ud83c\udf57",bg:"bg-rose-50",text:"text-rose-700"},
-  Eggs:      {emoji:"\ud83e\udd5a",bg:"bg-yellow-50",text:"text-yellow-700"},
+  Vegetables:{emoji:"🥕",bg:"bg-emerald-50",text:"text-emerald-700"},
+  Fruits:    {emoji:"🍎",bg:"bg-orange-50", text:"text-orange-700"},
+  "White Meats":{emoji:"🍗",bg:"bg-rose-50",text:"text-rose-700"},
+  Eggs:      {emoji:"🥚",bg:"bg-yellow-50",text:"text-yellow-700"},
   Other:     {emoji:"🛒",bg:"bg-gray-100", text:"text-gray-600"},
 };
 
@@ -283,7 +283,7 @@ function PriceRow({item,rowIndex,totalRows,lang,onChange,onToggle,onToggleSale,o
       <td className="px-5 py-3.5"><div className="flex items-center gap-3"><div className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xl "+cs.bg}>{cs.emoji}</div><div><p dir="rtl" className="font-bold text-gray-800 text-sm font-arabic">{item.name_ar}</p>
                 <textarea value={item.edited_description} onChange={e=>onDescriptionChange(item.id,e.target.value)} rows={1} placeholder="Description..." className={"mt-1 w-full rounded-lg border px-2 py-1 text-[10px] text-gray-600 outline-none resize-none "+(item.isDirty&&item.edited_description!==String((item as any).description_fr??"")?"border-amber-300 bg-amber-50":"border-gray-100 bg-gray-50")} style={{minWidth:160}} />{item.name_fr&&<p className="text-[10px] text-gray-400 font-latin">{item.name_fr}</p>}<span className={"mt-0.5 inline-block rounded-full px-2 py-0.5 text-[9px] font-bold "+cs.bg+" "+cs.text}>{item.category}</span><span className={"ml-1 inline-block h-2 w-2 rounded-full align-middle "+(item.image_status==="ready"?"bg-emerald-400":"bg-amber-300")} title={item.image_status==="ready"?"Image prête":"Image en attente"}/></div></div></td>
       <td className="px-5 py-3.5"><span className="text-sm font-semibold text-gray-400 font-latin">{item.price_mad.toFixed(2)}</span></td>
-      <td className="px-5 py-3.5"><div className="flex items-center gap-2"><input ref={inputRef} type="number" min="0" step="0.5" value={item.edited_price} onChange={e=>onChange(item.id,parseFloat(e.target.value)||0)} onKeyDown={e=>{if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();onSave(item.id);const inputs=document.querySelectorAll<HTMLInputElement>(".price-input");const idx=Array.from(inputs).indexOf(e.currentTarget);const nxt=inputs[idx+1];if(nxt){nxt.focus();nxt.select();}}}} className={"price-input w-24 rounded-xl border-2 px-2 py-2 text-center text-sm font-bold outline-none transition-all font-latin "+(item.isDirty?"border-amber-300 bg-amber-50 text-amber-800 focus:border-[#2E8B57] focus:bg-white focus:ring-2 focus:ring-[#2E8B57]/20":"border-gray-200 bg-white text-gray-800 focus:border-[#2E8B57] focus:ring-2 focus:ring-[#2E8B57]/20")}/><span className="text-xs text-gray-400">MAD</span>{item.isDirty&&item.price_mad>0&&item.edited_price!==item.price_mad&&(<span className={"text-[10px] font-bold rounded-full px-1.5 py-0.5 "+(pct>0?"bg-red-100 text-red-600":"bg-emerald-100 text-emerald-700")}>{pct>0?"\u2191":"\u2193"}{Math.abs(pct).toFixed(0)}%</span>)}</div></td>
+      <td className="px-5 py-3.5"><div className="flex items-center gap-2"><input ref={inputRef} type="number" min="0" step="0.5" value={item.edited_price} onChange={e=>onChange(item.id,parseFloat(e.target.value)||0)} onKeyDown={e=>{if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();onSave(item.id);const inputs=document.querySelectorAll<HTMLInputElement>(".price-input");const idx=Array.from(inputs).indexOf(e.currentTarget);const nxt=inputs[idx+1];if(nxt){nxt.focus();nxt.select();}}}} className={"price-input w-24 rounded-xl border-2 px-2 py-2 text-center text-sm font-bold outline-none transition-all font-latin "+(item.isDirty?"border-amber-300 bg-amber-50 text-amber-800 focus:border-[#2E8B57] focus:bg-white focus:ring-2 focus:ring-[#2E8B57]/20":"border-gray-200 bg-white text-gray-800 focus:border-[#2E8B57] focus:ring-2 focus:ring-[#2E8B57]/20")}/><span className="text-xs text-gray-400">MAD</span>{item.isDirty&&item.price_mad>0&&item.edited_price!==item.price_mad&&(<span className={"text-[10px] font-bold rounded-full px-1.5 py-0.5 "+(pct>0?"bg-red-100 text-red-600":"bg-emerald-100 text-emerald-700")}>{pct>0?"↑":"↓"}{Math.abs(pct).toFixed(0)}%</span>)}</div></td>
       <td className="px-5 py-3.5"><span className="text-xs font-semibold text-gray-400 font-latin">{item.unit||"—"}</span></td>
       <td className="px-5 py-3.5"><button onClick={()=>onToggle(item.id)} className="flex items-center gap-2 rounded-xl px-2 py-1 transition-all hover:bg-gray-100">{item.edited_in_stock?<><ToggleRight size={22} className="text-[#2E8B57]"/><span className={"text-xs font-bold text-[#2E8B57] "+font}>{L.in_stock}</span></>:<><ToggleLeft size={22} className="text-gray-300"/><span className={"text-xs font-bold text-gray-400 "+font}>{L.out_stock}</span></>}</button></td>
       <td className="px-5 py-3.5">

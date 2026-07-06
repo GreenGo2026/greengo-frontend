@@ -136,7 +136,7 @@ function CartRow({ item }: { item: CartItem }) {
         🛒
       </div>
       <div className="flex-1 min-w-0">
-        <p dir={dir} className={nameCls}>{item.name || "\u2014"}</p>
+        <p dir={dir} className={nameCls}>{item.name || "—"}</p>
         {item.variant_label && (
           <p className="text-[11px] text-gray-400 font-latin">{item.variant_label}</p>
         )}
