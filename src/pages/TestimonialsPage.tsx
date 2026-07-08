@@ -1,9 +1,12 @@
 // src/pages/TestimonialsPage.tsx
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import TestimonialsSection, { type Testimonial } from "../components/TestimonialsSection";
 import { useSeo } from "../hooks/useSeo";
+import { getReviews } from "../services/api";
 
-const TESTIMONIALS: Testimonial[] = [
+// Static fallback -- shown if the API is unreachable, so the page never goes blank.
+const FALLBACK_TESTIMONIALS: Testimonial[] = [
   {
     id: 1,
     name: "Youssef",
@@ -52,6 +55,28 @@ export default function TestimonialsPage() {
     description: "Ce que disent nos vrais clients à Salé et Rabat. 5 avis vérifiés sur la livraison, la fraîcheur et le service GreenGo Market.",
   });
 
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(FALLBACK_TESTIMONIALS);
+
+  useEffect(() => {
+    let cancelled = false;
+    getReviews()
+      .then((reviews) => {
+        if (cancelled || reviews.length === 0) return;
+        setTestimonials(
+          reviews.map((r, i) => ({
+            id: r.id || i,
+            name: r.customer_name,
+            neighborhood: r.neighborhood,
+            text: r.text,
+            rating: r.rating,
+            product: r.product_names.join(" + "),
+          }))
+        );
+      })
+      .catch(() => { /* keep the static fallback on failure */ });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -67,13 +92,13 @@ export default function TestimonialsPage() {
               <span key={i} className="text-yellow-400 text-xl">{s}</span>
             ))}
           </div>
-          <span className="text-green-200 text-sm">{TESTIMONIALS.length} avis vérifiés</span>
+          <span className="text-green-200 text-sm">{testimonials.length} avis vérifiés</span>
         </div>
       </div>
 
       {/* Testimonials grid */}
       <div className="max-w-5xl mx-auto px-4 py-12">
-        <TestimonialsSection testimonials={TESTIMONIALS} />
+        <TestimonialsSection testimonials={testimonials} />
       </div>
 
       {/* CTA at bottom */}

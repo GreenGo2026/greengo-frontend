@@ -138,6 +138,24 @@ export interface OrderStatusUpdateResponse {
   new_status: OrderStatus;
 }
 
+// ── Reviews ────────────────────────────────────────────────────────────────
+export interface Review {
+  id:            string;
+  customer_name: string;
+  neighborhood:  string;
+  rating:        number;
+  text:          string;
+  text_fr:       string;
+  product_names: string[];
+  verified:      boolean;
+  created_at:    string;
+}
+
+export async function getReviews(params?: { product?: string; category?: string }): Promise<Review[]> {
+  const r = await apiClient.get<unknown>("/reviews", { params });
+  return toArray<Review>(r.data);
+}
+
 // â”€â”€ Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type AnalyticsPeriod = "today" | "week" | "month" | "all";
 

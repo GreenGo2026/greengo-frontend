@@ -2,7 +2,7 @@
 import React from "react";
 
 export interface Testimonial {
-  id: number;
+  id: number | string;
   name: string;
   neighborhood: string;
   text: string;

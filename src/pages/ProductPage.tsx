@@ -8,6 +8,7 @@ import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import { computeLineTotal } from "../utils/pricing";
 import { getDeliveryUrgency } from "../utils/urgencySignals";
 import { useJsonLd } from "../hooks/useSeo";
+import ReviewsSection from "../components/ReviewsSection";
 
 type L = "fr" | "ar" | "en";
 const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
@@ -496,6 +497,8 @@ export default function ProductPage() {
               ))}
             </div>
           )}
+
+          <ReviewsSection productName={product.name_fr} category={product.category} />
         </div>
 
         {/* Related products */}
