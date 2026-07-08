@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Leaf, Mail, MapPin, Phone, Send, CheckCircle,
-  MessageCircle, ChevronRight, Heart,
+  MessageCircle, ChevronRight, Heart, Truck,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -392,6 +392,15 @@ export default function Footer() {
                     <p className="text-[11px] text-white/55 font-latin">WhatsApp 0664500789</p>
                   </div>
                 </a>
+              </li>
+
+              {/* Order tracking */}
+              <li>
+                <Link to="/suivi-commande"
+                  className={"flex items-center gap-2.5 text-sm text-white/50 transition-colors hover:text-white " + row}>
+                  <Truck size={12} className="shrink-0 text-[#2E8B57]" />
+                  <span className={font}>{language === "ar" ? "تتبع الطلبية" : "Suivi de commande"}</span>
+                </Link>
               </li>
 
               {/* Phone */}

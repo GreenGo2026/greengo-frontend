@@ -170,6 +170,7 @@ function PublicShell() {
           <Route path="/panier-type"    element={<PanierTypePage />} />
           <Route path="/offres"         element={<OffresPage />} />
           <Route path="/track/:orderId?" element={<TrackOrderPage />} />
+          <Route path="/suivi-commande" element={<TrackOrderPage />} />
           <Route path="/fidelite"   element={<FidelitePage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/livraison" element={<LivraisonPage />} />

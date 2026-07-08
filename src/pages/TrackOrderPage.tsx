@@ -2,24 +2,25 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
+import { trackOrder } from "../services/api";
 
 type L = "fr" | "ar" | "en";
 
 interface TrackingData {
-  order_id:           string;
-  status:             string;
-  driver_name:        string | null;
-  driver_phone:       string | null;
-  estimated_delivery: string | null;
-  created_at:         string;
+  order_ref:           string;
+  status:              string;
+  driver_name:         string | null;
+  driver_phone:        string | null;
+  estimated_delivery:  string | null;
+  created_at:          string;
 }
 
 const T = {
   title:     { fr: "Suivi de commande",           ar: "تتبع الطلبية",              en: "Order Tracking"              },
-  subtitle:  { fr: "Entrez votre numéro de commande pour suivre en temps réel.", ar: "أدخل رقم طلبيتك لمتابعتها.", en: "Enter your order number to track in real time." },
-  input_ph:  { fr: "N° de commande reçu par WhatsApp", ar: "رقم الطلبية من واتساب", en: "Order number from WhatsApp"  },
+  subtitle:  { fr: "Entrez votre référence de commande ou votre téléphone pour suivre en temps réel.", ar: "أدخل رقم طلبيتك أو هاتفك لمتابعتها.", en: "Enter your order reference or phone number to track in real time." },
+  input_ph:  { fr: "Référence WhatsApp (ex: 369627) ou téléphone", ar: "رقم الطلبية من واتساب أو الهاتف", en: "Order reference from WhatsApp or phone"  },
   track_btn: { fr: "Suivre ma commande",           ar: "تتبع طلبيتي",               en: "Track my order"              },
-  not_found: { fr: "Commande introuvable. Vérifiez le numéro et réessayez.", ar: "طلبية غير موجودة. تحقق من الرقم.", en: "Order not found. Check the number and try again." },
+  not_found: { fr: "Commande introuvable. Vérifiez la référence ou le téléphone.", ar: "طلبية غير موجودة. تحقق من الرقم.", en: "Order not found. Check the reference or phone number." },
   loading:   { fr: "Recherche en cours...",        ar: "جارٍ البحث...",             en: "Searching..."                },
   order_num: { fr: "Commande",                     ar: "طلبية",                     en: "Order"                       },
   driver:    { fr: "Votre livreur",                ar: "سائق التوصيل",              en: "Your driver"                 },
@@ -105,16 +106,22 @@ export default function TrackOrderPage() {
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
 
-  const API_BASE = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
-
   async function fetchOrder(id: string) {
-    if (!id.trim()) return;
+    const value = id.trim();
+    if (!value) return;
     setLoading(true); setError(""); setOrder(null);
     try {
-      const r = await fetch(`${API_BASE}/api/v1/orders/${id.trim()}/tracking`);
-      if (!r.ok) throw new Error("not found");
-      const data: TrackingData = await r.json();
-      setOrder(data);
+      // Three possible inputs, all funneled through the same lookup:
+      //  - the raw Mongo _id (24 hex chars) -- e.g. the direct link from the
+      //    post-checkout success screen (CartPage.tsx: `/track/${orderId}`)
+      //  - the short #{ref} (last 6 chars) customers receive via WhatsApp
+      //  - a phone number, typed manually on a later visit
+      const isFullMongoId = /^[0-9a-fA-F]{24}$/.test(value);
+      const isPhone = !isFullMongoId && /^[0-9+]{8,}$/.test(value.replace(/\s/g, ""));
+      const ref = isFullMongoId ? value.slice(-6) : value;
+      const results = await trackOrder(isPhone ? { phone: value } : { order_ref: ref });
+      if (results.length === 0) throw new Error("not found");
+      setOrder(results[0]);
     } catch {
       setError(T.not_found[l]);
     } finally {
@@ -132,9 +139,7 @@ export default function TrackOrderPage() {
     fetchOrder(orderId);
   }
 
-  const shortId = order
-    ? order.order_id.slice(-6).toUpperCase()
-    : orderId.slice(-6).toUpperCase();
+  const shortId = order ? order.order_ref : orderId.slice(-6).toUpperCase();
 
   return (
     <div

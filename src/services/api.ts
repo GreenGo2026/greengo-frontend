@@ -156,6 +156,24 @@ export async function getReviews(params?: { product?: string; category?: string 
   return toArray<Review>(r.data);
 }
 
+// ── Order tracking ───────────────────────────────────────────────────────────
+export interface TrackedOrder {
+  order_ref:           string;
+  status:              string;
+  created_at:          string;
+  total_price:         number;
+  customer_name:       string;
+  items_count:         number;
+  driver_name:         string | null;
+  driver_phone:        string | null;
+  estimated_delivery:  string | null;
+}
+
+export async function trackOrder(params: { order_ref?: string; phone?: string }): Promise<TrackedOrder[]> {
+  const r = await apiClient.get<unknown>("/orders/track", { params });
+  return toArray<TrackedOrder>(r.data);
+}
+
 // â”€â”€ Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type AnalyticsPeriod = "today" | "week" | "month" | "all";
 
