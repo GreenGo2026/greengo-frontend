@@ -6,7 +6,7 @@ import { createProduct, apiClient, type CreateProductPayload, uploadProductImage
 import { categoryLabel } from "../utils/categoryLabels";
 
 const CATEGORIES = ["Fruits","Légumes","Vegetables","Volailles","White Meats","Eggs","Fromage","Olives","Huile et miel","Produits naturels","Épices","Natural Juices","Mixed Packs","Autres"] as const;
-const UNITS       = ["kg","piece","100g","botte","g"] as const;
+const UNITS       = ["kg","piece","100g","botte","g","litre"] as const;
 
 type Status = "idle" | "saving" | "success" | "error";
 
