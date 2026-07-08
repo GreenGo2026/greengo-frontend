@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const WA_URL =
   "https://wa.me/212664500789?text=Bonjour%20GreenGo%20Market%2C%20je%20voudrais%20commander%20%3A%0A";
@@ -8,7 +9,7 @@ export default function WelcomePopup() {
 
   useEffect(() => {
     if (sessionStorage.getItem("welcome_shown")) return;
-    const t = setTimeout(() => setVisible(true), 1000);
+    const t = setTimeout(() => setVisible(true), 2000);
     return () => clearTimeout(t);
   }, []);
 
@@ -62,16 +63,48 @@ export default function WelcomePopup() {
           <p style={{ margin: "0.4rem 0 0", color: "rgba(255,255,255,0.82)", fontSize: "0.9rem" }}>
             Fruits &amp; légumes frais livrés à domicile
           </p>
+          <p dir="rtl" style={{ margin: "0.3rem 0 0", color: "rgba(255,255,255,0.65)", fontSize: "0.82rem" }}>
+            مرحباً بك في جرين غو ماركت 🌿
+          </p>
         </div>
 
         {/* Body */}
         <div style={{ padding: "1.5rem" }}>
-          <p style={{
-            margin: "0 0 1.25rem",
-            color: "#374151", fontSize: "0.95rem", lineHeight: 1.6, textAlign: "center",
+          {/* Offer box */}
+          <div style={{
+            background: "#f0f7f0",
+            borderRadius: "0.9rem",
+            padding: "1rem 1.1rem",
+            marginBottom: "1.25rem",
+            textAlign: "center",
           }}>
-            Commandez directement sur WhatsApp — réponse rapide, livraison le jour même !
-          </p>
+            <p style={{ margin: 0, color: "#0c3228", fontSize: "1.05rem", fontWeight: 700 }}>
+              ⚡ Livraison en 30 min
+            </p>
+            <p style={{ margin: "0.4rem 0 0", color: "#4b5563", fontSize: "0.85rem", lineHeight: 1.5 }}>
+              Fruits • Légumes • Volailles • Miel
+              <br />
+              Salé &amp; Rabat — 7j/7 de 8h à 21h
+            </p>
+          </div>
+
+          {/* Catalogue CTA */}
+          <Link
+            to="/shop"
+            onClick={dismiss}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+              background: "#0c3228", color: "#fff",
+              padding: "0.85rem 1.5rem",
+              borderRadius: "0.75rem",
+              textDecoration: "none",
+              fontWeight: 700, fontSize: "1rem",
+              marginBottom: "0.75rem",
+              transition: "filter 0.15s",
+            }}
+          >
+            Voir le catalogue →
+          </Link>
 
           {/* WhatsApp CTA */}
           <a
