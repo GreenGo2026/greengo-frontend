@@ -546,7 +546,7 @@ export default function AdminPage() {
 // ── WhatsApp Catalog Tab ──────────────────────────────────────────────────────
 
 function WhatsAppCatalogTab({ lang, font, products }: { lang: Lang; font: string; products: DBProduct[] }) {
-  const [phone,       setPhone]       = useState("0664500789");
+  const [phone,       setPhone]       = useState("0664397031");
   const [category,    setCategory]    = useState("all");
   const [inStockOnly, setInStockOnly] = useState(true);
   const [sending,     setSending]     = useState(false);

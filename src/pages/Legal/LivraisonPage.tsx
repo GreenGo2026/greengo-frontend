@@ -232,7 +232,7 @@ export default function LivraisonPage() {
                   </span>
                 ) : (
                   <a
-                    href="https://wa.me/212664500789"
+                    href="https://wa.me/212664397031"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs font-bold rounded-lg px-3 py-1.5 transition-colors"
@@ -278,7 +278,7 @@ export default function LivraisonPage() {
               {ar ? "تسوق الآن" : "Voir le catalogue"}
             </Link>
             <a
-              href="https://wa.me/212664500789"
+              href="https://wa.me/212664397031"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-2xl px-6 py-3 text-sm font-extrabold border border-white/30 hover:bg-white/10 transition-all"

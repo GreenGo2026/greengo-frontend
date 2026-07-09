@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const WA_URL =
-  "https://wa.me/212664500789?text=Bonjour%20GreenGo%20Market%2C%20je%20voudrais%20commander%20%3A%0A";
+  "https://wa.me/212664397031?text=Bonjour%20GreenGo%20Market%2C%20je%20voudrais%20commander%20%3A%0A";
 
 export default function WelcomePopup() {
   const [visible, setVisible] = useState(false);

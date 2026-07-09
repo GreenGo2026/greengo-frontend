@@ -14,7 +14,7 @@ import type { CartItem } from "../store/cartStore";
 import { useLanguage } from "../contexts/LanguageContext";
 
 const API_BASE  = `${import.meta.env.VITE_API_URL || ""}/api/v1`;
-const WA_NUMBER = "212664500789";
+const WA_NUMBER = "212664397031";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface GPS { lat: number; lng: number; }
@@ -154,7 +154,7 @@ function CartRow({ item }: { item: CartItem }) {
 }
 
 ﻿// ── GPS capture widget ────────────────────────────────────────────────────────
-const WA_GPS = "https://wa.me/212664500789?text=" + encodeURIComponent(
+const WA_GPS = "https://wa.me/212664397031?text=" + encodeURIComponent(
   "📍 Je souhaite partager ma position pour la livraison de ma commande GreenGo."
 );
 
@@ -338,7 +338,7 @@ function SuccessScreen({ orderId, lastCart }: { orderId: string; lastCart: any[]
         {dlError && <p className="text-xs text-red-500">{dlError}</p>}
       </div>
 
-      <a href={"https://wa.me/212664500789"}
+      <a href={"https://wa.me/212664397031"}
         target="_blank" rel="noopener noreferrer"
         className="flex items-center gap-2 rounded-2xl border border-[#2E8B57]/30 bg-[#2E8B57]/8 px-6 py-3 text-sm font-bold text-[#2E8B57] transition-all hover:bg-[#2E8B57]/15">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">

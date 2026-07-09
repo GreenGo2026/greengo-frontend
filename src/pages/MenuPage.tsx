@@ -9,7 +9,7 @@ import QRCode from "qrcode";
 
 type L = "fr" | "ar" | "en";
 const API = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
-const WA  = "https://wa.me/212664500789";
+const WA  = "https://wa.me/212664397031";
 
 function resolveImg(url?: string | null): string {
   if (!url?.trim()) return "";

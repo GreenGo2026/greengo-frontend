@@ -136,7 +136,7 @@ function OrderCard({ order, lang }: { order: any; lang: string }) {
             <Truck size={11} />
             {l === "fr" ? "Suivre" : l === "ar" ? "تتبع" : "Track"}
           </Link>
-          <a href={"https://wa.me/212664500789?text=" + encodeURIComponent(
+          <a href={"https://wa.me/212664397031?text=" + encodeURIComponent(
             l === "fr" ? `Bonjour, je voudrais récommander comme la commande #${shortId}` : `مرحبا، أريد إعادة طلب مثل الطلب #${shortId}`
           )} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors">

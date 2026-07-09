@@ -10,7 +10,7 @@ import type { CartItem } from "../../store/cartStore";
 import { isValidMoroccanPhone, normalizeForValidation } from "../../utils/validation";
 
 const API_BASE  = `${import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000"}/api/v1`;
-const WA_NUMBER = "212664500789";
+const WA_NUMBER = "212664397031";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface GPS { lat: number; lng: number; }

@@ -10,8 +10,8 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import type { SupportedLanguage } from "../../utils/translations";
 
 // ── Constants ────────────────────────────────────────────────────────────────
-const WA_SUPPORT = "https://wa.me/212664397031";
-const WA_ORDERS  = "https://wa.me/212664500789";
+const WA_SUPPORT = "https://wa.me/212664500789";
+const WA_ORDERS  = "https://wa.me/212664397031";
 const REL        = "noopener noreferrer";
 
 const LANGS: { code: SupportedLanguage; label: string }[] = [
@@ -274,10 +274,10 @@ export default function Header() {
         <div dir={dir} className="mx-auto flex max-w-7xl items-center justify-between px-5 py-1.5">
           <p className={"text-[10px] text-white/45 " + font}>
             {language === "ar"
-              ? "توصيل سريع لسلا | واتساب: 0664500789"
+              ? "توصيل سريع لسلا | واتساب: 0664397031"
               : language === "fr"
-              ? "Livraison rapide à Salé | WhatsApp: 0664500789"
-              : "Fast delivery in Salé | WhatsApp: 0664500789"}
+              ? "Livraison rapide à Salé | WhatsApp: 0664397031"
+              : "Fast delivery in Salé | WhatsApp: 0664397031"}
           </p>
           <div className={"flex items-center gap-4 " + (isRTL ? "flex-row-reverse" : "")}>
             <a href={WA_SUPPORT} target="_blank" rel={REL}

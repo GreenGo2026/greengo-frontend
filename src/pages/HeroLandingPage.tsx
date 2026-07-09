@@ -404,7 +404,7 @@ export default function HeroLandingPage() {
                     <path d="M5 12h14M12 5l7 7-7 7"/>
                   </svg>
                 </Link>
-                <a href="https://wa.me/212664500789" target="_blank" rel="noopener noreferrer"
+                <a href="https://wa.me/212664397031" target="_blank" rel="noopener noreferrer"
                   className="cta-wa inline-flex items-center gap-2.5 px-6 py-3.5"
                   style={{ fontSize: "0.83rem", textDecoration: "none" }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">

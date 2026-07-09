@@ -421,7 +421,7 @@ export default function ProductPage() {
                     ? (l === "fr" ? "Ajouter encore" : l === "ar" ? "\u0625\u0636\u0627\u0641\u0629 \u0623\u062e\u0631\u0649" : "Add more")
                     : (l === "fr" ? "\ud83d\uded2 Ajouter au panier" : l === "ar" ? "\ud83d\uded2 \u0623\u0636\u0641 \u0644\u0644\u0633\u0644\u0629" : "\ud83d\uded2 Add to cart")}
                 </button>
-                <a href={"https://wa.me/212664500789?text=" + encodeURIComponent(
+                <a href={"https://wa.me/212664397031?text=" + encodeURIComponent(
                   l === "fr" ? `Commander: ${product.name_fr || product.name_ar}${activeVariant ? ` (${activeVariant.label})` : ""} - ${activePrice.toFixed(2)} MAD/${product.unit}`
                   : `\u0628\u063a\u064a\u062a \u0646\u0637\u0644\u0628: ${product.name_ar}${activeVariant ? ` (${activeVariant.label})` : ""} - ${activePrice.toFixed(2)} \u062f\u0631\u0647\u0645/${product.unit}`
                 )}

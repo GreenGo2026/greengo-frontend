@@ -144,7 +144,7 @@ export default function LivraisonRabatPage() {
             <Link to="/shop" className="rounded-2xl px-6 py-3 text-sm font-extrabold transition-all hover:scale-105" style={{ background: GOLD, color: "#fff" }}>
               {ar ? "تسوق الآن" : "Voir le catalogue"}
             </Link>
-            <a href="https://wa.me/212664500789" target="_blank" rel="noopener noreferrer"
+            <a href="https://wa.me/212664397031" target="_blank" rel="noopener noreferrer"
               className="rounded-2xl px-6 py-3 text-sm font-extrabold border border-white/30 hover:bg-white/10 transition-all">
               {ar ? "تواصل عبر واتساب" : "Commander sur WhatsApp"}
             </a>

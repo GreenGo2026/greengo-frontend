@@ -181,7 +181,7 @@ export default function AboutPage() {
               <Leaf size={15} />
               {T.shopNow}
             </Link>
-            <a href="https://wa.me/212664500789" target="_blank" rel="noopener noreferrer"
+            <a href="https://wa.me/212664397031" target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-8 py-3.5 text-sm font-extrabold text-white shadow-lg transition-all hover:shadow-xl active:scale-95">
               📱 {ar ? "اطلب على واتساب" : fr ? "Commander sur WhatsApp" : "Order on WhatsApp"}
             </a>

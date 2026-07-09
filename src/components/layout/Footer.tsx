@@ -9,7 +9,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 
 // ── Contact constants ─────────────────────────────────────────────────────────
 const WA_SUPPORT  = "https://wa.me/212664500789";
-const WA_ORDERS   = "https://wa.me/212664500789";
+const WA_ORDERS   = "https://wa.me/212664397031";
 const EMAIL       = "contact@mygreengoo.com";
 const PHONE_LABEL = "+212 664-500-789";
 const PHONE_HREF  = "tel:+212664500789";
@@ -373,7 +373,7 @@ export default function Footer() {
                     <p className={"text-xs font-bold text-white/80 " + font}>
                       {language === "ar" ? "دعم العملاء" : "Support client"}
                     </p>
-                    <p className="text-[11px] text-white/55 font-latin">WhatsApp 0664397031</p>
+                    <p className="text-[11px] text-white/55 font-latin">WhatsApp 0664500789</p>
                   </div>
                 </a>
               </li>
@@ -389,7 +389,7 @@ export default function Footer() {
                     <p className={"text-xs font-bold text-white/65 " + font}>
                       {language === "ar" ? "طلبات الشراء" : "Commandes"}
                     </p>
-                    <p className="text-[11px] text-white/55 font-latin">WhatsApp 0664500789</p>
+                    <p className="text-[11px] text-white/55 font-latin">WhatsApp 0664397031</p>
                   </div>
                 </a>
               </li>

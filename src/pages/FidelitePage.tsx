@@ -209,7 +209,7 @@ export default function FidelitePage() {
               style={{ background: GOLD }}>
               {l === "ar" ? "\u062d\u0633\u0627\u0628\u064a" : "Mon espace client"}
             </Link>
-            <a href="https://wa.me/212664500789" target="_blank" rel="noopener noreferrer"
+            <a href="https://wa.me/212664397031" target="_blank" rel="noopener noreferrer"
               className="rounded-2xl px-6 py-3 text-sm font-bold border border-white/30 hover:bg-white/10 transition-all">
               {l === "ar" ? "\u0627\u0633\u0623\u0644 \u0639\u0628\u0631 \u0648\u0627\u062a\u0633\u0627\u0628" : "Demander via WhatsApp"}
             </a>

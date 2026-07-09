@@ -34,9 +34,9 @@ const SECTIONS: Sec[] = [
                en:["All products selected daily from certified local suppliers.","Damaged or poor quality product: free replacement.","Expiry dates checked before each shipment."] } },
   { id:"droit", e:"⚖️",
     title:{ fr:"6. Droit applicable", ar:"6. القانون المطبق", en:"6. Applicable Law" },
-    content:{ fr:["Les presentes CGV sont soumises au droit marocain.","Tout litige sera soumis aux tribunaux competents de Rabat-Sale.","Contact : team@mygreengoo.com | WhatsApp +212 664 397 031."],
-               ar:["تخضع هذه الشروط للقانون المغربي.","أي نزاع يُحال إلى محاكم الرباط-سلا.","تواصل: team@mygreengoo.com | واتساب 212664397031+"],
-               en:["These terms are governed by Moroccan law.","Disputes submitted to courts of Rabat-Sale.","Contact: team@mygreengoo.com | WhatsApp +212 664 397 031."] } },
+    content:{ fr:["Les presentes CGV sont soumises au droit marocain.","Tout litige sera soumis aux tribunaux competents de Rabat-Sale.","Contact : team@mygreengoo.com | WhatsApp +212 664 500 789."],
+               ar:["تخضع هذه الشروط للقانون المغربي.","أي نزاع يُحال إلى محاكم الرباط-سلا.","تواصل: team@mygreengoo.com | واتساب 212664500789+"],
+               en:["These terms are governed by Moroccan law.","Disputes submitted to courts of Rabat-Sale.","Contact: team@mygreengoo.com | WhatsApp +212 664 500 789."] } },
 ];
 
 const NAV = [
