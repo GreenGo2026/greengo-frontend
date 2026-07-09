@@ -1,5 +1,5 @@
 ﻿// src/pages/AboutPage.tsx
-import { Leaf, Truck, ShieldCheck, Users, Heart, Star } from "lucide-react";
+import { Leaf, ShieldCheck, Heart, Zap, Award, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useSeo } from "../hooks/useSeo";
@@ -20,30 +20,36 @@ export default function AboutPage() {
     heroSub:     ar ? "GreenGo — بقالك الإلكتروني الأول فسلا. خضرة وفواكه طازجة مختارة بعناية كل يوم، نوصلها لباب دارك بسرعة وأمان." : fr ? "GreenGo — votre épicerie en ligne à Salé. Fruits et légumes frais sélectionnés chaque jour, livrés rapidement et en toute sécurité." : "GreenGo — Salé's first online grocery. Carefully selected fresh fruits and vegetables delivered fast and safely to your door every day.",
     shopNow:     ar ? "تسوق الآن"            : fr ? "Faire mes courses"            : "Shop now",
     contactUs:   ar ? "تواصل معنا"           : fr ? "Nous contacter"               : "Contact us",
-    storyTitle:  ar ? "كيفاش بدات GreenGo؟"  : fr ? "Comment GreenGo a démarré ?"  : "How did GreenGo start?",
-    storyP1:     ar ? "الفكرة بدات بسيطة: لقينا أن الزبون فسلا يستاهل يلقى خضرة وفواكه طازجة وهو جالس فدارو. السوق متعب، والوقت غالي. فبنينا GreenGo باش نحلو هاد المشكلة." : fr ? "L'idée est née d'un constat simple : le client à Salé mérite de trouver des fruits et légumes frais depuis chez lui. Le marché est fatiguant et le temps est précieux. Nous avons créé GreenGo pour résoudre ce problème." : "The idea was simple: customers in Salé deserve fresh fruit and vegetables without leaving home. The market is tiring and time is precious. We built GreenGo to solve that.",
-    storyP2:     ar ? "بدأنا صغار، بس بقلب كبير. كل منتج نختارو بعناية، وكل زبون يهمنا. هدفنا ما كانش غير التوصيل — هدفنا نجيبو ليك الثقة والجودة لباب دارك." : fr ? "Nous avons commencé petit, mais avec un grand cœur. Chaque produit est soigneusement sélectionné, chaque client compte pour nous. Notre objectif n'est pas seulement la livraison — c'est vous apporter confiance et qualité." : "We started small but with a big heart. Every product is carefully chosen, every customer matters. Our goal isn't just delivery — it's bringing trust and quality to your door.",
+    storyTitle:  ar ? "كيفاش بدات GreenGo؟"  : fr ? "Comment tout a commencé"  : "How it all started",
+    storyP1:     ar ? "وُلدت GreenGo Market من قناعة بسيطة: سكان سلا والرباط يستحقون أفضل من سوق مزدحم أو متجر كبير بارد. بدأنا بفكرة، وسيارة صغيرة، ووعد — نوصل منتجات طازجة ومحلية وذات جودة، مباشرة لباب دارك، في 30 دقيقة." : fr ? "GreenGo Market est né d'une conviction simple : les habitants de Salé et Rabat méritent mieux qu'un marché encombré ou une grande surface froide. Nous avons commencé avec une idée, une camionnette et une promesse — livrer des produits frais, locaux et de qualité, directement chez vous, en 30 minutes." : "GreenGo Market was born from a simple conviction: the people of Salé and Rabat deserve better than a crowded market or a cold supermarket. We started with an idea, a small van, and a promise — to deliver fresh, local, quality products straight to your door in 30 minutes.",
+    storyP2:     ar ? "اليوم، عائلات في سلا والرباط وتمارة تثق فينا لقضاء حوائجها الطازجة. منتجاتنا تأتي مباشرة من منتجين محليين مغاربة — بدون وسطاء غير ضروريين، وبدون سلسلة تبريد مخترقة." : fr ? "Aujourd'hui, des familles à Salé, Rabat et Témara nous font confiance pour leurs courses fraîches. Nos produits viennent directement des producteurs locaux marocains — sans intermédiaires inutiles, sans chaîne de froid compromise." : "Today, families across Salé, Rabat and Témara trust us for their fresh grocery needs. Our products come directly from local Moroccan producers — no unnecessary middlemen, no broken cold chain.",
     madeWith:    ar ? "صنعناه بحب للمغرب ❤️" : fr ? "Fait avec amour pour le Maroc ❤️" : "Made with love for Morocco ❤️",
     statsTitle:  ar ? "GreenGo بالأرقام"     : fr ? "GreenGo en chiffres"          : "GreenGo by the numbers",
-    valuesTitle: ar ? "قيمنا"                : fr ? "Nos valeurs"                  : "Our values",
+    valuesTitle: ar ? "لماذا تختار جرين غو؟"  : fr ? "Pourquoi choisir GreenGo ?"    : "Why choose GreenGo?",
     ctaTitle:    ar ? "جاهز تطلب؟"           : fr ? "Prêt à commander ?"           : "Ready to order?",
-    ctaSub:      ar ? "آلاف الزبائن يثقون فينا كل يوم — انضم لعائلة GreenGo." : fr ? "Des milliers de clients nous font confiance chaque jour — rejoignez la famille GreenGo." : "Thousands of customers trust us daily — join the GreenGo family.",
+    ctaSub:      ar ? "انضم إلى العائلات التي تثق بنا في سلا والرباط وتمارة." : fr ? "Rejoignez les familles qui nous font confiance à Salé, Rabat et Témara." : "Join the families who trust us in Salé, Rabat and Témara.",
+    zonesTitle:  ar ? "مناطق التوصيل"        : fr ? "Nos zones de livraison"        : "Our delivery zones",
   };
 
   const stats = [
-    { value: "500+", label: ar ? "زبون سعيد"    : fr ? "Clients satisfaits"  : "Happy customers", color: "#2E8B57" },
-    { value: "50+",  label: ar ? "منتج طازج"     : fr ? "Produits frais"      : "Fresh products",  color: "#FF9800" },
-    { value: "2",    label: ar ? "سنة من الخبرة"  : fr ? "Ans d'expérience"    : "Years experience", color: "#C0614A" },
-    { value: "100%", label: ar ? "طازج يومياً"    : fr ? "Frais chaque jour"   : "Fresh daily",     color: "#4DB882" },
+    { value: "66+",   label: ar ? "طلبية تم توصيلها" : fr ? "Commandes livrées"   : "Orders delivered", color: "#2E8B57" },
+    { value: "196",   label: ar ? "منتج في الكتالوج" : fr ? "Produits au catalogue" : "Products in catalog", color: "#FF9800" },
+    { value: "3",     label: ar ? "مدن نخدمها"       : fr ? "Villes livrées"      : "Cities served",   color: "#C0614A" },
+    { value: "7j/7",  label: ar ? "8ص – 9م"          : fr ? "8h – 21h"            : "8am – 9pm",       color: "#4DB882" },
   ];
 
   const values = [
-    { icon: Leaf,        color: "#2E8B57", bg: "#edfbf3", ring: "#a3ebca", title: ar ? "الطزاجة أولاً"   : fr ? "La fraîcheur avant tout"     : "Freshness first",     body: ar ? "كل منتج يوصلك طازج من المزرعة مباشرة يومياً." : fr ? "Chaque produit livré directement de la ferme chaque jour."    : "Every product delivered fresh from the farm daily." },
-    { icon: Truck,       color: "#FF9800", bg: "#fff8e1", ring: "#ffe082", title: ar ? "توصيل سريع"      : fr ? "Livraison rapide"             : "Fast delivery",       body: ar ? "نوصلك لباب دارك فسلا بسرعة وأمان تام."              : fr ? "Livraison rapide et sécurisée à votre porte à Salé."         : "Fast and secure delivery to your door in Salé." },
-    { icon: ShieldCheck, color: "#C0614A", bg: "#fdf3f0", ring: "#f8c6b8", title: ar ? "جودة مضمونة"     : fr ? "Qualité garantie"             : "Guaranteed quality",  body: ar ? "كل منتج مراقب ومفتش قبل ما يوصلك."                   : fr ? "Chaque produit est contrôlé avant livraison."                : "Every product is checked before it reaches you." },
-    { icon: Users,       color: "#4DB882", bg: "#edfbf3", ring: "#6DDBA8", title: ar ? "عائلة GreenGo"   : fr ? "Famille GreenGo"              : "GreenGo family",      body: ar ? "مجتمع زبائن يثقون فينا ويرجعو كل يوم."               : fr ? "Une communauté de clients qui nous font confiance chaque jour." : "A community of customers who trust us every day." },
-    { icon: Heart,       color: "#7B1FA2", bg: "#f5f3ff", ring: "#ddd6fe", title: ar ? "شغف بالمغرب"     : fr ? "Passion pour le Maroc"        : "Passion for Morocco", body: ar ? "كل شي بنيناه من حب للمغرب وللزبون المغربي."           : fr ? "Tout ce que nous avons construit vient de l'amour du Maroc." : "Everything we built comes from love for Morocco." },
-    { icon: Star,        color: "#C9A96E", bg: "#fdf8ef", ring: "#f2ddb4", title: ar ? "تجربة فريدة"     : fr ? "Expérience unique"            : "Unique experience",   body: ar ? "ما كنقدموش غير منتجات — كنقدمو راحة البال."            : fr ? "Nous n'offrons pas que des produits — nous offrons la sérénité." : "We offer more than products — we offer peace of mind." },
+    { icon: Zap,           color: "#FF9800", bg: "#fff8e1", ring: "#ffe082", title: ar ? "توصيل في 30 دقيقة" : fr ? "Livraison en 30 minutes" : "30-minute delivery", body: ar ? "أسرع توصيل في المنطقة. ليس بعد ساعتين، ولا غداً — الآن." : fr ? "La promesse la plus rapide de la région. Pas en 2h, pas demain. Maintenant." : "The fastest promise in the region. Not in 2h, not tomorrow. Now." },
+    { icon: Leaf,          color: "#2E8B57", bg: "#edfbf3", ring: "#a3ebca", title: ar ? "100% محلي"         : fr ? "100% local"              : "100% local",          body: ar ? "خضرنا وفواكهنا وجاجنا ومنتجاتنا الطبيعية تأتي مباشرة من مزارعين مغاربة موثوقين." : fr ? "Nos fruits, légumes, volailles et produits naturels viennent de producteurs marocains de confiance." : "Our fruit, vegetables, poultry and natural products come from trusted Moroccan producers." },
+    { icon: Award,         color: "#C9A96E", bg: "#fdf8ef", ring: "#f2ddb4", title: ar ? "منتجات أصيلة"     : fr ? "Produits authentiques"    : "Authentic products",  body: ar ? "عسل طبيعي، أملو سوسي، زيتون بلدي، جاج الفرمة. منتجات لا تجدها في أي سوبرماركت." : fr ? "Miel artisanal, amlou du Souss, olives beldi, poulet de ferme. Des produits que vous ne trouvez pas en supermarché." : "Artisanal honey, Souss amlou, beldi olives, farm chicken. Products you won't find in a supermarket." },
+    { icon: MessageCircle, color: "#4DB882", bg: "#edfbf3", ring: "#6DDBA8", title: ar ? "واتساب أولاً"     : fr ? "WhatsApp-first"           : "WhatsApp-first",      body: ar ? "اطلب في 30 ثانية على واتساب أو موقعنا. بسيط، سريع، إنساني." : fr ? "Commandez en 30 secondes sur WhatsApp ou sur notre site. Simple, rapide, humain." : "Order in 30 seconds on WhatsApp or our site. Simple, fast, human." },
+    { icon: ShieldCheck,   color: "#C0614A", bg: "#fdf3f0", ring: "#f8c6b8", title: ar ? "جودة مضمونة"     : fr ? "Qualité garantie"        : "Guaranteed quality",  body: ar ? "إذا لم يعجبك أي منتج، نستردّه ونردّ لك المبلغ. رضاك هو أولويتنا." : fr ? "Si un produit ne vous convient pas, on vous rembourse. Sans discussion." : "If a product doesn't suit you, we refund you. No questions asked." },
+  ];
+
+  const zones = [
+    { city: ar ? "سلا"    : fr ? "Salé"   : "Salé",   note: fr ? "30 min" : "30 min" },
+    { city: ar ? "الرباط" : fr ? "Rabat"  : "Rabat",  note: fr ? "30 min" : "30 min" },
+    { city: ar ? "تمارة"  : fr ? "Témara" : "Témara", note: fr ? "< 1h"   : "< 1h"   },
   ];
 
   return (
@@ -61,7 +67,7 @@ export default function AboutPage() {
               <h1 className="text-3xl font-extrabold leading-tight text-white md:text-4xl lg:text-5xl">{T.heroTitle}</h1>
               <p className="mt-4 text-base leading-relaxed text-white/65 md:text-lg">{T.heroSub}</p>
               <div className={"mt-8 flex flex-wrap gap-3 " + (isRTL ? "justify-end" : "justify-start")}>
-                <Link to="/" className="rounded-full bg-white px-6 py-2.5 text-sm font-extrabold text-[#2E8B57] shadow-md transition-all hover:shadow-lg active:scale-95">{T.shopNow}</Link>
+                <Link to="/shop" className="rounded-full bg-white px-6 py-2.5 text-sm font-extrabold text-[#2E8B57] shadow-md transition-all hover:shadow-lg active:scale-95">{T.shopNow}</Link>
                 <Link to="/contact" className="rounded-full border border-white/25 bg-white/10 px-6 py-2.5 text-sm font-bold text-white backdrop-blur-sm transition-all hover:bg-white/20 active:scale-95">{T.contactUs}</Link>
               </div>
             </div>
@@ -147,6 +153,21 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <section className="py-14 md:py-16">
+        <div className="mx-auto max-w-3xl px-4 text-center">
+          <h2 className="text-2xl font-extrabold text-gray-800 md:text-3xl">📍 {T.zonesTitle}</h2>
+          <div className="mx-auto mt-3 mb-8 h-1 w-12 rounded-full" style={{ background: "linear-gradient(90deg, #2E8B57, #FF9800)" }} />
+          <div className="flex flex-wrap justify-center gap-4">
+            {zones.map((z) => (
+              <div key={z.city} className="rounded-2xl bg-white px-8 py-4 shadow-sm ring-1 ring-black/5">
+                <p className="font-extrabold text-gray-800">{z.city}</p>
+                <p className="mt-1 text-xs font-bold" style={{ color: "#FF9800" }}>⚡ {z.note}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="hero-gradient zellige-bg-light relative overflow-hidden py-16 text-center">
         <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(0,0,0,0.1) 0%, transparent 60%)" }} />
         <div className="relative mx-auto max-w-xl px-4">
@@ -155,10 +176,16 @@ export default function AboutPage() {
           </div>
           <h2 className={"text-2xl font-extrabold text-white md:text-3xl " + font}>{T.ctaTitle}</h2>
           <p className={"mt-3 text-base text-white/65 " + font}>{T.ctaSub}</p>
-          <Link to="/" className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-extrabold text-[#2E8B57] shadow-lg transition-all hover:shadow-xl active:scale-95">
-            <Leaf size={15} />
-            {T.shopNow}
-          </Link>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <Link to="/shop" className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-extrabold text-[#2E8B57] shadow-lg transition-all hover:shadow-xl active:scale-95">
+              <Leaf size={15} />
+              {T.shopNow}
+            </Link>
+            <a href="https://wa.me/212664500789" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-8 py-3.5 text-sm font-extrabold text-white shadow-lg transition-all hover:shadow-xl active:scale-95">
+              📱 {ar ? "اطلب على واتساب" : fr ? "Commander sur WhatsApp" : "Order on WhatsApp"}
+            </a>
+          </div>
         </div>
       </section>
 

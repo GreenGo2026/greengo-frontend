@@ -343,7 +343,7 @@ export default function Footer() {
                 { to: "/faq",       fr: "FAQ",        ar: "أسئلة شائعة" },
                 { to: "/testimonials",  fr: "Avis clients",           ar: "آراء العملاء" },
                 { to: "/fidelite",      fr: "Programme Fidélité",     ar: "برنامج الولاء" },
-                { to: "/about#story",   fr: "À propos de nous",       ar: "من نحن" },
+                { to: "/notre-histoire", fr: "Notre histoire",        ar: "قصتنا" },
                 { to: "/recrutement",   fr: "Recrutement",            ar: "التوظيف" },
               ].map((item) => (
                 <li key={item.to}>

@@ -144,6 +144,7 @@ function PublicShell() {
           <Route path="/shop"         element={<HomePage />}        />
           <Route path="/cart"         element={<CartPage />}        />
           <Route path="/about"        element={<AboutPage />}       />
+          <Route path="/notre-histoire" element={<AboutPage />}    />
           <Route path="/contact"      element={<ContactPage />}     />
 
           {/* Admin routes are handled at the root level (outside this shell) */}
