@@ -174,6 +174,12 @@ export async function trackOrder(params: { order_ref?: string; phone?: string })
   return toArray<TrackedOrder>(r.data);
 }
 
+// ── Newsletter ───────────────────────────────────────────────────────────────
+export async function subscribeNewsletter(email: string, source = "website"): Promise<{ status: string }> {
+  const r = await apiClient.post<{ status: string }>("/newsletter", { email, source });
+  return r.data;
+}
+
 // â”€â”€ Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type AnalyticsPeriod = "today" | "week" | "month" | "all";
 

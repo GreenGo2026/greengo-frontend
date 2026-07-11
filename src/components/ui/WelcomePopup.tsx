@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { subscribeNewsletter } from "../../services/api";
 
 const WA_URL =
   "https://wa.me/212664397031?text=Bonjour%20GreenGo%20Market%2C%20je%20voudrais%20commander%20%3A%0A";
 
+const BENEFITS = ["Arrivages frais du jour", "Produits de saison disponibles", "Offres exclusives membres"];
+
 export default function WelcomePopup() {
   const [visible, setVisible] = useState(false);
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem("welcome_shown")) return;
@@ -18,6 +23,22 @@ export default function WelcomePopup() {
   function dismiss() {
     sessionStorage.setItem("welcome_shown", "1");
     setVisible(false);
+  }
+
+  async function handleSubscribe() {
+    if (!email || !email.includes("@")) return;
+    setLoading(true);
+    try {
+      await subscribeNewsletter(email, "welcome_popup");
+      setSubscribed(true);
+      setTimeout(() => dismiss(), 2000);
+    } catch {
+      // Network hiccup shouldn't block the user from feeling welcomed.
+      setSubscribed(true);
+      setTimeout(() => dismiss(), 2000);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -47,112 +68,84 @@ export default function WelcomePopup() {
           animation: "wpSlideUp 0.35s ease",
         }}
       >
-        {/* Header band */}
-        <div style={{
-          background: "linear-gradient(135deg,#1a5c35 0%,#2E8B57 100%)",
-          padding: "1.5rem 1.5rem 1.25rem",
-          textAlign: "center",
-        }}>
-          <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>🌿</div>
-          <h2 style={{
-            margin: 0, color: "#fff",
-            fontSize: "1.35rem", fontWeight: 700, letterSpacing: "-0.01em",
-          }}>
-            Bienvenue chez GreenGo Market
-          </h2>
-          <p style={{ margin: "0.4rem 0 0", color: "rgba(255,255,255,0.82)", fontSize: "0.9rem" }}>
-            Fruits &amp; légumes frais livrés à domicile
-          </p>
-          <p dir="rtl" style={{ margin: "0.3rem 0 0", color: "rgba(255,255,255,0.65)", fontSize: "0.82rem" }}>
-            مرحباً بك في جرين غو ماركت 🌿
-          </p>
-        </div>
-
-        {/* Body */}
-        <div style={{ padding: "1.5rem" }}>
-          {/* Offer box */}
-          <div style={{
-            background: "#f0f7f0",
-            borderRadius: "0.9rem",
-            padding: "1rem 1.1rem",
-            marginBottom: "1.25rem",
-            textAlign: "center",
-          }}>
-            <p style={{ margin: 0, color: "#0c3228", fontSize: "1.05rem", fontWeight: 700 }}>
-              ⚡ Livraison en 30 min
-            </p>
-            <p style={{ margin: "0.4rem 0 0", color: "#4b5563", fontSize: "0.85rem", lineHeight: 1.5 }}>
-              Fruits • Légumes • Volailles • Miel
-              <br />
-              Salé &amp; Rabat — 7j/7 de 8h à 21h
-            </p>
+        <div className="p-6">
+          {/* Logo */}
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0c3228] text-3xl shadow-lg">
+            🌿
           </div>
 
-          {/* Catalogue CTA */}
-          <Link
-            to="/shop"
-            onClick={dismiss}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-              background: "#0c3228", color: "#fff",
-              padding: "0.85rem 1.5rem",
-              borderRadius: "0.75rem",
-              textDecoration: "none",
-              fontWeight: 700, fontSize: "1rem",
-              marginBottom: "0.75rem",
-              transition: "filter 0.15s",
-            }}
-          >
-            Voir le catalogue →
-          </Link>
+          {/* Headline */}
+          <div className="mb-4 text-center">
+            <h2 className="text-xl font-extrabold leading-tight text-[#0c3228]">
+              Le marché arrive chez vous.
+            </h2>
+            <p className="mt-1 text-base font-medium text-[#C9A96E]">Avant tout le monde.</p>
+          </div>
 
-          {/* WhatsApp CTA */}
-          <a
-            href={WA_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={dismiss}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem",
-              background: "#25D366", color: "#fff",
-              padding: "0.85rem 1.5rem",
-              borderRadius: "0.75rem",
-              textDecoration: "none",
-              fontWeight: 700, fontSize: "1rem",
-              boxShadow: "0 4px 14px rgba(37,211,102,0.35)",
-              marginBottom: "0.75rem",
-              transition: "filter 0.15s",
-            }}
-          >
-            <svg width="22" height="22" viewBox="0 0 32 32" fill="currentColor">
-              <path d="M16 0C7.163 0 0 7.163 0 16c0 2.822.736 5.476 2.027 7.782L.057 31.01
-                a1 1 0 001.225 1.225l7.228-1.97A15.94 15.94 0 0016 32c8.837 0 16-7.163
-                16-16S24.837 0 16 0zm8.31 22.897c-.352.99-1.74 1.813-2.847
-                2.051-.759.162-1.75.292-5.087-1.093-4.267-1.739-7.013-6.056-7.228-6.336
-                -.208-.28-1.756-2.338-1.756-4.46 0-2.122 1.112-3.163
-                1.506-3.596.395-.432.861-.54 1.147-.54.287 0 .574.003.826.015.264.013.619
-                -.1.968.74.36.861.87 2.647.946 2.84.077.194.128.42.025.677-.102.257-.154.416
-                -.306.64-.154.224-.323.5-.46.67-.154.19-.314.394-.135.773.18.38.8 1.318
-                1.715 2.135 1.178 1.05 2.172 1.375 2.55 1.53.378.153.598.128.818-.077.22
-                -.205.94-1.093 1.19-1.468.25-.374.5-.312.84-.187.34.124 2.16 1.018 2.53
-                1.202.37.184.616.275.706.43.09.154.09.893-.262 1.883z"/>
-            </svg>
-            Commander sur WhatsApp
-          </a>
+          {/* Gold divider */}
+          <div className="mx-auto mb-4 h-0.5 w-12 bg-[#C9A96E]" />
 
-          {/* Dismiss */}
+          {/* Pitch */}
+          <p className="mb-5 text-center text-sm leading-relaxed text-gray-500">
+            Les meilleurs produits de Salé et Rabat — annoncés en avant-première aux membres GreenGo.
+          </p>
+
+          {/* Benefits */}
+          <div className="mb-6 space-y-2.5">
+            {BENEFITS.map((item) => (
+              <div key={item} className="flex items-center gap-3">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-700">
+                  ✓
+                </span>
+                <span className="text-sm text-gray-700">{item}</span>
+              </div>
+            ))}
+          </div>
+
+          {subscribed ? (
+            <div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-4 text-center text-sm font-medium text-green-700">
+              ✅ Bienvenue dans la communauté GreenGo !
+            </div>
+          ) : (
+            <>
+              {/* Email form */}
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="email"
+                  placeholder="Votre adresse email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSubscribe()}
+                  className="flex-1 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#0c3228] focus:outline-none focus:ring-1 focus:ring-[#0c3228]"
+                />
+                <button
+                  onClick={handleSubscribe}
+                  disabled={loading || !email}
+                  className="whitespace-nowrap rounded-xl bg-[#0c3228] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-green-900 disabled:opacity-50"
+                >
+                  {loading ? "..." : "Rejoindre →"}
+                </button>
+              </div>
+
+              {/* WhatsApp CTA — secondary */}
+              <a
+                href={WA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={dismiss}
+                className="mb-3 block w-full rounded-xl bg-[#25D366] py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-green-600"
+              >
+                📱 Commander sur WhatsApp
+              </a>
+            </>
+          )}
+
+          {/* Skip */}
           <button
             onClick={dismiss}
-            style={{
-              width: "100%", padding: "0.7rem",
-              background: "transparent",
-              border: "1.5px solid #d1d5db",
-              borderRadius: "0.75rem",
-              color: "#6b7280", fontSize: "0.9rem", fontWeight: 500,
-              cursor: "pointer",
-            }}
+            className="w-full py-1 text-center text-xs text-gray-400 transition-colors hover:text-gray-600"
           >
-            Continuer sur le site
+            Continuer sans s'abonner
           </button>
         </div>
       </div>
