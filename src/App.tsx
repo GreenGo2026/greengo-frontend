@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop                from "./components/ScrollToTop";
 import { LanguageProvider }       from "./contexts/LanguageContext";
 import { useCartStore }           from "./store/cartStore";
+import AnnouncementBar             from "./components/layout/AnnouncementBar";
 import Header                     from "./components/layout/Header";
 import Footer                     from "./components/layout/Footer";
 import MobileBottomNav            from "./components/layout/MobileBottomNav";
@@ -136,6 +137,7 @@ function PublicShell() {
         WebkitUserSelect: "none",
       }}
     >
+      <AnnouncementBar />
       <Header />
       <main className="flex-grow">
         <Routes>
