@@ -111,7 +111,6 @@ export interface TranslationKeys {
   footer_delivery_badge:  string;
   footer_delivery_banner: string;
   footer_copyright:       string;
-  footer_made_in:         string;
 }
 
 export const translations: Record<SupportedLanguage, TranslationKeys> = {
@@ -208,10 +207,9 @@ export const translations: Record<SupportedLanguage, TranslationKeys> = {
     footer_tagline_2:       "Fresh fruits and vegetables delivered fast.",
     footer_quick_links:     "Quick Links",
     footer_contact:         "Contact Us",
-    footer_delivery_badge:  "Fast & guaranteed delivery 🛵",
-    footer_delivery_banner: "Fast & guaranteed delivery 🛵 — straight to your door!",
+    footer_delivery_badge:  "Fast delivery 🛵",
+    footer_delivery_banner: "Fast delivery 🛵 — straight to your door!",
     footer_copyright:       "GreenGo Market. All rights reserved.",
-    footer_made_in:         "Made with ❤️ for Morocco",
   },
 
   fr: {
@@ -306,10 +304,9 @@ export const translations: Record<SupportedLanguage, TranslationKeys> = {
     footer_tagline_2:       "Fruits et légumes frais livrés rapidement.",
     footer_quick_links:     "Liens rapides",
     footer_contact:         "Contactez-nous",
-    footer_delivery_badge:  "Livraison rapide et garantie 🛵",
-    footer_delivery_banner: "Livraison rapide et garantie 🛵 — directement à votre porte !",
+    footer_delivery_badge:  "Livraison rapide 🛵",
+    footer_delivery_banner: "Livraison rapide 🛵 — directement à votre porte !",
     footer_copyright:       "GreenGo Market. Tous droits réservés.",
-    footer_made_in:         "Fait avec ❤️ pour le Maroc",
   },
 
   ar: {
@@ -404,9 +401,8 @@ export const translations: Record<SupportedLanguage, TranslationKeys> = {
     footer_tagline_2:       "خضرة وفواكه طازجة وصلولك فالحال.",
     footer_quick_links:     "روابط سريعة",
     footer_contact:         "تواصل معانا",
-    footer_delivery_badge:  "توصيل سريع ومضمون 🛵",
-    footer_delivery_banner: "توصيل سريع ومضمون 🛵 — مباشرة لباب الدار!",
+    footer_delivery_badge:  "توصيل سريع 🛵",
+    footer_delivery_banner: "توصيل سريع 🛵 — مباشرة لباب الدار!",
     footer_copyright:       "GreenGo Market. جميع الحقوق محفوظة.",
-    footer_made_in:         "صنعناه بالمغرب ❤️",
   },
 };

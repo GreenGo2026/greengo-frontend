@@ -50,10 +50,10 @@ const STEPS = [
 ];
 
 const PRICING = [
-  { fr: "Zone Salé (Laayayda)",         ar: "منطقة سلا (Laayayda)", priceFr: "Gratuit",       priceAr: "مجاني", free: true  },
-  { fr: "Salé — autres quartiers", ar: "سلا — أحياء أخرى",    priceFr: "Nous contacter", priceAr: "اسأل عبر واتساب", free: false },
-  { fr: "Rabat",                         ar: "الرباط",                          priceFr: "Nous contacter", priceAr: "اسأل عبر واتساب", free: false },
-  { fr: "Témara",                        ar: "تمارة",                                priceFr: "Nous contacter", priceAr: "اسأل عبر واتساب", free: false },
+  { fr: "Zone Salé (Laayayda)",    ar: "منطقة سلا (Laayayda)", priceFr: "Gratuit", priceAr: "مجاني",   free: true },
+  { fr: "Salé — autres quartiers", ar: "سلا — أحياء أخرى",     priceFr: "20 MAD",  priceAr: "20 درهم", free: true },
+  { fr: "Rabat",                   ar: "الرباط",                priceFr: "30 MAD",  priceAr: "30 درهم", free: true },
+  { fr: "Témara",                  ar: "تمارة",                 priceFr: "40 MAD",  priceAr: "40 درهم", free: true },
 ];
 
 export default function LivraisonPage() {
@@ -246,8 +246,8 @@ export default function LivraisonPage() {
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">
             {ar
-              ? "أسعار التوصيل تختلف حسب المنطقة وحجم الطلب. تواصل معنا للتفاصيل."
-              : "Les frais varient selon votre adresse et le montant de la commande. Contactez-nous pour un devis précis."}
+              ? "رسوم التوصيل ثابتة: 20 درهم لسلا، 30 درهم للرباط، 40 درهم لتمارة."
+              : "Les frais de livraison sont fixes : 20 MAD pour Salé, 30 MAD pour Rabat, 40 MAD pour Témara."}
           </p>
         </section>
 

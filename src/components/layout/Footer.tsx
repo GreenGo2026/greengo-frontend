@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Leaf, Mail, MapPin, Phone, Send, CheckCircle,
-  MessageCircle, ChevronRight, Heart, Truck,
+  MessageCircle, ChevronRight, Truck,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -451,10 +451,10 @@ export default function Footer() {
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#4DB882]" />
           <p className={"text-xs font-bold text-white/80 tracking-wide " + font}>
             {language === "ar"
-              ? "توصيل سريع ومضمون لسلا 🛵 — اطلب الآن وتسلم اليوم!"
+              ? "توصيل سريع لسلا 🛵 — اطلب الآن وتسلم اليوم!"
               : language === "fr"
-              ? "Livraison rapide et garantie à Salé 🛵 — Commandez maintenant, livré aujourd'hui !"
-              : "Fast & guaranteed delivery in Salé 🛵 — Order now, delivered today!"}
+              ? "Livraison rapide à Salé 🛵 — Commandez maintenant, livré aujourd'hui !"
+              : "Fast delivery in Salé 🛵 — Order now, delivered today!"}
           </p>
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#4DB882]" style={{ animationDelay: "0.5s" }} />
         </div>
@@ -481,12 +481,6 @@ export default function Footer() {
                 {language === "ar" ? item.ar : item.fr}
               </Link>
             ))}
-          </div>
-
-          {/* Made with love */}
-          <div className={"flex items-center gap-1.5 " + row}>
-            <span className="text-[11px] text-white/55">{t("footer_made_in")}</span>
-            <Heart size={10} className="text-[#C0614A]/50 fill-[#C0614A]/30" />
           </div>
 
         </div>
