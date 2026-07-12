@@ -62,7 +62,6 @@ export interface TranslationKeys {
   form_phone:                 string;
   form_address:               string;
   form_address_placeholder:   string;
-  free_delivery_note:         string;
   form_validation_hint:       string;
   form_delivery_title:        string;
   form_address_label:         string;
@@ -167,7 +166,6 @@ export const translations: Record<SupportedLanguage, TranslationKeys> = {
     form_phone:                "Phone number",
     form_address:              "Delivery address",
     form_address_placeholder:  "E.g. Hay Al Massira, Street 5, No. 12, Salé",
-    free_delivery_note:        "Free delivery within Salé for the entire first month",
     form_validation_hint:      "Please fill in all required fields to complete your order",
     form_delivery_title:       "Delivery Information",
     form_address_label:        "Delivery Address (Salé) *",
@@ -264,7 +262,6 @@ export const translations: Record<SupportedLanguage, TranslationKeys> = {
     form_phone:                "Numéro de téléphone",
     form_address:              "Adresse de livraison",
     form_address_placeholder:  "Ex. Hay Al Massira, Rue 5, N°12, Salé",
-    free_delivery_note:        "Livraison gratuite à Salé pendant tout le premier mois",
     form_validation_hint:      "Veuillez remplir tous les champs obligatoires",
     form_delivery_title:       "Informations de livraison",
     form_address_label:        "Adresse de livraison (Salé) *",
@@ -361,7 +358,6 @@ export const translations: Record<SupportedLanguage, TranslationKeys> = {
     form_phone:                "رقم الهاتف",
     form_address:              "عنوان التوصيل",
     form_address_placeholder:  "مثلاً: حي المسيرة، زنقة 5، رقم 12، سلا",
-    free_delivery_note:        "توصيل مجاني داخل سلا طوال الشهر الأول",
     form_validation_hint:      "يرجى ملء جميع الحقول المطلوبة لإتمام الطلب",
     form_delivery_title:       "معلومات التوصيل",
     form_address_label:        "عنوان التوصيل (سلا) *",

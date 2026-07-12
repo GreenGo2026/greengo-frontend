@@ -7,8 +7,10 @@ import {
   MessageCircle, Leaf, Navigation, CheckCircle2,
   XCircle,
 } from "lucide-react";
-import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
+import { useCartStore, getUnitStep, formatQuantity, DELIVERY_FEES } from "../store/cartStore";
+import type { DeliveryZone } from "../store/cartStore";
 import { computeLineTotal } from "../utils/pricing";
+import { getProducts } from "../services/api";
 import { isValidMoroccanPhone, normalizeForValidation } from "../utils/validation";
 import type { CartItem } from "../store/cartStore";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -30,6 +32,20 @@ const CLS = {
   gpsIdle:     "flex w-full items-center justify-center gap-2.5 rounded-xl border border-[#2E8B57]/30 bg-[#2E8B57]/8 px-4 py-3 text-sm font-bold text-[#2E8B57] transition-all hover:bg-[#2E8B57]/15 active:scale-[0.98]",
   gpsLoading:  "flex w-full items-center justify-center gap-2.5 rounded-xl border border-[#2E8B57]/20 bg-[#2E8B57]/6 px-4 py-3 text-sm font-bold text-[#2E8B57]/60 cursor-not-allowed",
 } as const;
+
+// ── Delivery zones ────────────────────────────────────────────────────────────
+const DELIVERY_ZONES: { key: DeliveryZone; label: { fr: string; ar: string; en: string } }[] = [
+  { key: "laayayda", label: { fr: "Salé (Laâyayda)", ar: "سلا (العيايدة)", en: "Salé (Laayayda)" } },
+  { key: "sale",     label: { fr: "Salé (autres)",   ar: "سلا (أخرى)",    en: "Salé (other)"    } },
+  { key: "rabat",    label: { fr: "Rabat",           ar: "الرباط",        en: "Rabat"           } },
+  { key: "temara",   label: { fr: "Témara",          ar: "تمارة",         en: "Témara"          } },
+];
+
+function zoneLabel(zone: DeliveryZone, language: string): string {
+  const l = DELIVERY_ZONES.find((z) => z.key === zone)?.label;
+  if (!l) return zone;
+  return language === "ar" ? l.ar : language === "fr" ? l.fr : l.en;
+}
 
 // ── Zellige decorative background ─────────────────────────────────────────────
 const ZELLIGE_SVG = "<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'><g fill='none' stroke='%23ffffff' stroke-width='0.6' opacity='0.12'><polygon points='30,4 37,17 52,17 41,26 45,41 30,33 15,41 19,26 8,17 23,17'/><line x1='30' y1='4' x2='30' y2='56'/><line x1='4' y1='30' x2='56' y2='30'/><line x1='8' y1='8' x2='52' y2='52'/><line x1='52' y1='8' x2='8' y2='52'/></g></svg>";
@@ -354,9 +370,34 @@ export default function CartPage() {
   const { t, dir, language } = useLanguage();
   const font = language === "ar" ? "font-arabic" : "font-latin";
 
-  const cart       = useCartStore((s) => s.cart);
-  const totalPrice = useCartStore((s) => s.totalPrice);
-  const clearCart  = useCartStore((s) => s.clearCart);
+  const cart              = useCartStore((s) => s.cart);
+  const totalPrice        = useCartStore((s) => s.totalPrice);
+  const clearCart         = useCartStore((s) => s.clearCart);
+  const refreshPrices     = useCartStore((s) => s.refreshPrices);
+  const deliveryZone      = useCartStore((s) => s.deliveryZone);
+  const setDeliveryZone   = useCartStore((s) => s.setDeliveryZone);
+  const deliveryFeeFn     = useCartStore((s) => s.deliveryFee);
+  const totalWithDelivery = useCartStore((s) => s.totalWithDelivery);
+
+  const [priceUpdateNotice, setPriceUpdateNotice] = useState("");
+
+  // Cart persists in localStorage indefinitely -- re-validate against the
+  // live catalog on mount so the total shown here can never silently diverge
+  // from what the backend computes at order-submission time.
+  useEffect(() => {
+    getProducts()
+      .then((products) => {
+        const changes = refreshPrices(products);
+        if (changes.length > 0) {
+          setPriceUpdateNotice(
+            changes.length === 1
+              ? `Le prix de "${changes[0].name}" a été mis à jour.`
+              : `Les prix de ${changes.length} articles ont été mis à jour.`
+          );
+        }
+      })
+      .catch(() => { /* offline or API hiccup -- keep showing cached prices rather than block the page */ });
+  }, []);
 
   const [name,           setName]           = useState("");
   const [phone,          setPhone]          = useState("");
@@ -373,8 +414,10 @@ export default function CartPage() {
   const [phoneError,     setPhoneError]     = useState("");
   const [orderId,        setOrderId]        = useState("");
 
-  const total     = totalPrice();
-  const itemCount = cart.length;
+  const subtotal    = totalPrice();
+  const deliveryFee = deliveryFeeFn();
+  const total       = totalWithDelivery();
+  const itemCount   = cart.length;
   const phoneValid = phone.trim() !== "" && isValidMoroccanPhone(normalizeForValidation(phone));
   const isValid   = itemCount > 0 && name.trim().length > 1 && phoneValid && address.trim().length > 5 && !!paymentMethod;
 
@@ -512,6 +555,8 @@ export default function CartPage() {
         unit:           (i.unit ?? "kg").trim(),
         price_per_unit: Number(i.price_per_unit ?? 0),
       })),
+      delivery_zone: deliveryZone,
+      delivery_fee:  deliveryFee,
       total_price: total,
       payment_method: paymentMethod,
       use_points:     usePoints && customerPoints >= 50,
@@ -603,6 +648,13 @@ export default function CartPage() {
             </button>
           </div>
 
+          {priceUpdateNotice && (
+            <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs font-medium text-amber-700">
+              <AlertCircle size={14} className="shrink-0" />
+              {priceUpdateNotice}
+            </div>
+          )}
+
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
 
             {/* Left: items */}
@@ -637,12 +689,31 @@ export default function CartPage() {
                     </li>
                   ))}
                 </ul>
-                <div className={"flex items-center justify-between rounded-xl px-4 py-3 " + rowDir}
-                  style={{ background: "linear-gradient(135deg,#fdf8ef,#f9efda)" }}>
-                  <span className={"text-2xl font-extrabold text-[#2E8B57] " + font}>
-                    {total.toFixed(2)} MAD
-                  </span>
-                  <span className={"text-sm font-semibold text-gray-500 " + font}>{t("total")}</span>
+                <div className="space-y-2 border-t border-gray-100 pt-3">
+                  <div className={"flex items-center justify-between text-sm text-gray-500 " + rowDir}>
+                    <span className={font}>
+                      {language === "ar" ? "المجموع الفرعي" : language === "fr" ? "Sous-total" : "Subtotal"}
+                    </span>
+                    <span className="font-latin">{subtotal.toFixed(2)} MAD</span>
+                  </div>
+                  <div className={"flex items-center justify-between text-sm " + rowDir}>
+                    <span className={"text-gray-500 " + font}>
+                      {language === "ar" ? "رسوم التوصيل" : language === "fr" ? "Frais de livraison" : "Delivery fee"}
+                      <span className="text-xs text-gray-400 ml-1 font-latin">({zoneLabel(deliveryZone, language)})</span>
+                    </span>
+                    <span className={"font-latin " + (deliveryFee === 0 ? "font-semibold text-[#2E8B57]" : "text-gray-500")}>
+                      {deliveryFee === 0
+                        ? (language === "ar" ? "مجاني" : language === "fr" ? "Gratuit" : "Free")
+                        : `${deliveryFee.toFixed(2)} MAD`}
+                    </span>
+                  </div>
+                  <div className={"flex items-center justify-between rounded-xl px-4 py-3 " + rowDir}
+                    style={{ background: "linear-gradient(135deg,#fdf8ef,#f9efda)" }}>
+                    <span className={"text-2xl font-extrabold text-[#2E8B57] " + font}>
+                      {total.toFixed(2)} MAD
+                    </span>
+                    <span className={"text-sm font-semibold text-gray-500 " + font}>{t("total")}</span>
+                  </div>
                 </div>
               </div>
 
@@ -738,6 +809,39 @@ export default function CartPage() {
                   )}
                 </div>
 
+                {/* Zone de livraison */}
+                <div className="space-y-1.5">
+                  <label className={"flex items-center gap-1.5 text-xs font-semibold text-gray-600 " + font} dir={dir}>
+                    📍 {language === "ar" ? "منطقة التوصيل" : language === "fr" ? "Zone de livraison" : "Delivery zone"} *
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {DELIVERY_ZONES.map((zone) => {
+                      const fee = DELIVERY_FEES[zone.key];
+                      const active = deliveryZone === zone.key;
+                      return (
+                        <button
+                          key={zone.key}
+                          type="button"
+                          onClick={() => setDeliveryZone(zone.key)}
+                          className={"rounded-xl border-2 p-3 text-left text-sm transition-all " + font + " " + (
+                            active
+                              ? "border-[#2E8B57] bg-[#2E8B57]/8"
+                              : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                          )}>
+                          <span className={"block font-bold " + (active ? "text-[#2E8B57]" : "text-gray-700")}>
+                            {zoneLabel(zone.key, language)}
+                          </span>
+                          <span className={"text-xs " + (fee === 0 ? "font-semibold text-[#2E8B57]" : "text-gray-500")}>
+                            {fee === 0
+                              ? (language === "ar" ? "مجاني" : language === "fr" ? "Gratuit" : "Free")
+                              : `${fee.toFixed(2)} MAD`}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Adresse */}
                 <div className="space-y-1.5">
                   <label htmlFor="cp-addr"
@@ -769,9 +873,9 @@ export default function CartPage() {
                   )}
                 </div>
 
-                {/* Free delivery */}
+                {/* Delivery speed note (fee is shown in the total breakdown above) */}
                 <p className={"flex items-center gap-1.5 text-[11px] font-semibold text-[#2E8B57] " + font}>
-                  🛵 {t("free_delivery_note")}
+                  🛵 {language === "ar" ? "توصيل خلال 30 دقيقة" : language === "fr" ? "Livraison en 30 minutes" : "Delivery within 30 minutes"}
                 </p>
 
                 {/* Validation hint */}

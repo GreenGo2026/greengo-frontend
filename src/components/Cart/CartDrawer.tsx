@@ -5,8 +5,8 @@ import {
   Phone, User, CheckCircle, Loader2, Navigation,
   ChevronRight, AlertCircle, CheckCircle2,
 } from "lucide-react";
-import { useCartStore, formatQuantity, getUnitStep } from "../../store/cartStore";
-import type { CartItem } from "../../store/cartStore";
+import { useCartStore, formatQuantity, getUnitStep, DELIVERY_FEES } from "../../store/cartStore";
+import type { CartItem, DeliveryZone } from "../../store/cartStore";
 import { isValidMoroccanPhone, normalizeForValidation } from "../../utils/validation";
 
 const API_BASE  = `${import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000"}/api/v1`;
@@ -161,10 +161,21 @@ interface CartDrawerProps {
   onClose: () => void;
 }
 
+const DELIVERY_ZONE_LABELS: Record<DeliveryZone, string> = {
+  laayayda: "Salé (Laâyayda)",
+  sale:     "Salé (autres)",
+  rabat:    "Rabat",
+  temara:   "Témara",
+};
+
 export default function CartDrawer({ open, onClose }: CartDrawerProps) {
-  const cart       = useCartStore((s) => s.cart);
-  const totalPrice = useCartStore((s) => s.totalPrice);
-  const clearCart  = useCartStore((s) => s.clearCart);
+  const cart              = useCartStore((s) => s.cart);
+  const totalPrice        = useCartStore((s) => s.totalPrice);
+  const clearCart         = useCartStore((s) => s.clearCart);
+  const deliveryZone      = useCartStore((s) => s.deliveryZone);
+  const setDeliveryZone   = useCartStore((s) => s.setDeliveryZone);
+  const deliveryFeeFn     = useCartStore((s) => s.deliveryFee);
+  const totalWithDelivery = useCartStore((s) => s.totalWithDelivery);
 
   // ── Form state ──────────────────────────────────────────────────────────────
   const [step,           setStep]           = useState<DrawerStep>("cart");
@@ -244,8 +255,10 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
   }
 
   // ── Derived values ──────────────────────────────────────────────────────────
-  const total      = totalPrice();
-  const itemCount  = cart.length;
+  const subtotal    = totalPrice();
+  const deliveryFee = deliveryFeeFn();
+  const total       = totalWithDelivery();
+  const itemCount   = cart.length;
   const isFormValid =
     name.trim().length > 1 &&
     phone.trim() !== "" && isValidMoroccanPhone(normalizeForValidation(phone)) &&
@@ -272,6 +285,8 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
         unit:           i.unit ?? "kg",
         price_per_unit: i.price_per_unit ?? 0,
       })),
+      delivery_zone: deliveryZone,
+      delivery_fee:  deliveryFee,
       total_price: total,
     };
 
@@ -386,14 +401,21 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                     {cart.map((item, i) => <CartRow key={item.name + i} item={item} />)}
                   </ul>
                   <div className="my-2 border-t border-dashed border-gray-200" />
-                  <div
-                    className="flex items-center justify-between rounded-2xl px-4 py-3.5"
-                    style={{ background: "linear-gradient(135deg,#fdf8ef,#f9efda)" }}>
-                    <span className="text-base font-bold text-gray-600">Total</span>
-                    <span className="text-2xl font-extrabold text-gray-900 font-latin">
-                      {total.toFixed(2)}{" "}
-                      <span className="text-sm font-semibold text-gray-400">MAD</span>
-                    </span>
+                  <div className="space-y-1 px-4 py-3 border-t border-gray-100 text-sm">
+                    <div className="flex justify-between text-gray-500">
+                      <span>Sous-total</span>
+                      <span className="font-latin">{subtotal.toFixed(2)} MAD</span>
+                    </div>
+                    <div className="flex justify-between text-gray-500">
+                      <span>Livraison</span>
+                      <span className="font-latin">
+                        {deliveryFee === 0 ? "Gratuit" : `+${deliveryFee.toFixed(2)} MAD`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between font-bold text-[#0c3228] pt-1 border-t border-gray-100">
+                      <span>Total</span>
+                      <span className="font-latin">{total.toFixed(2)} MAD</span>
+                    </div>
                   </div>
                   <p className="flex items-center gap-1.5 text-xs font-semibold text-[#2E8B57]">
                     🛵 Livraison express 30 min à Salé & Rabat
@@ -453,6 +475,37 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                 )}
               </div>
 
+              {/* Zone de livraison */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600">
+                  📍 Zone de livraison *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(Object.keys(DELIVERY_ZONE_LABELS) as DeliveryZone[]).map((key) => {
+                    const fee = DELIVERY_FEES[key];
+                    const active = deliveryZone === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setDeliveryZone(key)}
+                        className={"rounded-xl border-2 p-2.5 text-left text-xs transition-all " + (
+                          active
+                            ? "border-[#2E8B57] bg-[#2E8B57]/8"
+                            : "border-gray-200 bg-white hover:border-gray-300"
+                        )}>
+                        <span className={"block font-bold " + (active ? "text-[#2E8B57]" : "text-gray-700")}>
+                          {DELIVERY_ZONE_LABELS[key]}
+                        </span>
+                        <span className={fee === 0 ? "font-semibold text-[#2E8B57]" : "text-gray-500"}>
+                          {fee === 0 ? "Gratuit" : `${fee.toFixed(2)} MAD`}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Adresse */}
               <div className="space-y-1.5">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600">
@@ -505,11 +558,23 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-2.5 flex items-center justify-between border-t border-gray-100 pt-2.5">
-                  <span className="text-sm font-bold text-gray-600">Total</span>
-                  <span className="text-lg font-extrabold text-[#2E8B57] font-latin">
-                    {total.toFixed(2)} MAD
-                  </span>
+                <div className="mt-2.5 space-y-1 border-t border-gray-100 pt-2.5 text-xs">
+                  <div className="flex items-center justify-between text-gray-500">
+                    <span>Sous-total</span>
+                    <span className="font-latin">{subtotal.toFixed(2)} MAD</span>
+                  </div>
+                  <div className="flex items-center justify-between text-gray-500">
+                    <span>Frais de livraison ({DELIVERY_ZONE_LABELS[deliveryZone]})</span>
+                    <span className="font-latin">
+                      {deliveryFee === 0 ? "Gratuit" : `${deliveryFee.toFixed(2)} MAD`}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-sm font-bold text-gray-600">Total</span>
+                    <span className="text-lg font-extrabold text-[#2E8B57] font-latin">
+                      {total.toFixed(2)} MAD
+                    </span>
+                  </div>
                 </div>
               </div>
 

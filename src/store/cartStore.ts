@@ -1,7 +1,7 @@
 ﻿// src/store/cartStore.ts
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Product } from "../services/api";
+import type { Product, DBProduct } from "../services/api";
 import { computeLineTotal } from "../utils/pricing";
 
 export interface CartItem extends Product {
@@ -54,12 +54,33 @@ function cartKey(item: { id?: string; name: string; variant_label?: string | nul
   return item.variant_label ? `${base}::${item.variant_label}` : base;
 }
 
+export interface PriceChange {
+  name: string;
+  variant_label?: string | null;
+  old_price: number;
+  new_price: number;
+}
+
+export type DeliveryZone = "laayayda" | "sale" | "rabat" | "temara";
+
+export const DELIVERY_FEES: Record<DeliveryZone, number> = {
+  laayayda: 0,
+  sale:     20,
+  rabat:    30,
+  temara:   40,
+};
+
 interface CartState {
   cart: CartItem[];
   addToCart: (product: Product, step?: number) => void;
   removeFromCart: (productName: string, step?: number, variantLabel?: string | null) => void;
   clearCart: () => void;
   totalPrice: () => number;
+  refreshPrices: (liveProducts: DBProduct[]) => PriceChange[];
+  deliveryZone: DeliveryZone;
+  setDeliveryZone: (zone: DeliveryZone) => void;
+  deliveryFee: () => number;
+  totalWithDelivery: () => number;
 }
 
 export const useCartStore = create<CartState>()(
@@ -110,10 +131,67 @@ export const useCartStore = create<CartState>()(
 
       clearCart: () => set({ cart: [] }),
 
+      // Cart items persist in localStorage indefinitely (a customer can add an
+      // item today and not check out for days). Nothing was re-validating the
+      // cached price_per_unit against the live catalog before checkout, so if
+      // a product's price changed in the meantime, the checkout screen showed
+      // a stale total -- while the backend independently recomputes the order
+      // total from current authoritative prices at submission time, so the
+      // customer would see one number and be charged another. Call this on
+      // cart/checkout mount so the two never diverge silently.
+      refreshPrices: (liveProducts: DBProduct[]): PriceChange[] => {
+        const changes: PriceChange[] = [];
+
+        set((state) => {
+          const byNameAr = new Map(liveProducts.map((p) => [p.name_ar, p]));
+
+          const nextCart = state.cart.map((item) => {
+            const live = byNameAr.get(item.name);
+            if (!live) return item; // product no longer found -- leave as-is, not this function's job to remove it
+
+            let currentPrice = live.price_mad;
+            if (item.variant_label && live.variants?.length) {
+              const variant = live.variants.find((v) => v.label === item.variant_label);
+              if (variant) currentPrice = variant.price_mad;
+            }
+
+            if (currentPrice > 0 && currentPrice !== item.price_per_unit) {
+              changes.push({
+                name: item.name,
+                variant_label: item.variant_label,
+                old_price: item.price_per_unit,
+                new_price: currentPrice,
+              });
+              return { ...item, price_per_unit: currentPrice };
+            }
+            return item;
+          });
+
+          return { cart: nextCart };
+        });
+
+        return changes;
+      },
+
       totalPrice: (): number => {
         const { cart } = get();
         const raw = cart.reduce((sum, i) => sum + computeLineTotal(i.price_per_unit || 0, i.cartQuantity || 0, i.unit || ""), 0);
         return Math.round(raw * 100) / 100;
+      },
+
+      deliveryZone: "sale" as DeliveryZone,
+
+      setDeliveryZone: (zone: DeliveryZone) => set({ deliveryZone: zone }),
+
+      deliveryFee: (): number => {
+        const zone: DeliveryZone = get().deliveryZone;
+        return DELIVERY_FEES[zone] ?? DELIVERY_FEES.sale;
+      },
+
+      totalWithDelivery: (): number => {
+        const subtotal = get().totalPrice();
+        const fee = get().deliveryFee();
+        return Math.round((subtotal + fee) * 100) / 100;
       },
     }),
     {
