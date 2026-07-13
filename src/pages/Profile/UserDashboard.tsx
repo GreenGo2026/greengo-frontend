@@ -62,10 +62,10 @@ function LoyaltyCard({ points, lang }: { points: number; lang: string }) {
   const l        = lang as L;
   const nextTier = points < 100 ? 100 : points < 250 ? 250 : points < 500 ? 500 : 1000;
   const progress = Math.min((points / nextTier) * 100, 100);
-  const reward   = nextTier === 100 ? (l === "fr" ? "Livraison offerte" : "توصيل مجاني")
-                 : nextTier === 250 ? (l === "fr" ? "-10% sur votre commande" : "خصم 10%")
-                 : nextTier === 500 ? (l === "fr" ? "Panier cadeau" : "سلة هدية")
-                 : (l === "fr" ? "Statut VIP" : "عضو مميز");
+  const reward   = nextTier === 100 ? (l === "fr" ? "Offre exclusive membre" : l === "ar" ? "عرض حصري للأعضاء" : "Exclusive member offer")
+                 : nextTier === 250 ? (l === "fr" ? "-10% sur votre commande" : l === "ar" ? "خصم 10%" : "-10% on your order")
+                 : nextTier === 500 ? (l === "fr" ? "Panier cadeau" : l === "ar" ? "سلة هدية" : "Gift basket")
+                 : (l === "fr" ? "Statut VIP" : l === "ar" ? "عضو مميز" : "VIP status");
   return (
     <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg,#fdf8ef,#f9efda)", border: "1px solid rgba(201,169,110,0.25)" }}>
       <div className="flex items-center justify-between mb-3">
