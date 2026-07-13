@@ -168,6 +168,47 @@ export default function PaniersTab({ products, lang, font }: {
                     className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-[#2E8B57]" />
                 </div>
               </div>
+
+              {/* Pack price — admin-set, authoritative. Customers only ever see this. */}
+              <div className="space-y-2 border-t border-gray-100 pt-3">
+                <p className="text-[10px] font-bold text-gray-400 uppercase">
+                  {lang === "ar" ? "💰 سعر السلة" : "💰 Prix du pack"}
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-gray-400 mb-1 block">
+                      {lang === "ar" ? "السعر النهائي (درهم)" : "Prix final (MAD)"}
+                    </label>
+                    <input type="number" step="0.5" min="0" value={draft.price ?? ""}
+                      onChange={e => setDraft(d => d ? { ...d, price: e.target.value ? parseFloat(e.target.value) : null } : d)}
+                      placeholder="ex: 150"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-[#2E8B57] font-latin" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-400 mb-1 block">
+                      {lang === "ar" ? "السعر الأصلي (اختياري)" : "Prix barré (optionnel)"}
+                    </label>
+                    <input type="number" step="0.5" min="0" value={draft.original_price ?? ""}
+                      onChange={e => setDraft(d => d ? { ...d, original_price: e.target.value ? parseFloat(e.target.value) : null } : d)}
+                      placeholder="ex: 180"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-[#2E8B57] font-latin" />
+                  </div>
+                </div>
+                <p className="text-[10px] text-gray-400">
+                  {lang === "ar"
+                    ? "السعر النهائي هو ما يراه العميل فقط. حساب من الكتالوج أدناه للمرجع فقط."
+                    : "Le client voit uniquement le prix final. Le total catalogue ci-dessous n'est qu'une référence pour vous aider à fixer ce prix."}
+                  {(() => {
+                    const ref = draft.items.reduce((s, it) => {
+                      const norm = normalizeLabel(it.label);
+                      const p = (products as any[]).find((p: any) => normalizeLabel(p.name_fr || "") === norm);
+                      return s + (p ? p.price_mad * it.qty : 0);
+                    }, 0);
+                    return ref > 0 ? ` Référence catalogue: ${ref.toFixed(2)} MAD.` : "";
+                  })()}
+                </p>
+              </div>
+
               <div className="space-y-2">
                 <p className="text-[10px] font-bold text-gray-400 uppercase">
                   {lang === "ar" ? "المواد (الاسم يجب أن يطابق Nom FR في الكتالوج)" : "Articles (label = Nom FR exact du catalogue)"}
@@ -228,8 +269,6 @@ export default function PaniersTab({ products, lang, font }: {
           return { ...bi, livePrice, lineTotal, inStock: liveP?.in_stock ?? null };
         });
         const liveTotal  = liveItems.reduce((s, i) => s + (i.lineTotal ?? 0), 0);
-        const saving8    = Math.round(liveTotal * 0.08);
-        const finalPrice = liveTotal - saving8;
         const hasOOS     = liveItems.some(i => i.inStock === false);
         const missingCount = liveItems.filter(i => i.livePrice === null).length;
 
@@ -256,18 +295,27 @@ export default function PaniersTab({ products, lang, font }: {
                 </p>
               </div>
               <div className="text-right">
-                {liveTotal > 0 ? (
+                {basket.price ? (
                   <>
-                    <p className="text-[11px] text-gray-300 line-through font-latin">{liveTotal.toFixed(2)} MAD</p>
+                    {basket.original_price && basket.original_price > basket.price && (
+                      <p className="text-[11px] text-gray-300 line-through font-latin">{basket.original_price.toFixed(2)} MAD</p>
+                    )}
                     <p className="text-lg font-black font-latin" style={{ color: basket.accent }}>
-                      {finalPrice.toFixed(2)} MAD
+                      {basket.price.toFixed(2)} MAD
                     </p>
-                    <p className="text-[9px] text-green-600 font-semibold">
-                      -8% &bull; eco {saving8.toFixed(0)} MAD
+                    <p className="text-[9px] text-gray-400 font-semibold">
+                      {lang === "ar" ? "سعر ثابت (يراه العميل)" : "prix fixe (vu par le client)"}
                     </p>
                   </>
                 ) : (
-                  <p className="text-xs text-gray-300 font-latin">— MAD</p>
+                  <p className="text-xs font-bold text-amber-500 font-latin">
+                    {lang === "ar" ? "⚠ لا يوجد سعر" : "⚠ Prix non défini"}
+                  </p>
+                )}
+                {liveTotal > 0 && (
+                  <p className="text-[9px] text-gray-300 font-latin mt-0.5">
+                    {lang === "ar" ? "مرجع الكتالوج" : "réf. catalogue"}: {liveTotal.toFixed(2)} MAD
+                  </p>
                 )}
               </div>
             </div>

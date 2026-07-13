@@ -4,37 +4,18 @@ import { Link } from "react-router-dom";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useCartStore } from "../store/cartStore";
-import { getPaniers, getProducts } from "../services/api";
-import type { Panier, PanierItem, DBProduct } from "../services/api";
+import { getPaniers } from "../services/api";
+import type { Panier } from "../services/api";
 
 type L = "fr" | "ar" | "en";
 
-// Accent-insensitive, case-insensitive match -- mirrors normalizeLabel in
-// PaniersTab.tsx so a panier item resolves to the same catalog product
-// whether viewed by an admin or a customer. NFD-decompose then drop the
-// combining-diacritical-marks block (U+0300-U+036F) by code point, rather
-// than a \u-escaped regex literal.
-function normalizeLabel(s: string): string {
-  const decomposed = s.toLowerCase().trim().normalize("NFD");
-  let out = "";
-  for (const ch of decomposed) {
-    const code = ch.codePointAt(0) ?? 0;
-    if (code < 0x0300 || code > 0x036f) out += ch;
-  }
-  return out;
-}
-
-function resolveProduct(label: string, products: DBProduct[]): DBProduct | null {
-  const norm = normalizeLabel(label);
-  return products.find((p) => normalizeLabel(p.name_fr || "") === norm) ?? null;
-}
-
 // ── Presentation metadata ─────────────────────────────────────────────────────
 // The `paniers` collection (shared with the admin editor in PaniersTab.tsx)
-// only stores id/order/title/persons/accent/items -- no emoji, badge,
-// subtitle or trilingual copy. That marketing dressing lives here, keyed by
-// basket id, so editing a basket's items/price/persons in the admin panel
-// stays live on this page without losing the richer public presentation.
+// only stores id/order/title/persons/accent/items/price/original_price -- no
+// emoji, badge, subtitle or trilingual copy. That marketing dressing lives
+// here, keyed by basket id, so editing a basket's items/persons/price in the
+// admin panel stays live on this page without losing the richer public
+// presentation.
 interface Presentation {
   emoji:       string;
   badge:       Record<L, string>;
@@ -89,56 +70,28 @@ const DEFAULT_PRESENTATION: Presentation = {
   color: "from-gray-800/30 to-gray-900/20",
 };
 
-// ── Live price/stock resolution ───────────────────────────────────────────────
-interface ResolvedItem extends PanierItem {
-  product: DBProduct | null; // null = no catalog match ("Produit introuvable")
-}
-
-function resolveItems(items: PanierItem[], products: DBProduct[]): ResolvedItem[] {
-  return items.map((it) => ({ ...it, product: resolveProduct(it.label, products) }));
-}
-
-function calcTotal(items: ResolvedItem[]): number {
-  return items.reduce((sum, it) => {
-    if (!it.product || !it.product.in_stock) return sum;
-    return sum + it.product.price_mad * it.qty;
-  }, 0);
-}
-
-function calcSaving(total: number): number {
-  return Math.round(total * 0.08); // 8% basket discount
-}
-
 // ── Basket Card ───────────────────────────────────────────────────────────────
-function BasketCard({ basket, products, lang }: { basket: Panier; products: DBProduct[]; lang: string }) {
+// Pricing is admin-controlled only: basket.price is the single number
+// customers see (no per-item calculation, no live catalog lookup). The whole
+// pack is added to the cart as one line at that fixed price.
+function BasketCard({ basket, lang }: { basket: Panier; lang: string }) {
   const l          = lang as L;
   const [open, setOpen]   = useState(false);
   const [added, setAdded] = useState(false);
   const addToCart  = useCartStore(s => s.addToCart);
 
-  const presentation   = PRESENTATION[basket.id] ?? DEFAULT_PRESENTATION;
-  const resolvedItems  = resolveItems(basket.items, products);
-  const total          = calcTotal(resolvedItems);
-  const saving         = calcSaving(total);
-  const discounted     = total - saving;
-  const missingCount   = resolvedItems.filter(it => !it.product).length;
-  const hasAddable      = resolvedItems.some(it => it.product && it.product.in_stock);
-
-  function itemDisplayName(it: ResolvedItem): string {
-    if (l === "ar") return it.product?.name_ar || it.label;
-    return it.product?.name_fr || it.label;
-  }
+  const presentation = PRESENTATION[basket.id] ?? DEFAULT_PRESENTATION;
+  const hasDiscount  = !!(basket.original_price && basket.price && basket.original_price > basket.price);
+  const discountPct  = hasDiscount ? Math.round((1 - basket.price! / basket.original_price!) * 100) : 0;
 
   function handleAddAll() {
-    resolvedItems.forEach(it => {
-      if (!it.product || !it.product.in_stock) return; // skip unresolved / out-of-stock
-      addToCart({
-        name:           it.product.name_ar,
-        price_per_unit: it.product.price_mad,
-        unit:           it.product.unit,
-        available:      true,
-      }, it.qty);
-    });
+    if (!basket.price) return; // no price set yet -- not orderable
+    addToCart({
+      name:           basket.title,
+      price_per_unit: basket.price,
+      unit:           "pack",
+      available:      true,
+    }, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
   }
@@ -180,38 +133,40 @@ function BasketCard({ basket, products, lang }: { basket: Panier; products: DBPr
           </p>
         )}
 
-        {/* Items preview */}
+        {/* Items preview — names + quantities only, no per-item price */}
         <div className="flex flex-wrap gap-1.5 mb-4">
-          {resolvedItems.map((item, i) => (
+          {basket.items.map((item, i) => (
             <span key={i}
-              className={"flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold " + (item.product ? "text-white/70" : "text-white/35")}
+              className="flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold text-white/70"
               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              {itemDisplayName(item)}
+              {item.label}
               {item.qty > 1 && <span className="text-white/40 font-latin">×{item.qty}</span>}
             </span>
           ))}
         </div>
 
-        {/* Pricing */}
+        {/* Pricing — admin-controlled only */}
         <div className={`flex items-center gap-3 mb-4 ${l === "ar" ? "flex-row-reverse" : ""}`}>
           <div>
-            {total > 0 ? (
+            {basket.price ? (
               <>
                 <div className={`flex items-baseline gap-1.5 ${l === "ar" ? "flex-row-reverse" : ""}`}>
-                  <span className="text-4xl font-black text-white font-latin" style={{ fontFamily: "var(--font-body)", letterSpacing: "-0.03em" }}>{discounted.toFixed(0)}</span>
+                  <span className="text-4xl font-black text-white font-latin" style={{ fontFamily: "var(--font-body)", letterSpacing: "-0.03em" }}>{basket.price.toFixed(0)}</span>
                   <span className="text-sm text-white/50 font-latin">MAD</span>
                 </div>
-                <div className={`flex items-center gap-2 ${l === "ar" ? "flex-row-reverse" : ""}`}>
-                  <span className="text-sm text-white/30 line-through font-latin">{total.toFixed(0)} MAD</span>
-                  <span className="text-xs font-bold rounded-full px-2 py-0.5"
-                    style={{ background: `${basket.accent}25`, color: basket.accent }}>
-                    -{saving} MAD
-                  </span>
-                </div>
+                {hasDiscount && (
+                  <div className={`flex items-center gap-2 ${l === "ar" ? "flex-row-reverse" : ""}`}>
+                    <span className="text-sm text-white/30 line-through font-latin">{basket.original_price!.toFixed(0)} MAD</span>
+                    <span className="text-xs font-bold rounded-full px-2 py-0.5"
+                      style={{ background: `${basket.accent}25`, color: basket.accent }}>
+                      -{discountPct}%
+                    </span>
+                  </div>
+                )}
               </>
             ) : (
-              <span className="text-sm font-bold text-white/40">
-                {l === "ar" ? "السعر غير متوفر" : l === "fr" ? "Prix non disponible" : "Price unavailable"}
+              <span className="text-sm font-bold text-white/40 italic">
+                {l === "ar" ? "السعر قريباً" : l === "fr" ? "Prix bientôt disponible" : "Price coming soon"}
               </span>
             )}
           </div>
@@ -226,51 +181,24 @@ function BasketCard({ basket, products, lang }: { basket: Panier; products: DBPr
           </button>
         </div>
 
-        {missingCount > 0 && (
-          <p className="mb-3 text-[11px] font-semibold text-amber-400/80">
-            ⚠ {l === "ar" ? `${missingCount} منتج غير متوفر حالياً` : l === "fr" ? `${missingCount} produit${missingCount > 1 ? "s" : ""} indisponible${missingCount > 1 ? "s" : ""} dans ce panier` : `${missingCount} item${missingCount > 1 ? "s" : ""} currently unavailable`}
-          </p>
-        )}
-
-        {/* Expanded items detail */}
+        {/* Expanded items detail — still no per-item price, just the full list */}
         {open && (
           <div className="mb-4 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-            {resolvedItems.map((item, i) => (
+            {basket.items.map((item, i) => (
               <div key={i}
                 className={`flex items-center justify-between px-3 py-2 text-xs ${i % 2 === 0 ? "bg-white/[0.03]" : ""} ${l === "ar" ? "flex-row-reverse" : ""}`}>
-                <span className="text-white/70 flex items-center gap-1.5">
-                  <span className={l === "ar" ? "font-arabic" : "font-latin"}>
-                    {itemDisplayName(item)}
-                  </span>
-                  {item.qty !== 1 && <span className="text-white/35 font-latin">×{item.qty} {item.unit}</span>}
+                <span className={"text-white/70 " + (l === "ar" ? "font-arabic" : "font-latin")}>
+                  {item.label}
                 </span>
-                {!item.product ? (
-                  <span className="text-[10px] font-bold text-amber-400/80">
-                    {l === "ar" ? "غير موجود" : l === "fr" ? "Indisponible" : "Unavailable"}
-                  </span>
-                ) : !item.product.in_stock ? (
-                  <span className="text-[10px] font-bold text-red-400/80">
-                    {l === "ar" ? "نفذ" : l === "fr" ? "Rupture" : "Out of stock"}
-                  </span>
-                ) : (
-                  <span className="text-white/40 font-latin">{(item.product.price_mad * item.qty).toFixed(2)} MAD</span>
-                )}
+                <span className="text-white/40 font-latin">{item.qty} {item.unit}</span>
               </div>
             ))}
-            {total > 0 && (
-              <div className={`flex justify-between px-3 py-2 font-bold text-xs border-t border-white/10 ${l === "ar" ? "flex-row-reverse" : ""}`}>
-                <span className={`text-white/50 ${l === "ar" ? "font-arabic" : "font-latin"}`}>
-                  {l === "ar" ? "المجموع قبل الخصم" : l === "fr" ? "Total avant réduction" : "Total before discount"}
-                </span>
-                <span className="text-white/50 font-latin">{total.toFixed(2)} MAD</span>
-              </div>
-            )}
           </div>
         )}
 
         {/* CTA buttons */}
         <div className="flex gap-2">
-          <button onClick={handleAddAll} disabled={!hasAddable}
+          <button onClick={handleAddAll} disabled={!basket.price}
             className={`flex-1 rounded-2xl py-4 text-sm font-extrabold text-white transition-all duration-200 active:scale-[0.97] hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed ${l === "ar" ? "font-arabic" : "font-latin"}`}
             style={{
               background: added
@@ -302,21 +230,19 @@ export default function PanierTypePage() {
   const cart       = useCartStore(s => s.cart);
   const totalItems = cart.reduce((n, i) => n + (i.cartQuantity || 0), 0);
 
-  const [baskets,  setBaskets]  = useState<Panier[]>([]);
-  const [products, setProducts] = useState<DBProduct[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState("");
+  const [baskets, setBaskets] = useState<Panier[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState("");
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError("");
-    Promise.all([getPaniers(), getProducts()])
-      .then(([paniersData, productsData]) => {
+    getPaniers()
+      .then((paniersData) => {
         if (cancelled) return;
         const sorted = [...paniersData].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
         setBaskets(sorted);
-        setProducts(productsData);
       })
       .catch(() => {
         if (!cancelled) setError(
@@ -352,16 +278,16 @@ export default function PanierTypePage() {
             <div className="h-0.5 w-24 mx-auto my-4 bg-gradient-to-r from-green-500 to-amber-500" />
             <p className="text-white/45 text-base leading-relaxed max-w-lg mx-auto font-light">
               {l === "ar"
-                ? "اختر سلتك الجاهزة وأضف كل المنتجات للسلة بنقرة واحدة. توفير مضمون على كل سلة."
+                ? "اختر سلتك الجاهزة وأضفها للسلة بنقرة واحدة."
                 : l === "fr"
-                ? "Choisissez votre panier et ajoutez tous les produits en un clic. Économie garantie sur chaque panier."
-                : "Choose your basket and add all products in one click. Guaranteed savings on every basket."}
+                ? "Choisissez votre panier et ajoutez-le en un clic."
+                : "Choose your basket and add it in one click."}
             </p>
 
             {/* Trust pills */}
             <div className="flex flex-wrap gap-2 justify-center mt-5">
               {[
-                { e:"💰", fr:"8% de réduction",       ar:"خصم 8%",              en:"8% discount"        },
+                { e:"💰", fr:"Prix groupé avantageux", ar:"سعر مجمّع مميز",        en:"Bundle pricing"    },
                 { e:"🛵", fr:"Livraison incluse",      ar:"التوصيل مشمول",       en:"Delivery included"  },
                 { e:"🌿", fr:"100% frais ce matin",   ar:"طازج 100% هذا الصباح",en:"100% fresh today"   },
                 { e:"✅", fr:"Qualité garantie",       ar:"جودة مضمونة",         en:"Quality guaranteed" },
@@ -396,7 +322,7 @@ export default function PanierTypePage() {
           {!loading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {baskets.map(basket => (
-                <BasketCard key={basket.id} basket={basket} products={products} lang={language} />
+                <BasketCard key={basket.id} basket={basket} lang={language} />
               ))}
             </div>
           )}

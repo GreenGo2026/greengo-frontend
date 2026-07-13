@@ -354,6 +354,8 @@ export interface Panier {
   persons: number;
   accent:  string;
   items:   PanierItem[];
+  price:          number | null; // admin-set fixed pack price -- authoritative
+  original_price: number | null; // strikethrough reference, optional
 }
 
 export async function getPaniers(): Promise<Panier[]> {
