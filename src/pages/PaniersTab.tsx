@@ -169,6 +169,20 @@ export default function PaniersTab({ products, lang, font }: {
                 </div>
               </div>
 
+              {/* Meta line — admin-set subtitle shown under the title on the public page */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                  {lang === "ar" ? "السطر الفرعي (يظهر تحت العنوان)" : "Ligne meta (affiché sous le titre)"}
+                </label>
+                <input type="text" value={draft.meta_line ?? ""}
+                  onChange={e => setDraft(d => d ? { ...d, meta_line: e.target.value || null } : d)}
+                  placeholder="ex: 4 personnes · 1 semaine"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-[#2E8B57]" />
+                <p className="text-[10px] text-gray-400 mt-1">
+                  {lang === "ar" ? "اتركه فارغاً لعرض عدد الأشخاص تلقائياً." : "Laissez vide pour afficher automatiquement le nombre de personnes."}
+                </p>
+              </div>
+
               {/* Pack price — admin-set, authoritative. Customers only ever see this. */}
               <div className="space-y-2 border-t border-gray-100 pt-3">
                 <p className="text-[10px] font-bold text-gray-400 uppercase">

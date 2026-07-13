@@ -356,6 +356,7 @@ export interface Panier {
   items:   PanierItem[];
   price:          number | null; // admin-set fixed pack price -- authoritative
   original_price: number | null; // strikethrough reference, optional
+  meta_line:      string | null; // admin-set subtitle, e.g. "4 personnes · 1 semaine"
 }
 
 export async function getPaniers(): Promise<Panier[]> {

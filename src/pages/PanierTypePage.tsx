@@ -19,7 +19,6 @@ type L = "fr" | "ar" | "en";
 interface Presentation {
   emoji:       string;
   badge:       Record<L, string>;
-  subtitle:    Record<L, string>;
   description: Record<L, string>;
   color:       string;
 }
@@ -28,35 +27,30 @@ const PRESENTATION: Record<string, Presentation> = {
   famille: {
     emoji: "👨‍👩‍👧‍👦",
     badge:       { fr: "Le plus populaire", ar: "الأكثر طلباً", en: "Most popular" },
-    subtitle:    { fr: "4 personnes · 1 semaine", ar: "4 أشخاص · أسبوع", en: "4 people · 1 week" },
     description: { fr: "Légumes frais, fruits de saison et poulet entier pour une semaine complète.", ar: "خضروات طازجة وفواكه موسمية ودجاجة كاملة لأسبوع كامل.", en: "Fresh vegetables, seasonal fruits and whole chicken for a full week." },
     color: "from-green-900/30 to-emerald-900/20",
   },
   couple: {
     emoji: "👫",
     badge:       { fr: "Idéal débutants", ar: "مثالي للمبتدئين", en: "Great for beginners" },
-    subtitle:    { fr: "2 personnes · 1 semaine", ar: "شخصان · أسبوع", en: "2 people · 1 week" },
     description: { fr: "L'essentiel pour deux — légumes, fruits et protéines pour la semaine.", ar: "الأساسيات لشخصين — خضروات وفواكه وبروتينات للأسبوع.", en: "The essentials for two — vegetables, fruits and proteins for the week." },
     color: "from-amber-900/25 to-orange-900/15",
   },
   legumes: {
     emoji: "🥗",
     badge:       { fr: "100% végétal", ar: "100% نباتي", en: "100% plant-based" },
-    subtitle:    { fr: "Fraîcheur garantie", ar: "طازجة مضمونة", en: "Guaranteed fresh" },
     description: { fr: "Une sélection de légumes frais choisis ce matin — idéal pour cuisiner marocain toute la semaine.", ar: "تشكيلة من خضروات طازجة مختارة هذا الصباح — مثالية للطبخ المغربي طوال الأسبوع.", en: "A selection of fresh vegetables picked this morning — ideal for Moroccan cooking all week." },
     color: "from-emerald-900/25 to-green-900/15",
   },
   tajine: {
     emoji: "🫕",
     badge:       { fr: "Spécial Maroc", ar: "خاص بالمغرب", en: "Moroccan special" },
-    subtitle:    { fr: "Tout pour vos tajines maison", ar: "كل ما تحتاجه لطواجنك", en: "Everything for home tajines" },
     description: { fr: "Les ingrédients parfaits pour cuisiner un tajine authentique — poulet, légumes et épices inclus.", ar: "المكونات المثالية لطهي طاجين أصيل — دجاج وخضروات وتوابل مشمولة.", en: "Perfect ingredients for an authentic tajine — chicken, vegetables and spices included." },
     color: "from-rose-900/20 to-orange-900/15",
   },
   fruits: {
     emoji: "🍇",
     badge:       { fr: "Vitamines & énergie", ar: "فيتامينات وطاقة", en: "Vitamins & energy" },
-    subtitle:    { fr: "Fruits de saison · famille", ar: "فواكه موسمية · للعائلة", en: "Seasonal fruits · family" },
     description: { fr: "Une sélection de fruits frais de saison — idéal pour toute la famille.", ar: "تشكيلة من فواكه طازجة موسمية — مثالية للعائلة بأكملها.", en: "A selection of fresh seasonal fruits — ideal for the whole family." },
     color: "from-purple-900/20 to-pink-900/15",
   },
@@ -65,10 +59,24 @@ const PRESENTATION: Record<string, Presentation> = {
 const DEFAULT_PRESENTATION: Presentation = {
   emoji: "🛒",
   badge:       { fr: "Panier prêt", ar: "سلة جاهزة", en: "Ready basket" },
-  subtitle:    { fr: "", ar: "", en: "" },
   description: { fr: "", ar: "", en: "" },
   color: "from-gray-800/30 to-gray-900/20",
 };
+
+// Admin-set meta_line is shown exactly as typed (any language, any wording).
+// Only when it's empty do we fall back to an auto-generated persons count --
+// and only when persons > 0 do we show anything at all.
+function metaLine(basket: Panier, l: L): string | null {
+  if (basket.meta_line) return basket.meta_line;
+  if (basket.persons > 0) {
+    return l === "ar"
+      ? `${basket.persons} ${basket.persons > 1 ? "أشخاص" : "شخص"}`
+      : l === "fr"
+      ? `${basket.persons} personne${basket.persons > 1 ? "s" : ""}`
+      : `${basket.persons} person${basket.persons > 1 ? "s" : ""}`;
+  }
+  return null;
+}
 
 // ── Basket Card ───────────────────────────────────────────────────────────────
 // Pricing is admin-controlled only: basket.price is the single number
@@ -113,9 +121,9 @@ function BasketCard({ basket, lang }: { basket: Panier; lang: string }) {
             <h2 className={`text-xl font-black text-white leading-tight ${l === "ar" ? "font-arabic text-right" : "font-latin"}`} style={l !== "ar" ? { fontFamily: "var(--font-display)", fontSize: "1.4rem" } : {}}>
               {presentation.emoji} {basket.title}
             </h2>
-            {presentation.subtitle[l] && (
+            {metaLine(basket, l) && (
               <p className={`text-xs text-white/50 mt-0.5 ${l === "ar" ? "font-arabic text-right" : "font-latin"}`}>
-                {presentation.subtitle[l]}
+                {metaLine(basket, l)}
               </p>
             )}
           </div>
