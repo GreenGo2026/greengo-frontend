@@ -989,7 +989,7 @@ export default function CartPage() {
                     const normalizedPhone = phone.trim().startsWith("+212")
                       ? phone.trim()
                       : "+212" + phone.trim().replace(/^0/, "");
-                    const msg = formatWhatsAppMessage(cart, total, name.trim(), normalizedPhone, address.trim(), orderId || undefined);
+                    const msg = formatWhatsAppMessage(cart, total, name.trim(), normalizedPhone, address.trim());
                     window.open("https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(msg), "_blank", "noopener,noreferrer");
                   }}
                   className={"flex w-full items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 py-2.5 text-sm font-bold text-green-700 transition-colors hover:bg-green-100 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"}>

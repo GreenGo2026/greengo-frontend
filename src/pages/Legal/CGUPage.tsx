@@ -13,7 +13,7 @@ const SECTIONS: Section[] = [
   { id:"commandes", emoji:"🛒", title:"3. Passation et confirmation des commandes",
     content:["Toute commande est soumise a la disponibilite des produits. GreenGo Market peut annuler ou modifier une commande en cas de rupture de stock, avec notification immediate.","La confirmation est envoyee par WhatsApp dans les 30 minutes. Sans confirmation, contactez-nous au +212 664 500 789.","Les prix sont en Dirhams Marocains (MAD) et peuvent varier selon les cours du marche. Le prix applicable est celui affiche a la confirmation."] },
   { id:"livraison", emoji:"🛵", title:"4. Livraison",
-    content:["GreenGo Market livre a Sale, Rabat et Temara du lundi au samedi de 8h00 a 20h00.","Delai de livraison : 30 minutes apres confirmation, sous reserve de disponibilite des livreurs.","Livraison offerte le premier mois. Ensuite : gratuite au-dessus de 200 MAD, sinon 15 MAD. En cas d absence, le livreur vous contacte. Sans reponse sous 10 minutes, un nouveau creneau est convenu."] },
+    content:["GreenGo Market livre a Sale, Rabat et Temara du lundi au samedi de 8h00 a 20h00.","Delai de livraison : 30 minutes apres confirmation, sous reserve de disponibilite des livreurs.","Les frais de livraison sont fixes selon la zone : Sale (Laayayda) : gratuit - Sale (autres quartiers) : 20 MAD - Rabat : 30 MAD - Temara : 40 MAD. Ces frais sont ajoutes au montant de la commande lors du passage en caisse. En cas d absence, le livreur vous contacte. Sans reponse sous 10 minutes, un nouveau creneau est convenu."] },
   { id:"paiement", emoji:"💳", title:"5. Modalites de paiement",
     content:["Modes acceptes : especes a la livraison (COD), virement bancaire, paiement en ligne par carte via interface securisee.","Tous les paiements en ligne sont chiffres. GreenGo Market ne conserve aucune donnee bancaire.","Pour tout litige de paiement, contactez-nous sous 48h a team@mygreengoo.com."] },
   { id:"qualite", emoji:"🌿", title:"6. Qualite et fraicheur des produits",
@@ -61,7 +61,7 @@ export default function CGUPage() {
           <div className="relative max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-amber-900/20 border border-amber-700/30 rounded-full px-4 py-1.5 mb-5">
               <span>📜</span>
-              <span className="text-[11px] font-bold tracking-widest uppercase text-amber-300">Document legal · Mis a jour Mai 2026</span>
+              <span className="text-[11px] font-bold tracking-widest uppercase text-amber-300">Document legal · Mis a jour Juillet 2026</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight mb-4">
               Conditions Generales<br/>

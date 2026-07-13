@@ -14,9 +14,9 @@ const SECTIONS: Sec[] = [
                en:["Any purchase on our site implies full acceptance of these terms.","Prices are in MAD including taxes and may change at any time.","An order is final only after WhatsApp confirmation from GreenGo Market."] } },
   { id:"livraison", e:"🛵",
     title:{ fr:"2. Livraison et delais", ar:"2. التوصيل والمواعيد", en:"2. Delivery & Timing" },
-    content:{ fr:["Livraison disponible a Sale, Rabat et Temara, du lundi au samedi de 8h a 20h.","Delai moyen : 30 minutes apres confirmation de commande.","Livraison offerte le premier mois, puis gratuite au-dessus de 200 MAD (sinon 15 MAD)."],
-               ar:["التوصيل متاح في سلا والرباط وتمارة من الاثنين إلى السبت 8ص-8م.","المدة المتوسطة: 30 دقيقة بعد التأكيد.","مجاني الشهر الأول، ثم مجاني فوق 200 درهم (وإلا 15 درهم)."],
-               en:["Delivery in Sale, Rabat and Temara, Mon-Sat 8am-8pm.","Average time: 30 minutes after order confirmation.","Free first month, then free above 200 MAD (otherwise 15 MAD)."] } },
+    content:{ fr:["Livraison disponible a Sale, Rabat et Temara, du lundi au samedi de 8h a 20h.","Delai moyen : 30 minutes apres confirmation de commande.","Les frais de livraison sont fixes selon la zone : Sale (Laayayda) : gratuit - Sale (autres quartiers) : 20 MAD - Rabat : 30 MAD - Temara : 40 MAD. Ces frais sont ajoutes au montant de la commande lors du passage en caisse."],
+               ar:["التوصيل متاح في سلا والرباط وتمارة من الاثنين إلى السبت 8ص-8م.","المدة المتوسطة: 30 دقيقة بعد التأكيد.","رسوم التوصيل ثابتة حسب المنطقة: سلا (لعيايدة): مجاني - سلا (أحياء أخرى): 20 درهم - الرباط: 30 درهم - تمارة: 40 درهم. تُضاف هذه الرسوم إلى مبلغ الطلب عند تأكيد الشراء."],
+               en:["Delivery in Sale, Rabat and Temara, Mon-Sat 8am-8pm.","Average time: 30 minutes after order confirmation.","Delivery fees are fixed by zone: Sale (Laayayda): free - Sale (other neighborhoods): 20 MAD - Rabat: 30 MAD - Temara: 40 MAD. These fees are added to the order total at checkout."] } },
   { id:"retour", e:"🔄",
     title:{ fr:"3. Retours et remboursements", ar:"3. الإرجاع والاسترداد", en:"3. Returns & Refunds" },
     content:{ fr:["Produit non conforme : signalez-le sous 24h via WhatsApp avec photo.","GreenGo Market remplace ou rembourse sous 48h.","Les produits frais conformes a la commande ne peuvent etre retournes."],
@@ -71,7 +71,7 @@ export default function TermsPage() {
                 <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{backgroundImage:'url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2280%22%20height%3D%2280%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23C9A96E%22%20stroke-width%3D%220.5%22%3E%3Cpolygon%20points%3D%2240%2C5%2047%2C18%2062%2C18%2051%2C27%2055%2C42%2040%2C34%2025%2C42%2029%2C27%2018%2C18%2033%2C18%22/%3E%3C/g%3E%3C/svg%3E")',backgroundSize:'80px 80px'}} />
           <div className="relative max-w-2xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-amber-900/20 border border-amber-700/30 rounded-full px-4 py-1.5 mb-5">
-              <span>📄</span><span className="text-[11px] font-bold tracking-widest uppercase text-amber-300">{l==="ar"?"الشروط العامة · مايو 2026":l==="fr"?"Conditions Generales · Mai 2026":"General Terms · May 2026"}</span>
+              <span>📄</span><span className="text-[11px] font-bold tracking-widest uppercase text-amber-300">{l==="ar"?"الشروط العامة · يوليوز 2026":l==="fr"?"Conditions Generales · Juillet 2026":"General Terms · July 2026"}</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight mb-4">
               {l==="ar"?"الشروط العامة":l==="fr"?"Conditions Generales":"General"}<br/>

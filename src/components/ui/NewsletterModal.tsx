@@ -153,7 +153,7 @@ function NewsletterModal() {
                   id="newsletter-title"
                   className="mt-1 text-2xl font-extrabold leading-tight text-gray-800"
                 >
-                  Get 10% Off + Free Delivery 🛵
+                  Get 10% Off Your First Order 🎁
                 </h2>
                 <p className="mt-2 text-sm text-gray-500 leading-relaxed">
                   Join the GreenGo community and be the first to know about
@@ -162,7 +162,7 @@ function NewsletterModal() {
               </div>
 
               <div className="flex items-center justify-center gap-2 flex-wrap">
-                {["10% off your first order", "Free delivery in Salé", "Weekly fresh picks"].map((perk) => (
+                {["10% off your first order", "Exclusive member offers", "Weekly fresh picks"].map((perk) => (
                   <span
                     key={perk}
                     className="rounded-full bg-[#f0faf4] px-3 py-1 text-[11px] font-semibold text-[#2E8B57]"

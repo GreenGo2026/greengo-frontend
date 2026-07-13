@@ -89,10 +89,8 @@ export interface TranslationKeys {
 
   // Newsletter modal
   newsletter_badge:       string;
-  newsletter_title:       string;
   newsletter_sub:         string;
   newsletter_perk_1:      string;
-  newsletter_perk_2:      string;
   newsletter_perk_3:      string;
   newsletter_cta:         string;
   newsletter_success:     string;
@@ -188,10 +186,8 @@ export const translations: Record<SupportedLanguage, TranslationKeys> = {
     order_success_sub:   "We received your order. Check WhatsApp for confirmation from the GreenGo team. 🌿",
 
     newsletter_badge:       "Exclusive Offer",
-    newsletter_title:       "Get 10% Off + Free Delivery 🛵",
     newsletter_sub:         "Join the GreenGo community and be the first to know about fresh arrivals and seasonal deals.",
     newsletter_perk_1:      "10% off your first order",
-    newsletter_perk_2:      "Free delivery in Salé",
     newsletter_perk_3:      "Weekly fresh picks",
     newsletter_cta:         "Claim My 10% Off 🎁",
     newsletter_success:     "Thank you! You're now part of our family 🌿",
@@ -284,10 +280,8 @@ export const translations: Record<SupportedLanguage, TranslationKeys> = {
     order_success_sub:   "Nous avons reçu votre commande. Vérifiez WhatsApp pour la confirmation. 🌿",
 
     newsletter_badge:       "Offre Exclusive",
-    newsletter_title:       "10% de réduction + Livraison gratuite 🛵",
     newsletter_sub:         "Rejoignez la communauté GreenGo et soyez le premier informé des nouveautés et promotions.",
     newsletter_perk_1:      "10% sur votre première commande",
-    newsletter_perk_2:      "Livraison gratuite à Salé",
     newsletter_perk_3:      "Sélections fraîches hebdomadaires",
     newsletter_cta:         "Obtenir ma réduction 🎁",
     newsletter_success:     "Merci ! Vous faites maintenant partie de notre famille 🌿",
@@ -380,10 +374,8 @@ export const translations: Record<SupportedLanguage, TranslationKeys> = {
     order_success_sub:   "وصلنا طلبك وتم حفظه. تحقق من واتساب للتأكيد من فريق GreenGo. 🌿",
 
     newsletter_badge:       "عرض حصري",
-    newsletter_title:       "احصل على 10% خصم + توصيل مجاني 🛵",
     newsletter_sub:         "انضم لعائلة GreenGo وكن أول من يعلم بالمنتجات الجديدة والعروض الموسمية.",
     newsletter_perk_1:      "خصم 10% على أول طلب",
-    newsletter_perk_2:      "توصيل مجاني في سلا",
     newsletter_perk_3:      "منتجات طازجة أسبوعياً",
     newsletter_cta:         "احصل على خصمي 🎁",
     newsletter_success:     "شكراً! أنت الآن من عائلتنا 🌿",
