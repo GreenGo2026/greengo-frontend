@@ -1,152 +1,108 @@
 // src/pages/PanierTypePage.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Loader2, AlertCircle } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useCartStore, getUnitStep } from "../store/cartStore";
+import { useCartStore } from "../store/cartStore";
+import { getPaniers, getProducts } from "../services/api";
+import type { Panier, PanierItem, DBProduct } from "../services/api";
 
 type L = "fr" | "ar" | "en";
 
-interface BasketItem {
-  sku:      string;
-  name_fr:  string;
-  name_ar:  string;
-  qty:      number;
-  unit:     string;
-  price:    number;
-  emoji:    string;
+// Accent-insensitive, case-insensitive match -- mirrors normalizeLabel in
+// PaniersTab.tsx so a panier item resolves to the same catalog product
+// whether viewed by an admin or a customer. NFD-decompose then drop the
+// combining-diacritical-marks block (U+0300-U+036F) by code point, rather
+// than a \u-escaped regex literal.
+function normalizeLabel(s: string): string {
+  const decomposed = s.toLowerCase().trim().normalize("NFD");
+  let out = "";
+  for (const ch of decomposed) {
+    const code = ch.codePointAt(0) ?? 0;
+    if (code < 0x0300 || code > 0x036f) out += ch;
+  }
+  return out;
 }
 
-interface Basket {
-  id:          string;
+function resolveProduct(label: string, products: DBProduct[]): DBProduct | null {
+  const norm = normalizeLabel(label);
+  return products.find((p) => normalizeLabel(p.name_fr || "") === norm) ?? null;
+}
+
+// ── Presentation metadata ─────────────────────────────────────────────────────
+// The `paniers` collection (shared with the admin editor in PaniersTab.tsx)
+// only stores id/order/title/persons/accent/items -- no emoji, badge,
+// subtitle or trilingual copy. That marketing dressing lives here, keyed by
+// basket id, so editing a basket's items/price/persons in the admin panel
+// stays live on this page without losing the richer public presentation.
+interface Presentation {
   emoji:       string;
   badge:       Record<L, string>;
-  title:       Record<L, string>;
   subtitle:    Record<L, string>;
   description: Record<L, string>;
-  items:       BasketItem[];
-  persons:     number;
   color:       string;
-  accent:      string;
 }
 
-// ── Basket definitions with real prices ──────────────────────────────────────
-const BASKETS: Basket[] = [
-  {
-    id: "famille",
+const PRESENTATION: Record<string, Presentation> = {
+  famille: {
     emoji: "👨‍👩‍👧‍👦",
-    badge:       { fr:"Le plus populaire", ar:"الأكثر طلباً", en:"Most popular" },
-    title:       { fr:"Panier Famille",    ar:"سلة العائلة",  en:"Family Basket" },
-    subtitle:    { fr:"4 personnes · 1 semaine", ar:"4 أشخاص · أسبوع", en:"4 people · 1 week" },
-    description: { fr:"Légumes frais, fruits de saison et poulet entier pour une semaine complète.", ar:"خضروات طازجة وفواكه موسمية ودجاجة كاملة لأسبوع كامل.", en:"Fresh vegetables, seasonal fruits and whole chicken for a full week." },
-    persons: 4,
+    badge:       { fr: "Le plus populaire", ar: "الأكثر طلباً", en: "Most popular" },
+    subtitle:    { fr: "4 personnes · 1 semaine", ar: "4 أشخاص · أسبوع", en: "4 people · 1 week" },
+    description: { fr: "Légumes frais, fruits de saison et poulet entier pour une semaine complète.", ar: "خضروات طازجة وفواكه موسمية ودجاجة كاملة لأسبوع كامل.", en: "Fresh vegetables, seasonal fruits and whole chicken for a full week." },
     color: "from-green-900/30 to-emerald-900/20",
-    accent: "#2E8B57",
-    items: [
-      { sku:"VEG-TOMATE-001",   name_fr:"Tomate ronde",    name_ar:"طماطم",       qty:2,   unit:"kg",     price:5.00,  emoji:"🍅" },
-      { sku:"VEG-PATATE-001",   name_fr:"Pomme de terre",  name_ar:"بطاطس",       qty:2,   unit:"kg",     price:4.50,  emoji:"🥔" },
-      { sku:"VEG-CAROTTE-001",  name_fr:"Carotte",         name_ar:"جزر",         qty:1,   unit:"kg",     price:4.00,  emoji:"🥕" },
-      { sku:"VEG-OIGNON-001",   name_fr:"Oignon rouge",    name_ar:"بصل أحمر",    qty:1,   unit:"kg",     price:11.50, emoji:"🧅" },
-      { sku:"VEG-COURGETTE-001",name_fr:"Courgette",       name_ar:"كوسة",        qty:1,   unit:"kg",     price:6.00,  emoji:"🥒" },
-      { sku:"VEG-PERSIL-001",   name_fr:"Persil",          name_ar:"معدنوس",      qty:1,   unit:"bundle", price:2.00,  emoji:"🌿" },
-      { sku:"VEG-CORIANDRE-001",name_fr:"Coriandre",       name_ar:"كزبرة",       qty:1,   unit:"bundle", price:2.00,  emoji:"🌿" },
-      { sku:"FRT-POMME-001",    name_fr:"Pomme verte",     name_ar:"تفاح أخضر",   qty:1,   unit:"kg",     price:7.00,  emoji:"🍎" },
-      { sku:"FRT-ORANGE-001",   name_fr:"Orange",          name_ar:"برتقال",      qty:1,   unit:"kg",     price:8.00,  emoji:"🍊" },
-      { sku:"FRT-BANANE-001",   name_fr:"Banane",          name_ar:"موز",         qty:1,   unit:"kg",     price:8.00,  emoji:"🍌" },
-      { sku:"VND-POULET-001",   name_fr:"Poulet entier",   name_ar:"دجاج كامل",   qty:1,   unit:"piece",  price:45.00, emoji:"🍗" },
-      { sku:"OEF-BELDI-001",    name_fr:"Oeufs beldi (12)",name_ar:"بيض بلدي",    qty:1,   unit:"boite",  price:24.00, emoji:"🥚" },
-    ],
   },
-  {
-    id: "couple",
+  couple: {
     emoji: "👫",
-    badge:       { fr:"Idéal débutants",   ar:"مثالي للمبتدئين", en:"Great for beginners" },
-    title:       { fr:"Panier Duo",        ar:"سلة الثنائي",     en:"Duo Basket"          },
-    subtitle:    { fr:"2 personnes · 1 semaine", ar:"شخصان · أسبوع", en:"2 people · 1 week" },
-    description: { fr:"L essentiel pour deux — légumes, fruits et protéines pour la semaine.", ar:"الأساسيات لشخصين — خضروات وفواكه وبروتينات للأسبوع.", en:"The essentials for two — vegetables, fruits and proteins for the week." },
-    persons: 2,
+    badge:       { fr: "Idéal débutants", ar: "مثالي للمبتدئين", en: "Great for beginners" },
+    subtitle:    { fr: "2 personnes · 1 semaine", ar: "شخصان · أسبوع", en: "2 people · 1 week" },
+    description: { fr: "L'essentiel pour deux — légumes, fruits et protéines pour la semaine.", ar: "الأساسيات لشخصين — خضروات وفواكه وبروتينات للأسبوع.", en: "The essentials for two — vegetables, fruits and proteins for the week." },
     color: "from-amber-900/25 to-orange-900/15",
-    accent: "#C9A96E",
-    items: [
-      { sku:"VEG-TOMATE-001",   name_fr:"Tomate ronde",    name_ar:"طماطم",       qty:1,   unit:"kg",     price:5.00,  emoji:"🍅" },
-      { sku:"VEG-PATATE-001",   name_fr:"Pomme de terre",  name_ar:"بطاطس",       qty:1,   unit:"kg",     price:4.50,  emoji:"🥔" },
-      { sku:"VEG-CAROTTE-001",  name_fr:"Carotte",         name_ar:"جزر",         qty:1,   unit:"kg",     price:4.00,  emoji:"🥕" },
-      { sku:"VEG-PERSIL-001",   name_fr:"Persil",          name_ar:"معدنوس",      qty:1,   unit:"bundle", price:2.00,  emoji:"🌿" },
-      { sku:"FRT-POMME-001",    name_fr:"Pomme verte",     name_ar:"تفاح أخضر",   qty:1,   unit:"kg",     price:7.00,  emoji:"🍎" },
-      { sku:"FRT-BANANE-001",   name_fr:"Banane",          name_ar:"موز",         qty:1,   unit:"kg",     price:8.00,  emoji:"🍌" },
-      { sku:"VND-BLANC-001",    name_fr:"Blanc de poulet", name_ar:"صدر الدجاج",  qty:0.5, unit:"kg",     price:32.00, emoji:"🍗" },
-      { sku:"OEF-BELDI-001",    name_fr:"Oeufs beldi (12)",name_ar:"بيض بلدي",    qty:1,   unit:"boite",  price:24.00, emoji:"🥚" },
-    ],
   },
-  {
-    id: "legumes",
+  legumes: {
     emoji: "🥗",
-    badge:       { fr:"100% végétal",      ar:"100% نباتي",      en:"100% plant-based"    },
-    title:       { fr:"Panier Légumes",    ar:"سلة الخضروات",    en:"Veggie Basket"        },
-    subtitle:    { fr:"Fraîcheur garantie · 10 variétés", ar:"طازجة مضمونة · 10 أنواع", en:"Guaranteed fresh · 10 varieties" },
-    description: { fr:"Dix légumes frais sélectionnés ce matin — idéal pour cuisiner marocain toute la semaine.", ar:"عشرة خضروات طازجة مختارة هذا الصباح — مثالية للطبخ المغربي طوال الأسبوع.", en:"Ten fresh vegetables selected this morning — ideal for Moroccan cooking all week." },
-    persons: 4,
+    badge:       { fr: "100% végétal", ar: "100% نباتي", en: "100% plant-based" },
+    subtitle:    { fr: "Fraîcheur garantie", ar: "طازجة مضمونة", en: "Guaranteed fresh" },
+    description: { fr: "Une sélection de légumes frais choisis ce matin — idéal pour cuisiner marocain toute la semaine.", ar: "تشكيلة من خضروات طازجة مختارة هذا الصباح — مثالية للطبخ المغربي طوال الأسبوع.", en: "A selection of fresh vegetables picked this morning — ideal for Moroccan cooking all week." },
     color: "from-emerald-900/25 to-green-900/15",
-    accent: "#4ade80",
-    items: [
-      { sku:"VEG-TOMATE-001",    name_fr:"Tomate ronde",   name_ar:"طماطم",       qty:2, unit:"kg",     price:5.00,  emoji:"🍅" },
-      { sku:"VEG-PATATE-001",    name_fr:"Pomme de terre", name_ar:"بطاطس",       qty:2, unit:"kg",     price:4.50,  emoji:"🥔" },
-      { sku:"VEG-CAROTTE-001",   name_fr:"Carotte",        name_ar:"جزر",         qty:1, unit:"kg",     price:4.00,  emoji:"🥕" },
-      { sku:"VEG-OIGNON-001",    name_fr:"Oignon rouge",   name_ar:"بصل أحمر",    qty:1, unit:"kg",     price:11.50, emoji:"🧅" },
-      { sku:"VEG-COURGETTE-001", name_fr:"Courgette",      name_ar:"كوسة",        qty:1, unit:"kg",     price:6.00,  emoji:"🥒" },
-      { sku:"VEG-POIVRON-001",   name_fr:"Poivron vert",   name_ar:"فلفل أخضر",   qty:1, unit:"kg",     price:8.00,  emoji:"🫑" },
-      { sku:"VEG-BROCOLI-001",   name_fr:"Brocoli",        name_ar:"بروكلي",      qty:1, unit:"kg",     price:12.00, emoji:"🥦" },
-      { sku:"VEG-BETTERAVE-001", name_fr:"Betterave",      name_ar:"شمندر",       qty:1, unit:"kg",     price:5.00,  emoji:"🫚" },
-      { sku:"VEG-PERSIL-001",    name_fr:"Persil",         name_ar:"معدنوس",      qty:1, unit:"bundle", price:2.00,  emoji:"🌿" },
-      { sku:"VEG-CORIANDRE-001", name_fr:"Coriandre",      name_ar:"كزبرة",       qty:1, unit:"bundle", price:2.00,  emoji:"🌿" },
-    ],
   },
-  {
-    id: "tajine",
+  tajine: {
     emoji: "🫕",
-    badge:       { fr:"Spécial Maroc",     ar:"خاص بالمغرب",    en:"Moroccan special"    },
-    title:       { fr:"Panier Tajine",     ar:"سلة الطاجين",    en:"Tajine Basket"        },
-    subtitle:    { fr:"Tout pour 2 tajines maison", ar:"كل ما تحتاجه لطاجينين", en:"Everything for 2 home tajines" },
-    description: { fr:"Les ingrédients parfaits pour cuisiner deux tajines authentiques — poulet, légumes et épices inclus.", ar:"المكونات المثالية لطهي طاجينين أصيلين — دجاج وخضروات وتوابل مشمولة.", en:"Perfect ingredients for two authentic tajines — chicken, vegetables and spices included." },
-    persons: 4,
+    badge:       { fr: "Spécial Maroc", ar: "خاص بالمغرب", en: "Moroccan special" },
+    subtitle:    { fr: "Tout pour vos tajines maison", ar: "كل ما تحتاجه لطواجنك", en: "Everything for home tajines" },
+    description: { fr: "Les ingrédients parfaits pour cuisiner un tajine authentique — poulet, légumes et épices inclus.", ar: "المكونات المثالية لطهي طاجين أصيل — دجاج وخضروات وتوابل مشمولة.", en: "Perfect ingredients for an authentic tajine — chicken, vegetables and spices included." },
     color: "from-rose-900/20 to-orange-900/15",
-    accent: "#f97316",
-    items: [
-      { sku:"VND-POULET-001",    name_fr:"Poulet entier",  name_ar:"دجاج كامل",   qty:1, unit:"piece",  price:45.00, emoji:"🍗" },
-      { sku:"VEG-PATATE-001",    name_fr:"Pomme de terre", name_ar:"بطاطس",       qty:1, unit:"kg",     price:4.50,  emoji:"🥔" },
-      { sku:"VEG-CAROTTE-001",   name_fr:"Carotte",        name_ar:"جزر",         qty:1, unit:"kg",     price:4.00,  emoji:"🥕" },
-      { sku:"VEG-OIGNON-001",    name_fr:"Oignon rouge",   name_ar:"بصل أحمر",    qty:1, unit:"kg",     price:11.50, emoji:"🧅" },
-      { sku:"VEG-COURGETTE-001", name_fr:"Courgette",      name_ar:"كوسة",        qty:1, unit:"kg",     price:6.00,  emoji:"🥒" },
-      { sku:"VEG-TOMATE-001",    name_fr:"Tomate ronde",   name_ar:"طماطم",       qty:1, unit:"kg",     price:5.00,  emoji:"🍅" },
-      { sku:"EPC-CUMIN-001",     name_fr:"Cumin moulu",    name_ar:"كمون مطحون",  qty:1, unit:"100g",   price:12.00, emoji:"🌶️" },
-      { sku:"EPC-PAPRIKA-001",   name_fr:"Paprika doux",   name_ar:"بابريكا",     qty:1, unit:"100g",   price:14.00, emoji:"🌶️" },
-      { sku:"EPC-RASELHANT-001", name_fr:"Ras el hanout",  name_ar:"راس الحانوت", qty:1, unit:"100g",   price:20.00, emoji:"✨" },
-      { sku:"VEG-CORIANDRE-001", name_fr:"Coriandre",      name_ar:"كزبرة",       qty:1, unit:"bundle", price:2.00,  emoji:"🌿" },
-    ],
   },
-  {
-    id: "fruits",
+  fruits: {
     emoji: "🍇",
-    badge:       { fr:"Vitamines & énergie", ar:"فيتامينات وطاقة", en:"Vitamins & energy" },
-    title:       { fr:"Panier Fruits",       ar:"سلة الفواكه",     en:"Fruit Basket"       },
-    subtitle:    { fr:"6 fruits de saison · famille", ar:"6 فواكه موسمية · للعائلة", en:"6 seasonal fruits · family" },
-    description: { fr:"Une sélection de six fruits frais de saison — idéal pour toute la famille.", ar:"تشكيلة من ستة فواكه طازجة موسمية — مثالية للعائلة بأكملها.", en:"A selection of six fresh seasonal fruits — ideal for the whole family." },
-    persons: 4,
+    badge:       { fr: "Vitamines & énergie", ar: "فيتامينات وطاقة", en: "Vitamins & energy" },
+    subtitle:    { fr: "Fruits de saison · famille", ar: "فواكه موسمية · للعائلة", en: "Seasonal fruits · family" },
+    description: { fr: "Une sélection de fruits frais de saison — idéal pour toute la famille.", ar: "تشكيلة من فواكه طازجة موسمية — مثالية للعائلة بأكملها.", en: "A selection of fresh seasonal fruits — ideal for the whole family." },
     color: "from-purple-900/20 to-pink-900/15",
-    accent: "#a855f7",
-    items: [
-      { sku:"FRT-POMME-001",   name_fr:"Pomme verte",  name_ar:"تفاح أخضر",  qty:2, unit:"kg", price:7.00,  emoji:"🍎" },
-      { sku:"FRT-ORANGE-001",  name_fr:"Orange",       name_ar:"برتقال",     qty:2, unit:"kg", price:8.00,  emoji:"🍊" },
-      { sku:"FRT-BANANE-001",  name_fr:"Banane",       name_ar:"موز",        qty:1, unit:"kg", price:8.00,  emoji:"🍌" },
-      { sku:"FRT-GRENADE-001", name_fr:"Grenade",      name_ar:"رمان",       qty:1, unit:"kg", price:10.00, emoji:"🍎" },
-      { sku:"FRT-RAISIN-001",  name_fr:"Raisin blanc", name_ar:"عنب أبيض",   qty:1, unit:"kg", price:12.00, emoji:"🍇" },
-      { sku:"FRT-PECHE-001",   name_fr:"Peche",        name_ar:"خوخ",        qty:1, unit:"kg", price:15.00, emoji:"🍑" },
-    ],
   },
-];
+};
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function calcTotal(items: BasketItem[]): number {
-  return items.reduce((s, i) => s + i.price * i.qty, 0);
+const DEFAULT_PRESENTATION: Presentation = {
+  emoji: "🛒",
+  badge:       { fr: "Panier prêt", ar: "سلة جاهزة", en: "Ready basket" },
+  subtitle:    { fr: "", ar: "", en: "" },
+  description: { fr: "", ar: "", en: "" },
+  color: "from-gray-800/30 to-gray-900/20",
+};
+
+// ── Live price/stock resolution ───────────────────────────────────────────────
+interface ResolvedItem extends PanierItem {
+  product: DBProduct | null; // null = no catalog match ("Produit introuvable")
+}
+
+function resolveItems(items: PanierItem[], products: DBProduct[]): ResolvedItem[] {
+  return items.map((it) => ({ ...it, product: resolveProduct(it.label, products) }));
+}
+
+function calcTotal(items: ResolvedItem[]): number {
+  return items.reduce((sum, it) => {
+    if (!it.product || !it.product.in_stock) return sum;
+    return sum + it.product.price_mad * it.qty;
+  }, 0);
 }
 
 function calcSaving(total: number): number {
@@ -154,23 +110,34 @@ function calcSaving(total: number): number {
 }
 
 // ── Basket Card ───────────────────────────────────────────────────────────────
-function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
+function BasketCard({ basket, products, lang }: { basket: Panier; products: DBProduct[]; lang: string }) {
   const l          = lang as L;
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]   = useState(false);
   const [added, setAdded] = useState(false);
   const addToCart  = useCartStore(s => s.addToCart);
-  const total      = calcTotal(basket.items);
-  const saving     = calcSaving(total);
-  const discounted = total - saving;
+
+  const presentation   = PRESENTATION[basket.id] ?? DEFAULT_PRESENTATION;
+  const resolvedItems  = resolveItems(basket.items, products);
+  const total          = calcTotal(resolvedItems);
+  const saving         = calcSaving(total);
+  const discounted     = total - saving;
+  const missingCount   = resolvedItems.filter(it => !it.product).length;
+  const hasAddable      = resolvedItems.some(it => it.product && it.product.in_stock);
+
+  function itemDisplayName(it: ResolvedItem): string {
+    if (l === "ar") return it.product?.name_ar || it.label;
+    return it.product?.name_fr || it.label;
+  }
 
   function handleAddAll() {
-    basket.items.forEach(item => {
+    resolvedItems.forEach(it => {
+      if (!it.product || !it.product.in_stock) return; // skip unresolved / out-of-stock
       addToCart({
-        name:           item.name_ar,
-        price_per_unit: item.price,
-        unit:           item.unit,
+        name:           it.product.name_ar,
+        price_per_unit: it.product.price_mad,
+        unit:           it.product.unit,
         available:      true,
-      }, item.qty);
+      }, it.qty);
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
@@ -178,7 +145,7 @@ function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
 
   return (
     <article
-      className={`rounded-3xl border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl bg-gradient-to-br ${basket.color}`}
+      className={`rounded-3xl border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl bg-gradient-to-br ${presentation.color}`}
       style={{ border: `1px solid ${basket.accent}30` }}
     >
       {/* Header */}
@@ -188,14 +155,16 @@ function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
             {/* Badge */}
             <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest mb-2"
               style={{ background: `${basket.accent}20`, color: basket.accent, border: `1px solid ${basket.accent}40` }}>
-              ⭐ {basket.badge[l]}
+              ⭐ {presentation.badge[l]}
             </span>
             <h2 className={`text-xl font-black text-white leading-tight ${l === "ar" ? "font-arabic text-right" : "font-latin"}`} style={l !== "ar" ? { fontFamily: "var(--font-display)", fontSize: "1.4rem" } : {}}>
-              {basket.emoji} {basket.title[l]}
+              {presentation.emoji} {basket.title}
             </h2>
-            <p className={`text-xs text-white/50 mt-0.5 ${l === "ar" ? "font-arabic text-right" : "font-latin"}`}>
-              {basket.subtitle[l]}
-            </p>
+            {presentation.subtitle[l] && (
+              <p className={`text-xs text-white/50 mt-0.5 ${l === "ar" ? "font-arabic text-right" : "font-latin"}`}>
+                {presentation.subtitle[l]}
+              </p>
+            )}
           </div>
           {/* Persons pill */}
           <div className="flex flex-col items-center shrink-0 rounded-2xl px-3 py-2"
@@ -205,17 +174,19 @@ function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
           </div>
         </div>
 
-        <p className={`text-sm text-white/55 leading-relaxed mb-4 ${l === "ar" ? "font-arabic text-right" : "font-latin"}`}>
-          {basket.description[l]}
-        </p>
+        {presentation.description[l] && (
+          <p className={`text-sm text-white/55 leading-relaxed mb-4 ${l === "ar" ? "font-arabic text-right" : "font-latin"}`}>
+            {presentation.description[l]}
+          </p>
+        )}
 
         {/* Items preview */}
         <div className="flex flex-wrap gap-1.5 mb-4">
-          {basket.items.map(item => (
-            <span key={item.sku}
-              className="flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold text-white/70"
+          {resolvedItems.map((item, i) => (
+            <span key={i}
+              className={"flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold " + (item.product ? "text-white/70" : "text-white/35")}
               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              {item.emoji} {l === "ar" ? item.name_ar : item.name_fr}
+              {itemDisplayName(item)}
               {item.qty > 1 && <span className="text-white/40 font-latin">×{item.qty}</span>}
             </span>
           ))}
@@ -224,17 +195,25 @@ function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
         {/* Pricing */}
         <div className={`flex items-center gap-3 mb-4 ${l === "ar" ? "flex-row-reverse" : ""}`}>
           <div>
-            <div className={`flex items-baseline gap-1.5 ${l === "ar" ? "flex-row-reverse" : ""}`}>
-              <span className="text-4xl font-black text-white font-latin" style={{ fontFamily: "var(--font-body)", letterSpacing: "-0.03em" }}>{discounted.toFixed(0)}</span>
-              <span className="text-sm text-white/50 font-latin">MAD</span>
-            </div>
-            <div className={`flex items-center gap-2 ${l === "ar" ? "flex-row-reverse" : ""}`}>
-              <span className="text-sm text-white/30 line-through font-latin">{total.toFixed(0)} MAD</span>
-              <span className="text-xs font-bold rounded-full px-2 py-0.5"
-                style={{ background: `${basket.accent}25`, color: basket.accent }}>
-                -{saving} MAD
+            {total > 0 ? (
+              <>
+                <div className={`flex items-baseline gap-1.5 ${l === "ar" ? "flex-row-reverse" : ""}`}>
+                  <span className="text-4xl font-black text-white font-latin" style={{ fontFamily: "var(--font-body)", letterSpacing: "-0.03em" }}>{discounted.toFixed(0)}</span>
+                  <span className="text-sm text-white/50 font-latin">MAD</span>
+                </div>
+                <div className={`flex items-center gap-2 ${l === "ar" ? "flex-row-reverse" : ""}`}>
+                  <span className="text-sm text-white/30 line-through font-latin">{total.toFixed(0)} MAD</span>
+                  <span className="text-xs font-bold rounded-full px-2 py-0.5"
+                    style={{ background: `${basket.accent}25`, color: basket.accent }}>
+                    -{saving} MAD
+                  </span>
+                </div>
+              </>
+            ) : (
+              <span className="text-sm font-bold text-white/40">
+                {l === "ar" ? "السعر غير متوفر" : l === "fr" ? "Prix non disponible" : "Price unavailable"}
               </span>
-            </div>
+            )}
           </div>
           <div className="flex-1" />
           {/* Toggle details */}
@@ -247,35 +226,52 @@ function BasketCard({ basket, lang }: { basket: Basket; lang: string }) {
           </button>
         </div>
 
+        {missingCount > 0 && (
+          <p className="mb-3 text-[11px] font-semibold text-amber-400/80">
+            ⚠ {l === "ar" ? `${missingCount} منتج غير متوفر حالياً` : l === "fr" ? `${missingCount} produit${missingCount > 1 ? "s" : ""} indisponible${missingCount > 1 ? "s" : ""} dans ce panier` : `${missingCount} item${missingCount > 1 ? "s" : ""} currently unavailable`}
+          </p>
+        )}
+
         {/* Expanded items detail */}
         {open && (
           <div className="mb-4 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-            {basket.items.map((item, i) => (
-              <div key={item.sku}
+            {resolvedItems.map((item, i) => (
+              <div key={i}
                 className={`flex items-center justify-between px-3 py-2 text-xs ${i % 2 === 0 ? "bg-white/[0.03]" : ""} ${l === "ar" ? "flex-row-reverse" : ""}`}>
                 <span className="text-white/70 flex items-center gap-1.5">
-                  <span>{item.emoji}</span>
                   <span className={l === "ar" ? "font-arabic" : "font-latin"}>
-                    {l === "ar" ? item.name_ar : item.name_fr}
+                    {itemDisplayName(item)}
                   </span>
                   {item.qty !== 1 && <span className="text-white/35 font-latin">×{item.qty} {item.unit}</span>}
                 </span>
-                <span className="text-white/40 font-latin">{(item.price * item.qty).toFixed(2)} MAD</span>
+                {!item.product ? (
+                  <span className="text-[10px] font-bold text-amber-400/80">
+                    {l === "ar" ? "غير موجود" : l === "fr" ? "Indisponible" : "Unavailable"}
+                  </span>
+                ) : !item.product.in_stock ? (
+                  <span className="text-[10px] font-bold text-red-400/80">
+                    {l === "ar" ? "نفذ" : l === "fr" ? "Rupture" : "Out of stock"}
+                  </span>
+                ) : (
+                  <span className="text-white/40 font-latin">{(item.product.price_mad * item.qty).toFixed(2)} MAD</span>
+                )}
               </div>
             ))}
-            <div className={`flex justify-between px-3 py-2 font-bold text-xs border-t border-white/10 ${l === "ar" ? "flex-row-reverse" : ""}`}>
-              <span className={`text-white/50 ${l === "ar" ? "font-arabic" : "font-latin"}`}>
-                {l === "ar" ? "المجموع قبل الخصم" : l === "fr" ? "Total avant réduction" : "Total before discount"}
-              </span>
-              <span className="text-white/50 font-latin">{total.toFixed(2)} MAD</span>
-            </div>
+            {total > 0 && (
+              <div className={`flex justify-between px-3 py-2 font-bold text-xs border-t border-white/10 ${l === "ar" ? "flex-row-reverse" : ""}`}>
+                <span className={`text-white/50 ${l === "ar" ? "font-arabic" : "font-latin"}`}>
+                  {l === "ar" ? "المجموع قبل الخصم" : l === "fr" ? "Total avant réduction" : "Total before discount"}
+                </span>
+                <span className="text-white/50 font-latin">{total.toFixed(2)} MAD</span>
+              </div>
+            )}
           </div>
         )}
 
         {/* CTA buttons */}
         <div className="flex gap-2">
-          <button onClick={handleAddAll}
-            className={`flex-1 rounded-2xl py-4 text-sm font-extrabold text-white transition-all duration-200 active:scale-[0.97] hover:brightness-110 ${l === "ar" ? "font-arabic" : "font-latin"}`}
+          <button onClick={handleAddAll} disabled={!hasAddable}
+            className={`flex-1 rounded-2xl py-4 text-sm font-extrabold text-white transition-all duration-200 active:scale-[0.97] hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed ${l === "ar" ? "font-arabic" : "font-latin"}`}
             style={{
               background: added
                 ? "linear-gradient(135deg,#16a34a,#15803d)"
@@ -305,6 +301,31 @@ export default function PanierTypePage() {
   const l = language as L;
   const cart       = useCartStore(s => s.cart);
   const totalItems = cart.reduce((n, i) => n + (i.cartQuantity || 0), 0);
+
+  const [baskets,  setBaskets]  = useState<Panier[]>([]);
+  const [products, setProducts] = useState<DBProduct[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+    Promise.all([getPaniers(), getProducts()])
+      .then(([paniersData, productsData]) => {
+        if (cancelled) return;
+        const sorted = [...paniersData].sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+        setBaskets(sorted);
+        setProducts(productsData);
+      })
+      .catch(() => {
+        if (!cancelled) setError(
+          l === "ar" ? "تعذر تحميل السلات. حاول مجدداً." : l === "fr" ? "Impossible de charger les paniers. Réessayez." : "Couldn't load baskets. Please try again."
+        );
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [l]);
 
   return (
     <div className={language === "ar" ? "font-arabic" : "font-latin"} dir={isRTL ? "rtl" : "ltr"}
@@ -356,11 +377,29 @@ export default function PanierTypePage() {
 
         {/* Baskets grid */}
         <section aria-label="Liste des paniers types" className="px-4 pb-8 max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {BASKETS.map(basket => (
-              <BasketCard key={basket.id} basket={basket} lang={language} />
-            ))}
-          </div>
+          {loading && (
+            <div className="flex items-center justify-center gap-3 py-16 text-white/50">
+              <Loader2 size={22} className="animate-spin" />
+              <span className="text-sm font-semibold">
+                {l === "ar" ? "جارٍ تحميل السلال..." : l === "fr" ? "Chargement des paniers…" : "Loading baskets…"}
+              </span>
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="flex flex-col items-center gap-2 py-16 text-center">
+              <AlertCircle size={22} className="text-red-400" />
+              <p className="text-sm font-semibold text-red-300">{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              {baskets.map(basket => (
+                <BasketCard key={basket.id} basket={basket} products={products} lang={language} />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Cart shortcut — shows when items added */}

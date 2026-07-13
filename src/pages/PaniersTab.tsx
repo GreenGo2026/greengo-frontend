@@ -7,6 +7,21 @@ import type { DBProduct, Panier } from "../services/api";
 type Lang = "fr" | "ar";
 type BasketItem = { label: string; qty: number; unit: string };
 
+// Accent-insensitive, case-insensitive comparison -- "Poivron vert" and
+// "poivron vert" (missing accent) must both resolve to the same catalog
+// product, or the item shows as "introuvable" for no reason. NFD-decompose
+// then drop the combining-diacritical-marks block (U+0300-U+036F) by code
+// point, rather than a \u-escaped regex literal (fragile to re-encoding).
+function normalizeLabel(s: string): string {
+  const decomposed = s.toLowerCase().trim().normalize("NFD");
+  let out = "";
+  for (const ch of decomposed) {
+    const code = ch.codePointAt(0) ?? 0;
+    if (code < 0x0300 || code > 0x036f) out += ch;
+  }
+  return out;
+}
+
 export default function PaniersTab({ products, lang, font }: {
   products: DBProduct[];
   lang: Lang;
@@ -203,9 +218,10 @@ export default function PaniersTab({ products, lang, font }: {
 
       {baskets.map(basket => {
         const liveItems = basket.items.map(bi => {
-          // Match by name_fr (case-insensitive exact match)
+          // Match by name_fr (accent- and case-insensitive)
+          const normLabel = normalizeLabel(bi.label);
           const liveP = (products as any[]).find((p: any) =>
-            (p.name_fr || "").toLowerCase().trim() === bi.label.toLowerCase().trim()
+            normalizeLabel(p.name_fr || "") === normLabel
           );
           const livePrice = liveP ? liveP.price_mad : null;
           const lineTotal = livePrice !== null ? livePrice * bi.qty : null;
