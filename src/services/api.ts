@@ -72,6 +72,9 @@ export interface DBProductUpdate {
   unit?:       string;
   category?:   string;
   step?:       0.25 | 0.5 | 1;
+  // Never auto-derived from price_mad -- only ever set when the admin
+  // explicitly edits variant prices in ProductsTab.
+  variants?:   ProductVariant[];
 }
 
 export interface DBProductUpdateResponse extends DBProduct {}

@@ -26,6 +26,11 @@ interface InlineEdit {
   id: string;
   name_fr: string; name_ar: string; category: string;
   price_mad: number; unit: string; in_stock: boolean; visible: boolean;
+  // Variant prices are independent of price_mad -- the backend never
+  // recalculates them once set (see should_auto_generate_variants), so
+  // editing price_mad alone silently desyncs them from what the storefront
+  // actually displays. Admin edits both explicitly, in one save.
+  variant_prices?: Array<{ label: string; price_mad: number; weight_g?: number | null; in_stock?: boolean }>;
 }
 
 interface Props { lang: Lang; font: string; }
@@ -109,7 +114,13 @@ export default function ProductsTab({ lang, font }: Props) {
   }
 
   function startEdit(p: DBProduct) {
-    setEditRow({ id: p.id, name_fr: p.name_fr || "", name_ar: p.name_ar, category: p.category, price_mad: p.price_mad, unit: p.unit, in_stock: p.in_stock, visible: p.visible });
+    setEditRow({
+      id: p.id, name_fr: p.name_fr || "", name_ar: p.name_ar, category: p.category,
+      price_mad: p.price_mad, unit: p.unit, in_stock: p.in_stock, visible: p.visible,
+      variant_prices: (p.variants || []).map(v => ({
+        label: v.label, price_mad: v.price_mad, weight_g: v.weight_g, in_stock: v.in_stock ?? true,
+      })),
+    });
   }
 
   async function saveEdit() {
@@ -122,6 +133,9 @@ export default function ProductsTab({ lang, font }: Props) {
         unit: editRow.unit, in_stock: editRow.in_stock,
         visible: editRow.visible,
         ...((editRow as any)._imageUrl ? { image_url: (editRow as any)._imageUrl } : {}),
+        // Variant prices are only ever sent if this product has variants --
+        // never auto-derived from price_mad, always exactly what the admin typed.
+        ...(editRow.variant_prices?.length ? { variants: editRow.variant_prices } : {}),
       } as any);
       setProducts(ps => ps.map(p => p.id === editRow.id ? { ...p, ...updated } : p));
       setEditRow(null);
@@ -368,10 +382,51 @@ export default function ProductsTab({ lang, font }: Props) {
                                 className="w-20 rounded-lg border border-amber-300 bg-amber-50 px-1.5 py-1 text-xs outline-none">
                                 {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
                               </select>
+                              {(() => {
+                                const v1kg = editRow.variant_prices?.find(v => v.weight_g === 1000);
+                                if (!v1kg || Math.abs(v1kg.price_mad - editRow.price_mad) <= 0.01) return null;
+                                return (
+                                  <p className="text-[10px] text-amber-600 text-right leading-tight">
+                                    ⚠️ variantes: {v1kg.price_mad} MAD
+                                  </p>
+                                );
+                              })()}
+                              {!!editRow.variant_prices?.length && (
+                                <div className="mt-1 w-full text-left border-t border-amber-200 pt-1.5 space-y-1">
+                                  <p className="text-[9px] font-semibold text-gray-500">
+                                    Prix variantes <span className="font-normal text-gray-400">(manuel)</span>
+                                  </p>
+                                  {editRow.variant_prices.map((v, i) => (
+                                    <div key={v.label} className="flex items-center gap-1.5">
+                                      <span className="text-[10px] text-gray-500 w-10 shrink-0">{v.label}</span>
+                                      <input type="number" step="0.5" min="0" value={v.price_mad}
+                                        onChange={e => {
+                                          const updated = [...(editRow.variant_prices || [])];
+                                          updated[i] = { ...v, price_mad: parseFloat(e.target.value) || 0 };
+                                          setEditRow(r => r ? { ...r, variant_prices: updated } : r);
+                                        }}
+                                        className="w-16 rounded-lg border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] text-right outline-none focus:border-[#2E8B57]" />
+                                      <span className="text-[10px] text-gray-400">MAD</span>
+                                    </div>
+                                  ))}
+                                  <p className="text-[9px] text-amber-600 bg-amber-50 rounded px-1.5 py-1">
+                                    ⚠️ Modifier le prix ci-dessus ne met pas à jour ces variantes.
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           : <>
                               <span className="font-bold text-gray-800 font-latin">{p.price_mad.toFixed(2)} MAD</span>
                               <span className="block text-[10px] text-gray-400 font-latin">/ {p.unit}</span>
+                              {(() => {
+                                const v1kg = p.variants?.find(v => v.weight_g === 1000);
+                                if (!v1kg || Math.abs(v1kg.price_mad - p.price_mad) <= 0.01) return null;
+                                return (
+                                  <span className="block mt-0.5 text-[10px] text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 leading-tight">
+                                    ⚠️ variantes: {v1kg.price_mad} MAD
+                                  </span>
+                                );
+                              })()}
                             </>
                         }
                       </td>
