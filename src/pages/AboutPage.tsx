@@ -185,6 +185,10 @@ export default function AboutPage() {
               className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-8 py-3.5 text-sm font-extrabold text-white shadow-lg transition-all hover:shadow-xl active:scale-95">
               📱 {ar ? "اطلب على واتساب" : fr ? "Commander sur WhatsApp" : "Order on WhatsApp"}
             </a>
+            <Link to="/pourquoi-nous"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-white/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white">
+              {ar ? "لماذا نحن ←" : fr ? "Pourquoi nous → " : "Why us → "}
+            </Link>
           </div>
         </div>
       </section>

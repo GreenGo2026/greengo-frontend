@@ -24,6 +24,7 @@ const AddProductPage   = lazy(() => import("./pages/AddProductPage"));
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 const SuperAdminPage   = lazy(() => import("./pages/SuperAdminPage"));
 const AboutPage        = lazy(() => import("./pages/AboutPage"));
+const WhyUsPage        = lazy(() => import("./pages/WhyUsPage"));
 const ContactPage      = lazy(() => import("./pages/ContactPage"));
 const PaymentGateway   = lazy(() => import("./pages/Payment/PaymentGateway"));
 const UserDashboard    = lazy(() => import("./pages/Profile/UserDashboard"));
@@ -147,6 +148,7 @@ function PublicShell() {
           <Route path="/cart"         element={<CartPage />}        />
           <Route path="/about"        element={<AboutPage />}       />
           <Route path="/notre-histoire" element={<AboutPage />}    />
+          <Route path="/pourquoi-nous" element={<WhyUsPage />}     />
           <Route path="/contact"      element={<ContactPage />}     />
 
           {/* Admin routes are handled at the root level (outside this shell) */}
