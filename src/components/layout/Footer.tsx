@@ -346,6 +346,7 @@ export default function Footer() {
                 { to: "/notre-histoire", fr: "Notre histoire",        ar: "قصتنا" },
                 { to: "/pourquoi-nous",  fr: "Pourquoi nous ?",        ar: "لماذا نحن؟" },
                 { to: "/guide/miel-artisanal-maroc", fr: "🍯 Guide du miel marocain", ar: "🍯 دليل العسل المغربي" },
+                { to: "/guide/huile-olive-marocaine", fr: "🫒 Guide huile d'olive marocaine", ar: "🫒 دليل زيت الزيتون المغربي" },
                 { to: "/recrutement",   fr: "Recrutement",            ar: "التوظيف" },
               ].map((item) => (
                 <li key={item.to}>
