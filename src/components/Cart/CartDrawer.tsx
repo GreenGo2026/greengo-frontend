@@ -21,7 +21,9 @@ type LocationStatus = "idle" | "loading" | "success" | "error";
 function CartRow({ item }: { item: CartItem }) {
   const add    = useCartStore((s) => s.addToCart);
   const remove = useCartStore((s) => s.removeFromCart);
-  const step   = getUnitStep(item.unit);
+  // Variant lines are discrete packs -- always step by whole packs, never by
+  // the base product's kg/g step (mirrors CartPage.tsx QuantityControl).
+  const step   = item.variant_label ? 1 : getUnitStep(item.unit);
   const qty    = item.cartQuantity;
   const line   = ((item.price_per_unit ?? 0) * qty).toFixed(2);
 

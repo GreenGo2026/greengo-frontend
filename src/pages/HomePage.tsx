@@ -190,7 +190,10 @@ function VariantCardControl({ product }: { product: DBProduct }) {
   const proxy = {
     name:           product.name_ar,
     price_per_unit: activeVariant.price_mad,
-    unit:           product.unit,
+    // Variant is a discrete pack, not a kg/g quantity of the base product --
+    // storing "piece" here (not product.unit) keeps downstream step lookups
+    // (CartPage/CartDrawer) consistent with the step=1 used below.
+    unit:           "piece",
     available:      activeVariant.in_stock,
     variant_label:  activeVariant.label,
   };

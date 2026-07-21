@@ -201,7 +201,10 @@ export const useCartStore = create<CartState>()(
       merge: (persisted: any, current: any) => {
         const seen = new Map<string, any>();
         for (const item of (persisted?.cart ?? [])) {
-          const key = item.id || item.name;
+          // Must match cartKey() exactly -- different variants of the same
+          // product (id/name) are separate lines and must never be collapsed
+          // into one another's price/unit (see L99 cart audit).
+          const key = cartKey(item);
           if (seen.has(key)) {
             const existing = seen.get(key);
             existing.cartQuantity = Math.round((existing.cartQuantity + item.cartQuantity) * 1000) / 1000;

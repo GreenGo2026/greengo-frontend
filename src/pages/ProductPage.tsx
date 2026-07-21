@@ -197,9 +197,13 @@ export default function ProductPage() {
   const cat      = getCat(product.category);
   const img      = imgError ? "" : resolveImg(product.image_url);
   const isJpg    = product.image_url?.endsWith(".jpg") || product.image_url?.endsWith(".jpeg");
-  const step     = getUnitStep(product.unit);
   const hasVariants = !!(product.variants && product.variants.length > 0);
   const activeVariant = hasVariants && selectedVariant !== null ? product.variants![selectedVariant] : null;
+  // A variant is a discrete pack (250g/500g/1kg bag) at a flat admin-set price,
+  // not a continuous per-kg rate -- it always steps by whole packs, never by
+  // the base product's kg/g step (see L99 cart audit).
+  const unit     = activeVariant ? "piece" : (product.unit || "piece");
+  const step     = activeVariant ? 1 : getUnitStep(product.unit);
   const cartItem = cart.find(i =>
     (i.name === product.name_ar || i.name === product.name_fr) &&
     (i.variant_label ?? null) === (activeVariant?.label ?? null)
@@ -219,7 +223,7 @@ export default function ProductPage() {
     addToCart({
       name:           product!.name_ar || product!.name_fr || "",
       price_per_unit: activePrice,
-      unit:           product!.unit,
+      unit:           unit,
       available:      product!.in_stock,
       variant_label:  activeVariant?.label ?? null,
     }, step);

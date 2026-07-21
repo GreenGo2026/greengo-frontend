@@ -114,7 +114,9 @@ function CartHeroStrip() {
 function QuantityControl({ item }: { item: CartItem }) {
   const add    = useCartStore((s) => s.addToCart);
   const remove = useCartStore((s) => s.removeFromCart);
-  const step   = getUnitStep(item.unit);
+  // Variant lines are discrete packs (see ProductPage/HomePage variant add) --
+  // always step by whole packs, never by the base product's kg/g step.
+  const step   = item.variant_label ? 1 : getUnitStep(item.unit);
   const qty    = item.cartQuantity;
 
   const decCls = qty <= step
