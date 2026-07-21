@@ -282,10 +282,15 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
       address:         address.trim(),
       gps_coordinates: location ?? undefined,
       items: cart.map((i) => ({
-        name:           i.variant_label ? `${i.name} (${i.variant_label})` : i.name,
+        // name must stay the bare product name -- the backend looks up the
+        // authoritative price by exact name_fr/name_ar match (see orders.py
+        // _server_product_info), so appending "(250g)" here made that lookup
+        // fail and silently skip server-side price validation for variants.
+        name:           i.name,
         quantity:       i.cartQuantity,
         unit:           i.unit ?? "kg",
         price_per_unit: i.price_per_unit ?? 0,
+        variant_label:  i.variant_label ?? null,
       })),
       delivery_zone: deliveryZone,
       delivery_fee:  deliveryFee,

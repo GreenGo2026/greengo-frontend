@@ -556,6 +556,7 @@ export default function CartPage() {
         quantity:       Number(i.cartQuantity),
         unit:           (i.unit ?? "kg").trim(),
         price_per_unit: Number(i.price_per_unit ?? 0),
+        variant_label:  i.variant_label ?? null,
       })),
       delivery_zone: deliveryZone,
       delivery_fee:  deliveryFee,
