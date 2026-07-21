@@ -30,6 +30,7 @@ const CAT: Record<string, { emoji: string; fr: string; ar: string; en: string; d
   "Fruits":            { emoji: "🍊", fr: "Fruits",            ar: "فواكه",             en: "Fruits",         dot: "#ea580c" },
   "White Meats":       { emoji: "🍗", fr: "Viandes blanches", ar: "لحوم بيضاء",       en: "White Meats",    dot: "#dc2626" },
   "Volailles":         { emoji: "🐓", fr: "Volailles",         ar: "دواجن",             en: "Poultry",        dot: "#b45309" },
+  "Viande Rouge":      { emoji: "🥩", fr: "Viande rouge",      ar: "اللحم الأحمر",      en: "Red Meat",       dot: "#991b1b" },
   "Eggs":              { emoji: "🥚", fr: "Œufs",             ar: "بيض",               en: "Eggs",           dot: "#ca8a04" },
   "Fromage":           { emoji: "🧀", fr: "Fromage",           ar: "الجبن",             en: "Cheese",         dot: "#f59e0b" },
   "Olives":            { emoji: "🫒", fr: "Olives",            ar: "زيتون",             en: "Olives",         dot: "#65a30d" },

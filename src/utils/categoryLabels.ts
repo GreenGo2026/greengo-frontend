@@ -5,6 +5,7 @@
 export const CATEGORY_LABEL_FR: Record<string, string> = {
   "Vegetables": "Légumes",
   "White Meats": "Viandes blanches",
+  "Viande Rouge": "Viande rouge",
   "Natural Juices": "Jus naturels 🧃",
   "Mixed Packs": "Paniers mixtes",
   "Purified Greens": "Herbes fraîches",

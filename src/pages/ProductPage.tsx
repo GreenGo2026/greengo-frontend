@@ -23,6 +23,7 @@ const CAT_META: Record<string, { emoji: string; fr: string; ar: string }> = {
   "Purified Greens": { emoji: "🌱", fr: "Herbes fra\u00eeches",   ar: "\u0623\u0639\u0634\u0627\u0628" },
   "Fruits":          { emoji: "🍎", fr: "Fruits frais",            ar: "\u0641\u0648\u0627\u0643\u0647" },
   "White Meats":     { emoji: "🍗", fr: "Viandes blanches",       ar: "\u0644\u062d\u0648\u0645 \u0628\u064a\u0636\u0627\u0621" },
+  "Viande Rouge":    { emoji: "🥩", fr: "Viande rouge",            ar: "اللحم الأحمر" },
   "Eggs":            { emoji: "🥚", fr: "Oeufs frais",             ar: "\u0628\u064a\u0636" },
   "Olives":          { emoji: "🫒", fr: "Olives",                  ar: "\u0632\u064a\u062a\u0648\u0646" },
   "Epices":          { emoji: "🧂", fr: "\u00c9pices",             ar: "\u062a\u0648\u0627\u0628\u0644" },

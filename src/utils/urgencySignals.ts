@@ -8,7 +8,7 @@ export interface UrgencySignal {
   color: string;
 }
 
-const FRESH_CATEGORIES = ["Vegetables", "Fruits", "Volailles", "White Meats"];
+const FRESH_CATEGORIES = ["Vegetables", "Fruits", "Volailles", "White Meats", "Viande Rouge"];
 
 /**
  * Urgency signal for a product card. Priority order:

@@ -154,6 +154,7 @@ const CAT_STYLE: Record<string,{emoji:string;bg:string;text:string}> = {
   Vegetables:{emoji:"🥕",bg:"bg-emerald-50",text:"text-emerald-700"},
   Fruits:    {emoji:"🍎",bg:"bg-orange-50", text:"text-orange-700"},
   "White Meats":{emoji:"🍗",bg:"bg-rose-50",text:"text-rose-700"},
+  "Viande Rouge":{emoji:"🥩",bg:"bg-red-50",text:"text-red-700"},
   Eggs:      {emoji:"🥚",bg:"bg-yellow-50",text:"text-yellow-700"},
   Other:     {emoji:"🛒",bg:"bg-gray-100", text:"text-gray-600"},
 };
