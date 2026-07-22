@@ -1,12 +1,13 @@
 // src/pages/ProductsTab.tsx
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Pencil, Trash2, Eye, EyeOff, Check, X, Plus, RefreshCw, AlertCircle } from "lucide-react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Loader2, Pencil, Trash2, Eye, EyeOff, Check, X, Plus, RefreshCw, AlertCircle, ClipboardList } from "lucide-react";
 import {
   createProduct, deleteProduct, getProducts, updateProductById, uploadProductImage,
   type CreateProductPayload, type DBProduct,
 } from "../services/api";
 import { getJwt } from "../services/adminJwt";
 import { categoryLabel } from "../utils/categoryLabels";
+import AuditHistory from "../components/admin/AuditHistory";
 
 type Lang = "fr" | "ar";
 
@@ -49,6 +50,7 @@ export default function ProductsTab({ lang, font }: Props) {
   const [editUploading, setEditUploading] = useState(false);
   const [catFilter,    setCatFilter]    = useState("all");
   const [searchQuery,  setSearchQuery]  = useState("");
+  const [historyProductId, setHistoryProductId] = useState<string | null>(null);
   const fileRef     = useRef<HTMLInputElement>(null);
   const formRef     = useRef<HTMLDivElement>(null);
   const editFileRef = useRef<HTMLInputElement>(null);
@@ -331,7 +333,8 @@ export default function ProductsTab({ lang, font }: Props) {
                     ? (p.image_url.startsWith("/static") ? `${BASE_URL}${p.image_url}` : p.image_url)
                     : null;
                   return (
-                    <tr key={p.id} className={`border-b border-gray-100 transition-all ${isEditing ? "bg-amber-50/60" : "hover:bg-gray-50/60"}`}>
+                    <Fragment key={p.id}>
+                    <tr className={`border-b border-gray-100 transition-all ${isEditing ? "bg-amber-50/60" : "hover:bg-gray-50/60"}`}>
                       {/* Image */}
                       <td className="px-3 py-2">
                         {imgSrc
@@ -478,9 +481,23 @@ export default function ProductsTab({ lang, font }: Props) {
                               </button>
                             </>
                           )}
+                          <button
+                            onClick={() => setHistoryProductId(historyProductId === p.id ? null : p.id)}
+                            title="Historique"
+                            className={`flex h-7 w-7 items-center justify-center rounded-lg transition ${historyProductId === p.id ? "bg-purple-100 text-purple-600" : "bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-purple-500"}`}>
+                            <ClipboardList size={12} />
+                          </button>
                         </div>
                       </td>
                     </tr>
+                    {historyProductId === p.id && (
+                      <tr>
+                        <td colSpan={7} className="bg-gray-50 p-4 border-b border-gray-100">
+                          <AuditHistory entityType="product" entityId={p.id} />
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                   );
                 })}
               </tbody>
