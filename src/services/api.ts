@@ -124,6 +124,13 @@ export interface OrderItem {
   price_per_unit: number;
   line_total?:    number;
 }
+export interface StatusHistoryEntry {
+  from:       string;
+  to:         string;
+  timestamp:  string;
+  changed_by: string;
+  note:       string;
+}
 export interface Order {
   id:               string;
   customer_phone:   string;
@@ -134,11 +141,15 @@ export interface Order {
   total_price:      number;
   status:           OrderStatus;
   created_at:       string;
+  status_history?:  StatusHistoryEntry[];
 }
 export interface OrderStatusUpdateResponse {
-  message:    string;
-  order_id:   string;
-  new_status: OrderStatus;
+  order_id:         string;
+  previous_status:  OrderStatus;
+  new_status:       OrderStatus;
+  restocked:        string[];
+  whatsapp_sent:    boolean;
+  note:             string | null;
 }
 
 // ── Reviews ────────────────────────────────────────────────────────────────
@@ -277,8 +288,16 @@ export async function getOrders(status?: OrderStatus, limit = 50): Promise<Order
     };
   });
 }
-export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<OrderStatusUpdateResponse> {
-  const r = await apiClient.patch<OrderStatusUpdateResponse>(`/orders/${orderId}/status`, null, { params: { status } });
+export async function updateOrderStatus(
+  orderId: string,
+  status: OrderStatus,
+  options?: { note?: string; notifyCustomer?: boolean },
+): Promise<OrderStatusUpdateResponse> {
+  const r = await apiClient.patch<OrderStatusUpdateResponse>(`/orders/${orderId}/status`, {
+    status,
+    note: options?.note ?? null,
+    notify_customer: options?.notifyCustomer ?? true,
+  });
   return r.data;
 }
 

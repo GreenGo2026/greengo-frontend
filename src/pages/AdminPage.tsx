@@ -268,6 +268,18 @@ function OrderCard({order,lang,isOldest,onStatusChange,showToast,onRefresh}:{ord
               <a href={waHref} target="_blank" rel="noopener noreferrer" className={"flex items-center gap-1.5 rounded-full bg-[#2E8B57] px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-[#1a6b42] transition-colors "+font}><MessageCircle size={11}/>{L.wa_btn}</a>
             </div>
             {(order.items||[]).length>0&&(<div><p className={"text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2 "+font}>{L.items_lbl}</p><div className="space-y-1.5">{(order.items||[]).map((item,i)=>{const nm=item.name||item.item_name||"";return(<div key={i} className={"flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2.5 ring-1 ring-gray-200 "+(lang==="ar"?"flex-row-reverse":"")}><div className={"flex items-center gap-2.5 "+(lang==="ar"?"flex-row-reverse":"")}><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-base">🛒</div><div className={lang==="ar"?"text-right":""}><p dir="rtl" className="text-sm font-bold text-gray-800 font-arabic">{nm}</p><p className="text-[10px] text-gray-400 font-latin">×{item.quantity} {item.unit}</p></div></div><div className="text-right"><p className="text-sm font-extrabold text-[#2E8B57] font-latin">{((item.price_per_unit||0)*(item.quantity||0)).toFixed(2)}</p><p className="text-[10px] text-gray-400">MAD</p></div></div>);})}</div><div className={"mt-3 flex items-center justify-between rounded-xl px-3 py-2.5 "+(lang==="ar"?"flex-row-reverse":"")} style={{background:"linear-gradient(135deg,#fdf8ef,#f9efda)"}}><span className={"text-sm font-bold text-gray-600 "+font}>{L.total_lbl}</span><span className="text-xl font-extrabold text-[#2E8B57] font-latin">{(order.total_price||0).toFixed(2)} <span className="text-xs font-semibold text-gray-400">MAD</span></span></div></div>)}
+            {!!order.status_history?.length && (
+              <div>
+                <p className={"text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2 "+font}>📋 Historique</p>
+                <div className="space-y-1">
+                  {order.status_history.map((h,i)=>{
+                    const fromLbl=sCfg(lang)[normalizeStatus(h.from)]?.label||h.from;
+                    const toLbl=sCfg(lang)[normalizeStatus(h.to)]?.label||h.to;
+                    return(<div key={i} className="text-[11px] text-gray-500 flex items-center gap-2 flex-wrap"><span className="text-gray-300 font-latin">{formatTs(h.timestamp)}</span><span>{fromLbl} → {toLbl}</span>{h.note&&<span className="text-gray-400 italic">({h.note})</span>}</div>);
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
