@@ -7,6 +7,9 @@ const WA_HREF    = "https://wa.me/212664500789";
 const WA_REL     = "noopener noreferrer";
 const PHONE      = "+212 664-500-789";
 const PHONE_HREF = "tel:+212664500789";
+// Additional 24/7 support line -- alongside PHONE_HREF, not a replacement.
+const PHONE_247      = "+212 666-521-313";
+const PHONE_247_HREF = "tel:+212666521313";
 
 export default function ContactPage() {
   const { dir, language, isRTL } = useLanguage();
@@ -129,6 +132,10 @@ export default function ContactPage() {
                   <div>
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">{T.phoneTitle}</p>
                     <a href={PHONE_HREF} className="mt-1 block text-sm font-semibold text-gray-700 transition-colors hover:text-[#2E8B57] font-latin">{PHONE}</a>
+                    <a href={PHONE_247_HREF} className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-gray-700 transition-colors hover:text-[#2E8B57] font-latin">
+                      {PHONE_247}
+                      <span className="rounded-full bg-[#2E8B57]/10 px-1.5 py-0.5 text-[9px] font-black text-[#2E8B57]">24h/24</span>
+                    </a>
                   </div>
                 </div>
 

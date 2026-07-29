@@ -12,6 +12,8 @@ import type { SupportedLanguage } from "../../utils/translations";
 // ── Constants ────────────────────────────────────────────────────────────────
 const WA_SUPPORT = "https://wa.me/212664500789";
 const WA_ORDERS  = "https://wa.me/212664397031";
+// Additional 24/7 support line -- alongside WA_SUPPORT, not a replacement.
+const PHONE_247_HREF = "tel:+212666521313";
 const REL        = "noopener noreferrer";
 
 const LANGS: { code: SupportedLanguage; label: string }[] = [
@@ -284,6 +286,11 @@ export default function Header() {
               className={"flex items-center gap-1 text-[10px] text-white/45 transition-colors hover:text-white/70 " + font}>
               <Headphones size={10} />
               {language === "ar" ? "دعم العملاء" : language === "fr" ? "Support client" : "Customer support"}
+            </a>
+            <a href={PHONE_247_HREF}
+              className={"flex items-center gap-1 text-[10px] text-white/45 transition-colors hover:text-white/70 " + font}>
+              📞 0666-521313
+              <span className="opacity-70">24h/24</span>
             </a>
             <Link to="/orders"
               className={"text-[10px] text-white/45 transition-colors hover:text-white/70 " + font}>

@@ -13,6 +13,9 @@ const WA_ORDERS   = "https://wa.me/212664397031";
 const EMAIL       = "contact@mygreengoo.com";
 const PHONE_LABEL = "+212 664-500-789";
 const PHONE_HREF  = "tel:+212664500789";
+// Additional 24/7 support line -- alongside PHONE_HREF/WA_SUPPORT, not a replacement.
+const PHONE_247_LABEL = "+212 666-521-313";
+const PHONE_247_HREF  = "tel:+212666521313";
 const REL         = "noopener noreferrer";
 
 // ── Social links ──────────────────────────────────────────────────────────────
@@ -412,6 +415,16 @@ export default function Footer() {
                   className={"flex items-center gap-2.5 text-sm text-white/50 transition-colors hover:text-white " + row}>
                   <Phone size={12} className="shrink-0 text-[#2E8B57]" />
                   <span className="font-latin">{PHONE_LABEL}</span>
+                </a>
+              </li>
+
+              {/* Phone -- 24h/24 support line */}
+              <li>
+                <a href={PHONE_247_HREF}
+                  className={"flex items-center gap-2.5 text-sm text-white/50 transition-colors hover:text-white " + row}>
+                  <Phone size={12} className="shrink-0 text-[#2E8B57]" />
+                  <span className="font-latin">{PHONE_247_LABEL}</span>
+                  <span className="text-[10px] text-white/40">24h/24</span>
                 </a>
               </li>
 

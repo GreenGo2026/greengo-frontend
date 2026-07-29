@@ -1004,6 +1004,15 @@ export default function CartPage() {
                 </p>
               </div>
 
+              {/* Support contact -- 24h/24 phone line, visible in the order tunnel */}
+              <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm text-center">
+                <p className="text-sm text-gray-600">Besoin d'aide ? Appelez-nous :</p>
+                <a href="tel:+212666521313" className="mt-1 block font-bold text-[#0c3228] text-lg">
+                  0666-521-313
+                </a>
+                <span className="text-xs text-gray-400">disponible 24h/24</span>
+              </div>
+
             </div>
           </div>
         </div>
