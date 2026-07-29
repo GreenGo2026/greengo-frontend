@@ -1,6 +1,6 @@
 // src/pages/ProductsTab.tsx
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Pencil, Trash2, Eye, EyeOff, Check, X, Plus, RefreshCw, AlertCircle, ClipboardList } from "lucide-react";
+import { Loader2, Pencil, Trash2, Eye, EyeOff, Check, X, Plus, RefreshCw, AlertCircle, ClipboardList, PackageX } from "lucide-react";
 import {
   createProduct, deleteProduct, getProducts, updateProductById, uploadProductImage,
   type CreateProductPayload, type DBProduct,
@@ -113,6 +113,26 @@ export default function ProductsTab({ lang, font }: Props) {
       const updated = await updateProductById(p.id, { visible: !p.visible } as any);
       setProducts(ps => ps.map(x => x.id === p.id ? { ...x, visible: updated.visible } : x));
     } catch { alert("Erreur mise à jour visibilité."); }
+  }
+
+  // L99: explicit admin action -- clears weight variants (250g/500g/1kg) so the
+  // product displays as a normal item again. No automatic regeneration here;
+  // if the category is still in VARIANT_CATEGORIES (backend), the *next*
+  // price/category edit on this product could regenerate variants -- that's
+  // a separate backend concern, not something this button controls.
+  async function handleClearVariants(productId: string, productName: string) {
+    if (!window.confirm(
+      `Supprimer toutes les variantes de "${productName}" ?\n\n` +
+      `Le produit sera vendu sans boutons 250g/500g/1kg.\n` +
+      `Cette action est irréversible depuis l'interface.`
+    )) return;
+    try {
+      const updated = await updateProductById(productId, { variants: [] });
+      setProducts(ps => ps.map(p => p.id === productId ? { ...p, ...updated } : p));
+      alert(`✅ Variantes supprimées pour "${productName}"`);
+    } catch {
+      alert("❌ Erreur lors de la suppression des variantes.");
+    }
   }
 
   function startEdit(p: DBProduct) {
@@ -479,6 +499,13 @@ export default function ProductsTab({ lang, font }: Props) {
                                 className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition disabled:opacity-50">
                                 {deletingId === p.id ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={12} />}
                               </button>
+                              {!!p.variants?.length && (
+                                <button onClick={() => handleClearVariants(p.id, p.name_fr || p.name_ar || "ce produit")}
+                                  title="Supprimer les variantes (vendre sans 250g/500g/1kg)"
+                                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 text-orange-500 hover:bg-orange-100 transition">
+                                  <PackageX size={12} />
+                                </button>
+                              )}
                             </>
                           )}
                           <button
