@@ -31,7 +31,7 @@ interface InlineEdit {
   // recalculates them once set (see should_auto_generate_variants), so
   // editing price_mad alone silently desyncs them from what the storefront
   // actually displays. Admin edits both explicitly, in one save.
-  variant_prices?: Array<{ label: string; price_mad: number; weight_g?: number | null; in_stock?: boolean }>;
+  variant_prices?: Array<{ label: string; price_mad: number; weight_g?: number | null; in_stock?: boolean; stock_qty?: number | null }>;
 }
 
 interface Props { lang: Lang; font: string; }
@@ -140,7 +140,7 @@ export default function ProductsTab({ lang, font }: Props) {
       id: p.id, name_fr: p.name_fr || "", name_ar: p.name_ar, category: p.category,
       price_mad: p.price_mad, unit: p.unit, in_stock: p.in_stock, visible: p.visible,
       variant_prices: (p.variants || []).map(v => ({
-        label: v.label, price_mad: v.price_mad, weight_g: v.weight_g, in_stock: v.in_stock ?? true,
+        label: v.label, price_mad: v.price_mad, weight_g: v.weight_g, in_stock: v.in_stock ?? true, stock_qty: v.stock_qty,
       })),
     });
   }
@@ -430,6 +430,9 @@ export default function ProductsTab({ lang, font }: Props) {
                                         }}
                                         className="w-16 rounded-lg border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] text-right outline-none focus:border-[#2E8B57]" />
                                       <span className="text-[10px] text-gray-400">MAD</span>
+                                      <span className="text-[10px] text-gray-400">
+                                        {v.stock_qty != null ? `stock: ${v.stock_qty}` : "stock: —"}
+                                      </span>
                                     </div>
                                   ))}
                                   <p className="text-[9px] text-amber-600 bg-amber-50 rounded px-1.5 py-1">

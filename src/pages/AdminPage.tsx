@@ -55,10 +55,11 @@ const I: Record<Lang, Record<string,string>> = {
     pin_btn:"Ouvrir", pin_err:"PIN incorrect.", pin_ph:"\u2022\u2022\u2022\u2022",
     filter_all:"Toutes",
     approve:"Approuver", reject:"Refuser",
+    start_prep:"D\u00e9marrer la pr\u00e9paration", starting:"D\u00e9marrage\u2026",
     assign_livreur:"Confier au Livreur", confirm_payment:"Confirmer le paiement",
     complete:"Terminer", approving:"En cours\u2026", rejecting:"Refus\u2026",
     payment_q:"Le client a re\u00e7u sa commande et pay\u00e9 en esp\u00e8ces\u00a0?",
-    status_pending:"En attente", status_preparing:"Approuv\u00e9e",
+    status_pending:"En attente", status_confirmed:"Confirm\u00e9e", status_preparing:"En pr\u00e9paration",
     status_ofd:"En livraison", status_delivered:"Livr\u00e9",
     status_completed:"Termin\u00e9e", status_cancelled:"Refus\u00e9e",
     tl_ordered:"Command\u00e9", tl_approved:"Approuv\u00e9",
@@ -80,6 +81,7 @@ const I: Record<Lang, Record<string,string>> = {
     error_orders:"Impossible de charger les commandes.",
     error_products:"Impossible de charger les produits.",
     toast_approved:"\u2705 Commande approuv\u00e9e!", toast_rejected:"\u274c Commande refus\u00e9e.",
+    toast_confirmed:"\u2705 Commande confirm\u00e9e!", toast_prep_started:"\ud83d\udc68\u200d\ud83c\udf73 Pr\u00e9paration d\u00e9marr\u00e9e!",
     toast_livreur:"\ud83d\udeb4 Confi\u00e9e au livreur!", toast_payment:"\ud83d\udcb0 Paiement confirm\u00e9!",
     toast_saved:" prix publi\u00e9s!", toast_no_dirty:"Aucun changement.",
     toast_partial:" sauvegard\u00e9s,", toast_failed:" \u00e9chou\u00e9s.",
@@ -96,10 +98,11 @@ const I: Record<Lang, Record<string,string>> = {
     pin_btn:"\u0641\u062a\u062d", pin_err:"\u0631\u0645\u0632 \u062e\u0627\u0637\u0626.", pin_ph:"\u2022\u2022\u2022\u2022",
     filter_all:"\u0627\u0644\u0643\u0644",
     approve:"\u0642\u0628\u0648\u0644 \u0627\u0644\u0637\u0644\u0628", reject:"\u0631\u0641\u0636 \u0627\u0644\u0637\u0644\u0628",
+    start_prep:"\u0628\u062f\u0621 \u0627\u0644\u062a\u062d\u0636\u064a\u0631", starting:"\u062c\u0627\u0631\u064d \u0627\u0644\u0628\u062f\u0621\u2026",
     assign_livreur:"\u062a\u0633\u0644\u064a\u0645 \u0644\u0644\u064a\u0641\u0631\u0648\u0631", confirm_payment:"\u062a\u0623\u0643\u064a\u062f \u0627\u0633\u062a\u0644\u0627\u0645 \u0627\u0644\u062f\u0641\u0639",
     complete:"\u0625\u062a\u0645\u0627\u0645", approving:"\u062c\u0627\u0631\u064d\u2026", rejecting:"\u0631\u0641\u0636\u2026",
     payment_q:"\u0647\u0644 \u0627\u0633\u062a\u0644\u0645 \u0627\u0644\u0639\u0645\u064a\u0644 \u0637\u0644\u0628\u0647 \u0648\u062f\u0641\u0639 \u0646\u0642\u062f\u0627\u064b\u061f",
-    status_pending:"\u0642\u064a\u062f \u0627\u0644\u0627\u0646\u062a\u0638\u0627\u0631", status_preparing:"\u0645\u0642\u0628\u0648\u0644",
+    status_pending:"\u0642\u064a\u062f \u0627\u0644\u0627\u0646\u062a\u0638\u0627\u0631", status_confirmed:"\u0645\u0624\u0643\u062f\u0629", status_preparing:"\u0642\u064a\u062f \u0627\u0644\u062a\u062d\u0636\u064a\u0631",
     status_ofd:"\u0641\u064a \u0627\u0644\u0637\u0631\u064a\u0642", status_delivered:"\u062a\u0645 \u0627\u0644\u062a\u0648\u0635\u064a\u0644",
     status_completed:"\u0645\u0643\u062a\u0645\u0644", status_cancelled:"\u0645\u0631\u0641\u0648\u0636",
     tl_ordered:"\u0637\u064f\u0644\u0628", tl_approved:"\u0645\u0642\u0628\u0648\u0644",
@@ -121,6 +124,7 @@ const I: Record<Lang, Record<string,string>> = {
     error_orders:"\u062a\u0639\u0630\u0651\u0631 \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0637\u0644\u0628\u0627\u062a.",
     error_products:"\u062a\u0639\u0630\u0651\u0631 \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0645\u0646\u062a\u062c\u0627\u062a.",
     toast_approved:"\u2705 \u062a\u0645 \u0642\u0628\u0648\u0644 \u0627\u0644\u0637\u0644\u0628!", toast_rejected:"\u274c \u062a\u0645 \u0631\u0641\u0636 \u0627\u0644\u0637\u0644\u0628.",
+    toast_confirmed:"✅ تم تأكيد الطلب!", toast_prep_started:"👨‍🍳 بدأ التحضير!",
     toast_livreur:"\ud83d\udeb4 \u0633\u0644\u0645\u062a \u0644\u0644\u064a\u0641\u0631\u0648\u0631!", toast_payment:"\ud83d\udcb0 \u062a\u0645 \u062a\u0623\u0643\u064a\u062f \u0627\u0644\u062f\u0641\u0639!",
     toast_saved:" \u0633\u0639\u0631 \u062a\u0645 \u0646\u0634\u0631\u0647!", toast_no_dirty:"\u0644\u0627 \u062a\u0648\u062c\u062f \u062a\u063a\u064a\u064a\u0631\u0627\u062a.",
     toast_partial:" \u062a\u0645 \u062d\u0641\u0638\u0647\u0627\u060c", toast_failed:" \u0641\u0634\u0644\u062a.",
@@ -136,6 +140,7 @@ function sCfg(lang: Lang): Record<OrderStatus,{label:string;color:string;bg:stri
   const L = I[lang];
   return {
     pending:          {label:L.status_pending,   color:"text-amber-700",  bg:"bg-amber-100",   ring:"ring-amber-300",  dot:"#F59E0B",icon:<Clock size={11}/>},
+    confirmed:        {label:L.status_confirmed, color:"text-cyan-700",   bg:"bg-cyan-100",    ring:"ring-cyan-300",   dot:"#06B6D4",icon:<CheckCircle size={11}/>},
     preparing:        {label:L.status_preparing, color:"text-blue-700",   bg:"bg-blue-100",    ring:"ring-blue-300",   dot:"#3B82F6",icon:<CheckSquare size={11}/>},
     out_for_delivery: {label:L.status_ofd,       color:"text-violet-700", bg:"bg-violet-100",  ring:"ring-violet-300", dot:"#7C3AED",icon:<Bike size={11}/>},
     delivered:        {label:L.status_delivered, color:"text-emerald-700",bg:"bg-emerald-100", ring:"ring-emerald-300",dot:"#10B981",icon:<CheckCircle size={11}/>},
@@ -145,7 +150,8 @@ function sCfg(lang: Lang): Record<OrderStatus,{label:string;color:string;bg:stri
 }
 
 const NEXT_STATES: Record<OrderStatus,OrderStatus[]> = {
-  pending:["preparing","cancelled"], preparing:["out_for_delivery","cancelled"],
+  pending:["confirmed","cancelled"], confirmed:["preparing","cancelled"],
+  preparing:["out_for_delivery","cancelled"],
   out_for_delivery:["delivered","cancelled"], delivered:["completed"],
   completed:[], cancelled:[],
 };
@@ -182,7 +188,7 @@ function SBadge({status,lang}:{status:OrderStatus;lang:Lang}){
 function Timeline({status,lang}:{status:OrderStatus;lang:Lang}){
   const L=I[lang];
   const steps=[{label:L.tl_ordered,icon:<ShoppingBag size={11}/>},{label:L.tl_approved,icon:<CheckSquare size={11}/>},{label:L.tl_delivery,icon:<Bike size={11}/>},{label:L.tl_done,icon:<CheckCircle size={11}/>}];
-  const rank:Record<string,number>={pending:0,preparing:1,out_for_delivery:2,delivered:3,completed:3,cancelled:-1};
+  const rank:Record<string,number>={pending:0,confirmed:1,preparing:1,out_for_delivery:2,delivered:3,completed:3,cancelled:-1};
   const cur=rank[status?.toLowerCase()]??0;
   return(<div className="flex items-start gap-0 w-full">{steps.map((step,i)=>{const done=cur>i;const active=cur===i&&status!=="cancelled";return(<div key={i} className="flex flex-1 items-center"><div className="flex flex-col items-center gap-1 min-w-0"><div className={"flex h-7 w-7 items-center justify-center rounded-full transition-all "+(done?"bg-[#2E8B57] text-white":active?"bg-amber-400 text-white animate-pulse":"bg-gray-100 text-gray-400")}>{step.icon}</div><span className={"text-[9px] font-semibold text-center px-0.5 "+(done?"text-[#2E8B57]":active?"text-amber-600":"text-gray-400")}>{step.label}</span></div>{i<steps.length-1&&<div className={"flex-1 h-0.5 mx-1 mb-4 rounded-full "+(done?"bg-[#2E8B57]":active?"bg-amber-200":"bg-gray-100")}/>}</div>);})}</div>);
 }
@@ -202,12 +208,13 @@ function OrderCard({order,lang,isOldest,onStatusChange,showToast,onRefresh}:{ord
   const isTerminal=nextStates.length===0;
   const showTl=localStatus!=="pending"&&localStatus!=="cancelled";
   const isUrgent=localStatus==="pending"&&ago>20;
-  const borderCls=localStatus==="pending"&&isUrgent?"border-amber-400":localStatus==="pending"?"border-amber-200":localStatus==="preparing"?"border-blue-200":localStatus==="out_for_delivery"?"border-violet-300":localStatus==="completed"?"border-emerald-300":localStatus==="cancelled"?"border-red-200":"border-gray-200";
-  const topGrad=localStatus==="pending"?(isUrgent?"linear-gradient(90deg,#F59E0B,#FDE68A)":"linear-gradient(90deg,#FCD34D,#FEF9C3)"):localStatus==="preparing"?"linear-gradient(90deg,#3B82F6,#93C5FD)":localStatus==="out_for_delivery"?"linear-gradient(90deg,#7C3AED,#C4B5FD)":localStatus==="completed"?"linear-gradient(90deg,#2E8B57,#4DB882)":localStatus==="cancelled"?"linear-gradient(90deg,#EF4444,#FCA5A5)":"linear-gradient(90deg,#10B981,#6EE7B7)";
+  const borderCls=localStatus==="pending"&&isUrgent?"border-amber-400":localStatus==="pending"?"border-amber-200":localStatus==="confirmed"?"border-cyan-200":localStatus==="preparing"?"border-blue-200":localStatus==="out_for_delivery"?"border-violet-300":localStatus==="completed"?"border-emerald-300":localStatus==="cancelled"?"border-red-200":"border-gray-200";
+  const topGrad=localStatus==="pending"?(isUrgent?"linear-gradient(90deg,#F59E0B,#FDE68A)":"linear-gradient(90deg,#FCD34D,#FEF9C3)"):localStatus==="confirmed"?"linear-gradient(90deg,#06B6D4,#A5F3FC)":localStatus==="preparing"?"linear-gradient(90deg,#3B82F6,#93C5FD)":localStatus==="out_for_delivery"?"linear-gradient(90deg,#7C3AED,#C4B5FD)":localStatus==="completed"?"linear-gradient(90deg,#2E8B57,#4DB882)":localStatus==="cancelled"?"linear-gradient(90deg,#EF4444,#FCA5A5)":"linear-gradient(90deg,#10B981,#6EE7B7)";
   async function go(s:OrderStatus){
     setLoading(s);
     try{await onStatusChange(order.id,s);setLocal(s);
-      if(s==="preparing")showToast(L.toast_approved,"success");
+      if(s==="confirmed")showToast(L.toast_confirmed,"success");
+      else if(s==="preparing")showToast(L.toast_prep_started,"success");
       else if(s==="out_for_delivery")showToast(L.toast_livreur,"info");
       else if(s==="delivered"||s==="completed")showToast(L.toast_payment,"success");
       else if(s==="cancelled")showToast(L.toast_rejected,"error");
@@ -254,7 +261,8 @@ function OrderCard({order,lang,isOldest,onStatusChange,showToast,onRefresh}:{ord
         {showTl&&<Timeline status={localStatus} lang={lang}/>}
         {!isTerminal&&(
           <div className="space-y-2">
-            {localStatus==="pending"&&(<div className={"flex gap-2.5 "+(lang==="ar"?"flex-row-reverse":"")}><button onClick={()=>go("preparing")} disabled={loading!==null} className={"flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading==="preparing"?"#9ca3af":"linear-gradient(135deg,#2E8B57,#1a6b42)"}}>{loading==="preparing"?<Loader2 size={14} className="animate-spin"/>:<CheckSquare size={14}/>}{loading==="preparing"?L.approving:L.approve}</button><button onClick={()=>go("cancelled")} disabled={loading!==null} className={"flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 bg-white px-5 py-3 text-sm font-extrabold text-red-500 transition-all hover:bg-red-50 hover:border-red-400 active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")}>{loading==="cancelled"?<Loader2 size={13} className="animate-spin"/>:<Ban size={13}/>}{loading==="cancelled"?L.rejecting:L.reject}</button></div>)}
+            {localStatus==="pending"&&(<div className={"flex gap-2.5 "+(lang==="ar"?"flex-row-reverse":"")}><button onClick={()=>go("confirmed")} disabled={loading!==null} className={"flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading==="confirmed"?"#9ca3af":"linear-gradient(135deg,#2E8B57,#1a6b42)"}}>{loading==="confirmed"?<Loader2 size={14} className="animate-spin"/>:<CheckSquare size={14}/>}{loading==="confirmed"?L.approving:L.approve}</button><button onClick={()=>go("cancelled")} disabled={loading!==null} className={"flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 bg-white px-5 py-3 text-sm font-extrabold text-red-500 transition-all hover:bg-red-50 hover:border-red-400 active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")}>{loading==="cancelled"?<Loader2 size={13} className="animate-spin"/>:<Ban size={13}/>}{loading==="cancelled"?L.rejecting:L.reject}</button></div>)}
+            {localStatus==="confirmed"&&(<button onClick={()=>go("preparing")} disabled={loading!==null} className={"flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading?"#9ca3af":"linear-gradient(135deg,#06B6D4,#0891B2)"}}>{loading?<Loader2 size={14} className="animate-spin"/>:<CheckSquare size={14}/>}{loading?L.starting:L.start_prep}</button>)}
             {localStatus==="preparing"&&(<button onClick={()=>go("out_for_delivery")} disabled={loading!==null} className={"flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading?"#9ca3af":"linear-gradient(135deg,#FF9800,#e68900)"}}>{loading?<Loader2 size={14} className="animate-spin"/>:<Bike size={14}/>}{loading?L.approving:L.assign_livreur}</button>)}
             {localStatus==="out_for_delivery"&&(<div className="rounded-2xl bg-violet-50 p-4 ring-2 ring-violet-200 space-y-3"><p className={"text-center text-sm font-bold text-violet-700 "+font} dir={lang==="ar"?"rtl":"ltr"}>{L.payment_q}</p><button onClick={()=>go("delivered")} disabled={loading!==null} className={"flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading?"#9ca3af":"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>{loading?<Loader2 size={14} className="animate-spin"/>:<DollarSign size={14}/>}{loading?L.approving:L.confirm_payment}</button></div>)}
             {localStatus==="delivered"&&(<button onClick={()=>go("completed")} disabled={loading!==null} className={"flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading?"#9ca3af":"linear-gradient(135deg,#2E8B57,#1a6b42)"}}>{loading?<Loader2 size={14} className="animate-spin"/>:<CheckCircle size={14}/>}{loading?L.approving:L.complete}</button>)}
@@ -479,6 +487,7 @@ export default function AdminPage() {
 
   const filterOptions:{value:OrderStatus|"all";label:string}[]=[
     {value:"all",label:L.filter_all},{value:"pending",label:L.status_pending},
+    {value:"confirmed",label:L.status_confirmed},
     {value:"preparing",label:L.status_preparing},{value:"out_for_delivery",label:L.status_ofd},
     {value:"delivered",label:L.status_delivered},{value:"completed",label:L.status_completed},
     {value:"cancelled",label:L.status_cancelled},

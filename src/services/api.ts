@@ -42,6 +42,7 @@ export interface ProductVariant {
   weight_g?: number | null;
   sku?:      string | null;
   in_stock:  boolean;
+  stock_qty?: number | null;
 }
 
 export interface DBProduct {
@@ -110,6 +111,7 @@ export interface CheckoutOrderResponse {
 
 export type OrderStatus =
   | "pending"
+  | "confirmed"
   | "preparing"
   | "out_for_delivery"
   | "delivered"
