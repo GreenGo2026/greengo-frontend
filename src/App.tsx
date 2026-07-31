@@ -27,6 +27,7 @@ const AboutPage        = lazy(() => import("./pages/AboutPage"));
 const WhyUsPage        = lazy(() => import("./pages/WhyUsPage"));
 const MielArtisanal    = lazy(() => import("./pages/guide/MielArtisanal"));
 const HuileOlive       = lazy(() => import("./pages/guide/HuileOlive"));
+const PouletBeldi      = lazy(() => import("./pages/guide/PouletBeldi"));
 const ContactPage      = lazy(() => import("./pages/ContactPage"));
 const PaymentGateway   = lazy(() => import("./pages/Payment/PaymentGateway"));
 const UserDashboard    = lazy(() => import("./pages/Profile/UserDashboard"));
@@ -153,6 +154,7 @@ function PublicShell() {
           <Route path="/pourquoi-nous" element={<WhyUsPage />}     />
           <Route path="/guide/miel-artisanal-maroc" element={<MielArtisanal />} />
           <Route path="/guide/huile-olive-marocaine" element={<HuileOlive />} />
+          <Route path="/guide/poulet-beldi" element={<PouletBeldi />} />
           <Route path="/contact"      element={<ContactPage />}     />
 
           {/* Admin routes are handled at the root level (outside this shell) */}
