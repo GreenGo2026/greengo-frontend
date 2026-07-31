@@ -533,7 +533,7 @@ export default function HeroLandingPage() {
           letterSpacing: "0.1em",
           color: "rgba(255,255,255,0.18)",
         }}>
-          © 2025 GreenGo Market · mygreengoo.com · Maroc
+          © {new Date().getFullYear()} GreenGo Market — Salé, Maroc
         </p>
       </footer>
 
