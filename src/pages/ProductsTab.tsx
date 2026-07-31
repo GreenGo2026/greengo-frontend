@@ -1,6 +1,6 @@
 // src/pages/ProductsTab.tsx
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Pencil, Trash2, Eye, EyeOff, Check, X, Plus, RefreshCw, AlertCircle, ClipboardList, PackageX } from "lucide-react";
+import { Loader2, Pencil, Trash2, Eye, EyeOff, Check, X, Plus, RefreshCw, AlertCircle, ClipboardList, PackageX, Maximize2 } from "lucide-react";
 import {
   createProduct, deleteProduct, getProducts, updateProductById, uploadProductImage,
   type CreateProductPayload, type DBProduct,
@@ -8,11 +8,12 @@ import {
 import { getJwt } from "../services/adminJwt";
 import { categoryLabel } from "../utils/categoryLabels";
 import AuditHistory from "../components/admin/AuditHistory";
+import ProductDetailModal from "../components/admin/ProductDetailModal";
 
 type Lang = "fr" | "ar";
 
-const CATEGORIES = ["Fruits", "Légumes", "Vegetables", "Volailles", "Viande Rouge", "White Meats", "Eggs", "Fromage", "Olives", "Huile et miel", "Produits naturels", "Épices", "Natural Juices", "Mixed Packs", "Paniers", "Autres"];
-const UNITS       = ["kg", "piece", "100g", "botte", "g", "litre"];
+export const CATEGORIES = ["Fruits", "Légumes", "Vegetables", "Volailles", "Viande Rouge", "White Meats", "Eggs", "Fromage", "Olives", "Huile et miel", "Produits naturels", "Épices", "Natural Juices", "Mixed Packs", "Paniers", "Autres"];
+export const UNITS       = ["kg", "piece", "100g", "botte", "g", "litre"];
 
 const BASE_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
@@ -51,6 +52,7 @@ export default function ProductsTab({ lang, font }: Props) {
   const [catFilter,    setCatFilter]    = useState("all");
   const [searchQuery,  setSearchQuery]  = useState("");
   const [historyProductId, setHistoryProductId] = useState<string | null>(null);
+  const [detailProduct, setDetailProduct] = useState<DBProduct | null>(null);
   const fileRef     = useRef<HTMLInputElement>(null);
   const formRef     = useRef<HTMLDivElement>(null);
   const editFileRef = useRef<HTMLInputElement>(null);
@@ -517,6 +519,12 @@ export default function ProductsTab({ lang, font }: Props) {
                             className={`flex h-7 w-7 items-center justify-center rounded-lg transition ${historyProductId === p.id ? "bg-purple-100 text-purple-600" : "bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-purple-500"}`}>
                             <ClipboardList size={12} />
                           </button>
+                          <button
+                            onClick={() => setDetailProduct(p)}
+                            title="Fiche complète"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-[#0c3228] transition">
+                            <Maximize2 size={12} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -535,6 +543,16 @@ export default function ProductsTab({ lang, font }: Props) {
           </div>
         )}
       </div>
+
+      {detailProduct && (
+        <ProductDetailModal
+          product={detailProduct}
+          onClose={() => setDetailProduct(null)}
+          onSaved={(updated) => {
+            setProducts(ps => ps.map(x => x.id === updated.id ? updated : x));
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -73,6 +73,12 @@ export interface DBProductUpdate {
   unit?:       string;
   category?:   string;
   step?:       0.25 | 0.5 | 1;
+  visible?:        boolean;
+  on_sale?:        boolean;
+  discount_pct?:   number;
+  description_fr?: string;
+  image_url?:      string;
+  stock_qty?:      number | null;
   // Never auto-derived from price_mad -- only ever set when the admin
   // explicitly edits variant prices in ProductsTab.
   variants?:   ProductVariant[];
