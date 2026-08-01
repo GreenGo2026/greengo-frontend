@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { getProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useCartStore, getUnitStep, formatQuantity } from "../store/cartStore";
 import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -15,7 +15,7 @@ import { useSeo } from "../hooks/useSeo";
 import { getUrgencySignal, getDiscountedPrice } from "../utils/urgencySignals";
 
 // ── Niche category definitions ───────────────────────────────────────────────
-interface NicheCategory {
+export interface NicheCategory {
   key:      string;
   emoji:    string;
   label_fr: string;
@@ -33,7 +33,7 @@ function resolveImg(url: string | null | undefined): string {
   return _API + "/" + url;
 }
 
-const NICHE_CATS: NicheCategory[] = [
+export const NICHE_CATS: NicheCategory[] = [
   { key: "all",               emoji: "✨", label_fr: "Tous les produits", label_ar: "كل المنتجات",          label_en: "All",              db_match: [] },
   { key: "Fruits",            emoji: "🍎", label_fr: "Fruits",            label_ar: "فواكه",                 label_en: "Fruits",           db_match: ["Fruits", "fruits", "fruit"] },
   { key: "Vegetables",        emoji: "🥕", label_fr: "Légumes",           label_ar: "خضروات",                label_en: "Vegetables",       db_match: ["Vegetables", "vegetables", "Purified Greens", "purified greens"] },
@@ -69,7 +69,7 @@ const BESTSELLER_NAMES = [
   "البطاطا الجديدة",
 ];
 
-function catLabel(cat: NicheCategory, lang: string): string {
+export function catLabel(cat: NicheCategory, lang: string): string {
   if (lang === "ar") return cat.label_ar;
   if (lang === "fr") return cat.label_fr;
   return cat.label_en;
@@ -853,10 +853,11 @@ export default function HomePage() {
     description: "Découvrez nos produits frais : légumes, fruits, volailles, miel, amlou, olives, fromages. Livraison 30 min à Salé et Rabat. منتجات طازجة بسلا والرباط.",
   });
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products,  setProducts]  = useState<DBProduct[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState("");
-  const [activeKey, setActiveKey] = useState<string>("all");
+  const [activeKey, setActiveKey] = useState<string>(() => searchParams.get("cat") || "all");
   const [search,       setSearch]       = useState("");
   const [searchInput,  setSearchInput]  = useState(""); // raw input value
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -888,6 +889,21 @@ export default function HomePage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  // Keep activeKey in sync with ?cat= — covers links from CategoryNavBand
+  // navigating into an already-mounted HomePage (no remount, so the
+  // useState initializer above won't re-run).
+  useEffect(() => {
+    setActiveKey(searchParams.get("cat") || "all");
+  }, [searchParams]);
+
+  function handleCategoryChange(key: string) {
+    setActiveKey(key);
+    const next = new URLSearchParams(searchParams);
+    if (key === "all") next.delete("cat");
+    else next.set("cat", key);
+    setSearchParams(next, { replace: true });
+  }
 
   const filtered = useMemo(() => {
     let list = [...products];
@@ -932,7 +948,7 @@ export default function HomePage() {
   const inStockCount = filtered.filter((p) => p.in_stock).length;
 
   function resetFilters() {
-    setActiveKey("all");
+    handleCategoryChange("all");
     setSearch("");
     setSortKey("default");
   }
@@ -1060,7 +1076,7 @@ export default function HomePage() {
                   return (
                     <button
                       key={cat.key}
-                      onClick={() => setActiveKey(cat.key)}
+                      onClick={() => handleCategoryChange(cat.key)}
                       className={"w-full text-left px-4 py-2.5 text-sm flex items-center justify-between gap-2 transition-colors " + font + " " + (isRTL ? "flex-row-reverse text-right" : "") + " " + (active ? "bg-[#2E8B57] text-white font-medium" : "text-white/60 hover:bg-white/8 hover:text-white")}>
                       <span className="flex items-center gap-2 min-w-0">
                         <span className="shrink-0">{cat.emoji}</span>
@@ -1094,7 +1110,7 @@ export default function HomePage() {
                   return (
                     <button
                       key={cat.key}
-                      onClick={() => setActiveKey(cat.key)}
+                      onClick={() => handleCategoryChange(cat.key)}
                       className={"gg-pill flex shrink-0 items-center gap-2 " + font + " " + (active ? "active" : "")}>
                       <span className="text-base leading-none">{cat.emoji}</span>
                       <span>{catLabel(cat, language)}</span>

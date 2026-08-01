@@ -10,6 +10,7 @@ import { LanguageProvider }       from "./contexts/LanguageContext";
 import { useCartStore }           from "./store/cartStore";
 import AnnouncementBar             from "./components/layout/AnnouncementBar";
 import Header                     from "./components/layout/Header";
+import CategoryNavBand            from "./components/layout/CategoryNavBand";
 import Footer                     from "./components/layout/Footer";
 import MobileBottomNav            from "./components/layout/MobileBottomNav";
 import NewsletterModal            from "./components/ui/NewsletterModal";
@@ -143,6 +144,7 @@ function PublicShell() {
     >
       <AnnouncementBar />
       <Header />
+      <CategoryNavBand />
       <main className="flex-grow">
         <Routes>
           {/* ── Storefront ── */}
