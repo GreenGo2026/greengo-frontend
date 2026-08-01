@@ -26,3 +26,6 @@ dist-ssr
 all-routes-frontend.txt
 api-data-audit.txt
 clean-links.txt
+
+.claude/
+skills-lock.json
