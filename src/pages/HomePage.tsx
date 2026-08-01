@@ -868,6 +868,8 @@ export default function HomePage() {
     searchTimer.current = setTimeout(() => setSearch(val), 180);
   }, []);
   const [sortKey,   setSortKey]   = useState<SortKey>("default");
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [onSaleOnly,  setOnSaleOnly]  = useState(false);
 
   async function load() {
     setLoading(true);
@@ -928,6 +930,12 @@ export default function HomePage() {
       );
     }
 
+    // In-stock filter
+    if (inStockOnly) list = list.filter((p) => p.in_stock !== false);
+
+    // On-sale filter
+    if (onSaleOnly) list = list.filter((p) => p.on_sale === true);
+
     // Sort — always in-stock first
     list.sort((a, b) => (b.in_stock ? 1 : 0) - (a.in_stock ? 1 : 0));
     if (sortKey === "price_asc")  list.sort((a, b) => (b.in_stock === a.in_stock ? a.price_mad - b.price_mad : (b.in_stock ? 1 : -1)));
@@ -935,7 +943,7 @@ export default function HomePage() {
     if (sortKey === "name_az")    list.sort((a, b) => (b.in_stock === a.in_stock ? (a.name_ar ?? "").localeCompare(b.name_ar ?? "") : (b.in_stock ? 1 : -1)));
 
     return list;
-  }, [products, activeKey, search, sortKey]);
+  }, [products, activeKey, search, inStockOnly, onSaleOnly, sortKey]);
 
   const bestSellers = useMemo(() => {
     if (!products.length) return [];
@@ -950,6 +958,9 @@ export default function HomePage() {
   function resetFilters() {
     handleCategoryChange("all");
     setSearch("");
+    setSearchInput("");
+    setInStockOnly(false);
+    setOnSaleOnly(false);
     setSortKey("default");
   }
 
@@ -1091,6 +1102,36 @@ export default function HomePage() {
                   );
                 })}
               </div>
+
+              {/* Filters section */}
+              <div className="border-t border-white/10 px-4 py-3">
+                <h3 className={"text-xs font-semibold text-white/50 uppercase tracking-wider mb-3 " + font}>
+                  {language === "ar" ? "الفلاتر" : language === "fr" ? "Filtres" : "Filters"}
+                </h3>
+                <div className="space-y-2.5">
+                  <label className={"flex items-center gap-2 text-sm text-white/70 cursor-pointer " + font + " " + (isRTL ? "flex-row-reverse" : "")}>
+                    <input
+                      type="checkbox"
+                      checked={inStockOnly}
+                      onChange={(e) => setInStockOnly(e.target.checked)}
+                      className="rounded accent-[#2E8B57]"
+                    />
+                    {language === "ar" ? "المتوفر فقط" : language === "fr" ? "En stock uniquement" : "In stock only"}
+                  </label>
+                  <label className={"flex items-center gap-2 text-sm text-white/70 cursor-pointer " + font + " " + (isRTL ? "flex-row-reverse" : "")}>
+                    <input
+                      type="checkbox"
+                      checked={onSaleOnly}
+                      onChange={(e) => setOnSaleOnly(e.target.checked)}
+                      className="rounded accent-[#2E8B57]"
+                    />
+                    <span className="flex items-center gap-1.5">
+                      {language === "ar" ? "العروض فقط" : language === "fr" ? "En promotion" : "On sale"}
+                      <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 rounded-full">%</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
             </div>
           </aside>
 
@@ -1123,6 +1164,22 @@ export default function HomePage() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Mobile filter chips — lg:hidden */}
+            <div className={"lg:hidden flex gap-2 overflow-x-auto scrollbar-hide " + (isRTL ? "flex-row-reverse" : "")}>
+              <button
+                onClick={() => setInStockOnly((v) => !v)}
+                className={"text-xs px-3 py-1.5 rounded-full border whitespace-nowrap flex-shrink-0 transition-colors " + font + " " +
+                  (inStockOnly ? "bg-[#2E8B57] text-white border-[#2E8B57]" : "border-white/15 text-white/60")}>
+                {language === "ar" ? "المتوفر" : language === "fr" ? "En stock" : "In stock"}
+              </button>
+              <button
+                onClick={() => setOnSaleOnly((v) => !v)}
+                className={"text-xs px-3 py-1.5 rounded-full border whitespace-nowrap flex-shrink-0 transition-colors " + font + " " +
+                  (onSaleOnly ? "bg-red-500 text-white border-red-500" : "border-white/15 text-white/60")}>
+                {language === "ar" ? "العروض" : language === "fr" ? "En promo" : "On sale"}
+              </button>
             </div>
 
             {/* Search — own full-width row, promoted per Amazon-style layout */}
@@ -1168,7 +1225,7 @@ export default function HomePage() {
               </button>
 
               {/* Active filters summary */}
-              {(activeKey !== "all" || search) && (
+              {(activeKey !== "all" || search || inStockOnly || onSaleOnly || sortKey !== "default") && (
                 <button
                   onClick={resetFilters}
                   className={"flex items-center gap-1.5 rounded-2xl border border-[#2E8B57]/25 bg-[#2E8B57]/8 px-3.5 py-2.5 text-xs font-bold text-[#2E8B57] transition-all hover:bg-[#2E8B57]/15 " + font}>
