@@ -50,6 +50,25 @@ const NICHE_CATS: NicheCategory[] = [
   { key: "Mixed Packs",       emoji: "🛒", label_fr: "Paniers mixtes",    label_ar: "باقات الخضار والفواكه", label_en: "Mixed Packs",      db_match: ["Mixed Packs", "Mixed Fruit & Veggie Packs", "mixed packs"] },
 ];
 
+// Best-sellers seed — top 10 by order_count from a one-time /orders/top-products
+// report (2026-08-01), ranked highest first. Order line items store
+// product.name_ar (see cart proxy in ProductCard/QtyControl), not name_fr, so
+// matching is done on name_ar. Kept as top 10 (not just top 6) so a
+// temporarily out-of-stock bestseller (e.g. "أناناس") is backfilled by the
+// next name in rank order — the displayed row below still slices to 6.
+const BESTSELLER_NAMES = [
+  "برتقال",
+  "جزر",
+  "أناناس",
+  "بصل أحمر",
+  "طماطم",
+  "بطاطا",
+  "معدنوس",
+  "أجنحة الدجاج",
+  "بصل أصفر",
+  "البطاطا الجديدة",
+];
+
 function catLabel(cat: NicheCategory, lang: string): string {
   if (lang === "ar") return cat.label_ar;
   if (lang === "fr") return cat.label_fr;
@@ -577,7 +596,7 @@ function ProductGalleryModal({
 
 // ── Product Card ──────────────────────────────────────────────────────────────
 // ── Product Card ──────────────────────────────────────────────────────────────
-function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
+function ProductCard({ product, rank, compact = false }: { product: DBProduct; rank: number; compact?: boolean }) {
   const { language } = useLanguage();
   const font    = language === "ar" ? "font-arabic" : "font-latin";
   const meta    = getCatMeta(product.category);
@@ -595,8 +614,9 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
   // Discount gets its own circular badge (below); this pill now only covers
   // the low-stock signal, since discount already takes priority in
   // getUrgencySignal and would otherwise show in both places at once.
-  const showUrgencyBadge = product.in_stock && signal.level === "medium";
+  const showUrgencyBadge = product.in_stock && signal.level === "medium" && !compact;
   const hasDiscount = !!(product.on_sale && product.discount_pct);
+  const isNewArrival = !!(product.created_at && new Date(product.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
   const salePrice = hasDiscount ? getDiscountedPrice(product.price_mad, product.discount_pct!) : product.price_mad;
   const proxy  = { name: product.name_ar, price_per_unit: salePrice, unit: product.unit, available: product.in_stock, step: (product as any).step };
   const step   = getUnitStep(proxy.unit, proxy);
@@ -644,26 +664,29 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
               </div>
             </div>
           )}
-          {rank === 0 && (
-            <div className="absolute left-2.5 top-2.5 z-20 flex items-center gap-1 rounded-full bg-[#FF9800] px-2.5 py-1 shadow-lg shadow-[#FF9800]/30">
-              <Star size={9} className="fill-white text-white" />
-              <span className="text-[9px] font-extrabold text-white tracking-wide">TOP</span>
-            </div>
-          )}
-          {hasDiscount && (
-            <div
-              className="absolute left-2 z-20 w-11 h-11 rounded-full bg-[#F97316] text-white flex items-center justify-center text-xs font-bold shadow-md leading-tight text-center"
-              style={{ top: rank === 0 ? "2.75rem" : "0.5rem" }}>
-              -{product.discount_pct}%
-            </div>
-          )}
-          {showUrgencyBadge && (
-            <div
-              className={`absolute left-2.5 z-20 rounded-full px-2.5 py-1 text-[9px] font-bold shadow-sm ${signal.color}`}
-              style={{ top: rank === 0 ? "2.35rem" : "0.625rem" }}>
-              {signal.badge}
-            </div>
-          )}
+          <div className="absolute left-2.5 top-2.5 z-20 flex flex-col items-start gap-1.5">
+            {rank === 0 && (
+              <div className="flex items-center gap-1 rounded-full bg-[#FF9800] px-2.5 py-1 shadow-lg shadow-[#FF9800]/30">
+                <Star size={9} className="fill-white text-white" />
+                <span className="text-[9px] font-extrabold text-white tracking-wide">TOP</span>
+              </div>
+            )}
+            {hasDiscount && (
+              <div className="w-11 h-11 rounded-full bg-[#F97316] text-white flex items-center justify-center text-xs font-bold shadow-md leading-tight text-center">
+                -{product.discount_pct}%
+              </div>
+            )}
+            {showUrgencyBadge && (
+              <div className={`rounded-full px-2.5 py-1 text-[9px] font-bold shadow-sm ${signal.color}`}>
+                {signal.badge}
+              </div>
+            )}
+            {isNewArrival && (
+              <span className="rounded-full bg-[#0c3228] text-white text-[9px] font-bold px-2.5 py-1 shadow-sm">
+                {language === "ar" ? "جديد" : language === "fr" ? "Nouveau" : "New"}
+              </span>
+            )}
+          </div>
           <div className="absolute right-2.5 top-2.5 z-20">
             {product.in_stock ? (
               <span className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-[#2E8B57] shadow-sm backdrop-blur-sm border border-[#2E8B57]/12">
@@ -699,7 +722,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
         <div className="flex flex-1 flex-col gap-2 p-3 sm:p-3.5">
           <div>
             <Link to={`/produit/${product.id}`} className="group-hover:underline decoration-[#2E8B57]/40">
-              <h3 dir="rtl" className={"line-clamp-2 text-sm font-extrabold leading-snug text-gray-900 font-arabic hover:text-[#2E8B57] transition-colors " + (language === "ar" ? "text-right" : "text-left")}>
+              <h3 dir="rtl" className={"line-clamp-2 font-extrabold leading-snug text-gray-900 font-arabic hover:text-[#2E8B57] transition-colors " + (compact ? "text-xs " : "text-sm ") + (language === "ar" ? "text-right" : "text-left")}>
                 {name}
               </h3>
             </Link>
@@ -718,7 +741,7 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
                 </span>
               </div>
             )}
-            {product.variants && product.variants.length > 0 && (
+            {!compact && product.variants && product.variants.length > 0 && (
               <p className="text-[10px] text-gray-400 mt-0.5">
                 {language === "ar" ? `${product.variants.length} أحجام متوفرة` : language === "fr" ? `${product.variants.length} tailles disponibles` : `${product.variants.length} sizes available`}
               </p>
@@ -898,6 +921,14 @@ export default function HomePage() {
     return list;
   }, [products, activeKey, search, sortKey]);
 
+  const bestSellers = useMemo(() => {
+    if (!products.length) return [];
+    return BESTSELLER_NAMES
+      .map((name) => products.find((p) => p.name_ar === name && p.in_stock))
+      .filter((p): p is DBProduct => !!p)
+      .slice(0, 6);
+  }, [products]);
+
   const inStockCount = filtered.filter((p) => p.in_stock).length;
 
   function resetFilters() {
@@ -953,7 +984,30 @@ export default function HomePage() {
         )}
       </nav>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 space-y-5">
+      {!loading && bestSellers.length > 0 && (
+        <section dir={dir} className={"max-w-7xl mx-auto px-4 pt-2 " + font}>
+          <div className={"flex items-center justify-between mb-3 " + (isRTL ? "flex-row-reverse" : "")}>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              🏆 {language === "ar" ? "الأكثر مبيعاً" : language === "fr" ? "Nos best-sellers" : "Best-sellers"}
+            </h2>
+            <button
+              onClick={() => document.getElementById("catalogue")?.scrollIntoView({ behavior: "smooth" })}
+              className="text-sm text-[#F97316] font-semibold hover:underline">
+              {language === "ar" ? "عرض الكل ←" : language === "fr" ? "Voir tout →" : "See all →"}
+            </button>
+          </div>
+          {/* Horizontal scroll on mobile, grid on desktop */}
+          <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory lg:grid lg:grid-cols-6 lg:overflow-visible">
+            {bestSellers.map((product, i) => (
+              <div key={product.id} className="flex-shrink-0 w-40 snap-start lg:w-auto">
+                <ProductCard product={product} rank={i} compact />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div id="catalogue" className="mx-auto max-w-7xl px-4 py-6 space-y-5">
 
         {/* ?? WhatsApp CTA banner ?? */}
         <div style={{
