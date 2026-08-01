@@ -246,7 +246,7 @@ export default function ProductPage() {
     <div className={font} dir={isRTL ? "rtl" : "ltr"} style={{ minHeight: "100vh", background: "#FAF7F2" }}>
       {product && <SeoHead product={product} lang={language} />}
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className="max-w-6xl mx-auto px-4 py-6">
 
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className={`flex items-center gap-2 text-xs text-gray-400 mb-6 flex-wrap ${isRTL ? "flex-row-reverse" : ""}`}>
@@ -272,10 +272,12 @@ export default function ProductPage() {
         </nav>
 
         {/* Product grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-10">
 
-          {/* Image */}
-          <div className="relative rounded-3xl overflow-hidden flex items-center justify-center aspect-square"
+          {/* Image — aspect-ratio 4/3, ready for Higgsfield video: swap <img> for
+              <video autoPlay loop muted playsInline className="w-full h-full
+              object-cover"> once a video URL is available, no restructuring needed. */}
+          <div className="relative rounded-3xl overflow-hidden flex items-center justify-center aspect-[4/3]"
             style={{ background: isJpg ? "#f9fafb" : "#f0fdf4", border: "1px solid rgba(0,0,0,0.06)" }}>
             {img
               ? <img src={img} alt={l === "ar" ? product.name_ar : product.name_fr || product.name_ar}
@@ -361,7 +363,7 @@ export default function ProductPage() {
               {activeVariant ? (
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-black font-latin text-[#0c3228]">{activeVariant.price_mad.toFixed(2)}</span>
-                  <span className="text-gray-500 text-sm font-latin">MAD \u2014 {activeVariant.label}</span>
+                  <span className="text-gray-500 text-sm font-latin">MAD {"\u2014"} {activeVariant.label}</span>
                 </div>
               ) : dealPrice ? (
                 <div className="flex items-baseline gap-3">
