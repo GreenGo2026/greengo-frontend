@@ -469,20 +469,66 @@ function ProductGalleryModal({
               </div>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { icon: "🌿", fr: "Produit frais",    ar: "منتج طازج",   en: "Fresh product"   },
-              { icon: "🛵", fr: "Livraison rapide", ar: "توصيل سريع",  en: "Fast delivery"   },
-              { icon: "🇲🇦", fr: "Origine Maroc",   ar: "من المغرب",   en: "From Morocco"    },
-              { icon: "✅", fr: "Qualite garantie", ar: "جودة مضمونة", en: "Quality assured" },
-            ].map(f => (
-              <div key={f.en} className="flex items-center gap-2 rounded-xl bg-white border border-gray-100 px-2.5 py-2">
-                <span className="text-sm leading-none">{f.icon}</span>
-                <span className={"text-[10px] font-semibold text-gray-600 " + font}>
-                  {language === "ar" ? f.ar : language === "fr" ? f.fr : f.en}
-                </span>
-              </div>
-            ))}
+          {product.description_fr && (
+            <div className="border-t border-gray-100 pt-4">
+              <h4 className={"text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 " + font}>
+                {language === "ar" ? "الوصف" : language === "fr" ? "Description" : "Description"}
+              </h4>
+              <p className={"text-sm text-gray-600 leading-relaxed " + font} dir={language === "ar" ? "rtl" : "ltr"}>
+                {product.description_fr}
+              </p>
+            </div>
+          )}
+
+          {/* About this item — Amazon-style structured specs, trilingual */}
+          <div className="border-t border-gray-100 pt-4">
+            <h4 className={"text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 " + font}>
+              {language === "ar" ? "حول هذا المنتج" : language === "fr" ? "À propos de ce produit" : "About this item"}
+            </h4>
+            <ul className="space-y-2.5">
+              {[
+                {
+                  icon: "🌿",
+                  fr: "Fraîcheur garantie", ar: "طازج مضمون", en: "Guaranteed freshness",
+                  detail_fr: "Sélectionné et livré le jour même",
+                  detail_ar: "يُختار ويُوصَّل في نفس اليوم",
+                  detail_en: "Selected and delivered same-day",
+                },
+                {
+                  icon: "🛵",
+                  fr: "Livraison en 30 min", ar: "توصيل خلال 30 دقيقة", en: "30-min delivery",
+                  detail_fr: "Salé, Rabat et Témara — 7j/7, 8h–21h",
+                  detail_ar: "سلا، الرباط وتمارة — 7/7، من 8ص إلى 9م",
+                  detail_en: "Salé, Rabat & Témara — 7 days a week, 8am–9pm",
+                },
+                {
+                  icon: "🇲🇦",
+                  fr: "Origine Maroc", ar: "من المغرب", en: "From Morocco",
+                  detail_fr: "Producteurs locaux sélectionnés",
+                  detail_ar: "من منتجين محليين مختارين",
+                  detail_en: "Selected local producers",
+                },
+                {
+                  icon: "✅",
+                  fr: "Qualité vérifiée", ar: "جودة موثوقة", en: "Verified quality",
+                  detail_fr: "Contrôle qualité avant chaque livraison",
+                  detail_ar: "فحص الجودة قبل كل توصيل",
+                  detail_en: "Quality checked before every delivery",
+                },
+              ].map((spec) => (
+                <li key={spec.en} className="flex items-start gap-3">
+                  <span className="text-lg shrink-0 mt-0.5">{spec.icon}</span>
+                  <div>
+                    <p className={"text-sm font-medium text-[#0c3228] " + font}>
+                      {language === "ar" ? spec.ar : language === "fr" ? spec.fr : spec.en}
+                    </p>
+                    <p className={"text-xs text-gray-500 leading-relaxed " + font}>
+                      {language === "ar" ? spec.detail_ar : language === "fr" ? spec.detail_fr : spec.detail_en}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
           <button
             disabled={!product.in_stock}
@@ -561,6 +607,10 @@ function ProductCard({ product, rank }: { product: DBProduct; rank: number }) {
       <article
         className="gg-product-card group relative flex flex-col overflow-hidden"
         style={{ minHeight: "340px" }}>
+        {/* Image container — aspect-ratio 4/3, ready for Higgsfield video: swap
+            <img> for <video autoPlay loop muted playsInline className="absolute
+            inset-0 h-full w-full object-cover"> once a video URL is available,
+            no restructuring needed. */}
         <div
           className="relative overflow-hidden cursor-pointer bg-white"
           style={{ aspectRatio: "4 / 3", width: "100%" }}
@@ -884,6 +934,25 @@ export default function HomePage() {
       </div>
       <SocialProofStrip />
 
+      {/* Breadcrumb — Amazon style, dark theme to match this page's background */}
+      <nav dir={dir} className={"max-w-7xl mx-auto px-4 py-2 text-xs text-white/40 flex items-center gap-1.5 " + font + " " + (isRTL ? "flex-row-reverse" : "")}>
+        <Link to="/" className="hover:text-emerald-400 transition-colors">
+          {language === "ar" ? "الرئيسية" : language === "fr" ? "Accueil" : "Home"}
+        </Link>
+        <span className="text-white/20">/</span>
+        <Link to="/shop" className="hover:text-emerald-400 transition-colors">
+          {language === "ar" ? "الكتالوج" : language === "fr" ? "Catalogue" : "Catalog"}
+        </Link>
+        {activeKey !== "all" && (
+          <>
+            <span className="text-white/20">/</span>
+            <span className="text-emerald-400 font-medium">
+              {catLabel(NICHE_CATS.find((c) => c.key === activeKey) ?? NICHE_CATS[0], language)}
+            </span>
+          </>
+        )}
+      </nav>
+
       <div className="mx-auto max-w-7xl px-4 py-6 space-y-5">
 
         {/* ?? WhatsApp CTA banner ?? */}
@@ -916,85 +985,127 @@ export default function HomePage() {
           </a>
         </div>
 
-        {/* ?? Category pills ?? */}
-        <div className="relative">
-          <div className={"flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide " + (isRTL ? "flex-row-reverse" : "")}>
-            {NICHE_CATS.map((cat) => {
-              const active  = activeKey === cat.key;
-              const count   = cat.key === "all"
-                ? products.length
-                : products.filter((p) => cat.db_match.some((m) => (p.category ?? "").toLowerCase() === m.toLowerCase())).length;
-              // Hide categories with no matching products (except "all")
-              if (cat.key !== "all" && count === 0) return null;
-              return (
+        {/* ── Sidebar (desktop) + content (mobile pills / search / grid) ── */}
+        <div className="flex gap-6 items-start">
+
+          {/* Desktop sidebar — lg+ only, persistent category filter */}
+          <aside className="hidden lg:block w-56 shrink-0">
+            <div className="rounded-2xl border border-white/10 bg-white/8 overflow-hidden sticky top-4">
+              <div className="px-4 py-3 border-b border-white/10">
+                <h3 className={"text-xs font-semibold text-white/50 uppercase tracking-wider " + font}>
+                  {language === "ar" ? "التصنيفات" : language === "fr" ? "Catégories" : "Categories"}
+                </h3>
+              </div>
+              <div className="py-2">
+                {NICHE_CATS.map((cat) => {
+                  const active = activeKey === cat.key;
+                  const count  = cat.key === "all"
+                    ? products.length
+                    : products.filter((p) => cat.db_match.some((m) => (p.category ?? "").toLowerCase() === m.toLowerCase())).length;
+                  if (cat.key !== "all" && count === 0) return null;
+                  return (
+                    <button
+                      key={cat.key}
+                      onClick={() => setActiveKey(cat.key)}
+                      className={"w-full text-left px-4 py-2.5 text-sm flex items-center justify-between gap-2 transition-colors " + font + " " + (isRTL ? "flex-row-reverse text-right" : "") + " " + (active ? "bg-[#2E8B57] text-white font-medium" : "text-white/60 hover:bg-white/8 hover:text-white")}>
+                      <span className="flex items-center gap-2 min-w-0">
+                        <span className="shrink-0">{cat.emoji}</span>
+                        <span className="truncate">{catLabel(cat, language)}</span>
+                      </span>
+                      {count > 0 && (
+                        <span className={"shrink-0 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] font-extrabold " + (active ? "bg-white/20 text-white" : "bg-white/10 text-white/50")}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
+
+          {/* Content column */}
+          <div className="flex-1 min-w-0 space-y-5">
+
+            {/* Mobile category pills — lg:hidden, unchanged behaviour */}
+            <div className="lg:hidden relative">
+              <div className={"flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide " + (isRTL ? "flex-row-reverse" : "")}>
+                {NICHE_CATS.map((cat) => {
+                  const active  = activeKey === cat.key;
+                  const count   = cat.key === "all"
+                    ? products.length
+                    : products.filter((p) => cat.db_match.some((m) => (p.category ?? "").toLowerCase() === m.toLowerCase())).length;
+                  // Hide categories with no matching products (except "all")
+                  if (cat.key !== "all" && count === 0) return null;
+                  return (
+                    <button
+                      key={cat.key}
+                      onClick={() => setActiveKey(cat.key)}
+                      className={"gg-pill flex shrink-0 items-center gap-2 " + font + " " + (active ? "active" : "")}>
+                      <span className="text-base leading-none">{cat.emoji}</span>
+                      <span>{catLabel(cat, language)}</span>
+                      {count > 0 && (
+                        <span className={"flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] font-extrabold " + (active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500")}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Search — own full-width row, promoted per Amazon-style layout */}
+            <div className="relative">
+              <Search size={14} className={"absolute top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none " + (isRTL ? "right-3.5" : "left-3.5")} />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                dir={dir}
+                placeholder={language === "ar" ? "ابحث عن منتج…" : language === "fr" ? "Rechercher un produit…" : "Search products…"}
+                className={"w-full rounded-2xl border border-white/10 bg-white/8 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:bg-white/12 shadow-sm " + (isRTL ? "pr-10 pl-4" : "pl-10 pr-4") + " " + font}
+              />
+            </div>
+
+            {/* Secondary tools row: sort / refresh / clear */}
+            <div className={"flex flex-wrap items-center gap-3 " + (isRTL ? "flex-row-reverse" : "")}>
+
+              {/* Sort */}
+              <div className={"flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-3.5 py-2.5 shadow-sm " + (isRTL ? "flex-row-reverse" : "")}>
+                <SlidersHorizontal size={13} className="text-gray-400 shrink-0" />
+                <select
+                  value={sortKey}
+                  onChange={(e) => setSortKey(e.target.value as SortKey)}
+                  dir={dir}
+                  className={"bg-transparent text-sm text-white/70 outline-none cursor-pointer " + font}>
+                  {SORT_OPTIONS.map((opt) => (
+                    <option key={opt.key} value={opt.key}>{sortLabel(opt, language)}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Refresh */}
+              <button
+                onClick={load}
+                disabled={loading}
+                title="Refresh"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/8 text-white/55 shadow-sm transition-all hover:border-emerald-500/40 hover:text-emerald-400 disabled:opacity-40">
+                {loading
+                  ? <Loader2 size={14} className="animate-spin" />
+                  : <RefreshCw size={14} />
+                }
+              </button>
+
+              {/* Active filters summary */}
+              {(activeKey !== "all" || search) && (
                 <button
-                  key={cat.key}
-                  onClick={() => setActiveKey(cat.key)}
-                  className={"gg-pill flex shrink-0 items-center gap-2 " + font + " " + (active ? "active" : "")}>
-                  <span className="text-base leading-none">{cat.emoji}</span>
-                  <span>{catLabel(cat, language)}</span>
-                  {count > 0 && (
-                    <span className={"flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] font-extrabold " + (active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500")}>
-                      {count}
-                    </span>
-                  )}
+                  onClick={resetFilters}
+                  className={"flex items-center gap-1.5 rounded-2xl border border-[#2E8B57]/25 bg-[#2E8B57]/8 px-3.5 py-2.5 text-xs font-bold text-[#2E8B57] transition-all hover:bg-[#2E8B57]/15 " + font}>
+                  ✕ {language === "ar" ? "إزالة الفلاتر" : language === "fr" ? "Effacer" : "Clear filters"}
                 </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── Search + sort toolbar ── */}
-        <div className={"flex flex-wrap items-center gap-3 " + (isRTL ? "flex-row-reverse" : "")}>
-
-          {/* Search */}
-          <div className="relative flex-1 min-w-52">
-            <Search size={14} className={"absolute top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none " + (isRTL ? "right-3.5" : "left-3.5")} />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              dir={dir}
-              placeholder={language === "ar" ? "ابحث عن منتج…" : language === "fr" ? "Rechercher un produit…" : "Search products…"}
-              className={"w-full rounded-2xl border border-white/10 bg-white/8 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:bg-white/12 shadow-sm " + (isRTL ? "pr-10 pl-4" : "pl-10 pr-4") + " " + font}
-            />
-          </div>
-
-          {/* Sort */}
-          <div className={"flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-3.5 py-2.5 shadow-sm " + (isRTL ? "flex-row-reverse" : "")}>
-            <SlidersHorizontal size={13} className="text-gray-400 shrink-0" />
-            <select
-              value={sortKey}
-              onChange={(e) => setSortKey(e.target.value as SortKey)}
-              dir={dir}
-              className={"bg-transparent text-sm text-white/70 outline-none cursor-pointer " + font}>
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.key} value={opt.key}>{sortLabel(opt, language)}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Refresh */}
-          <button
-            onClick={load}
-            disabled={loading}
-            title="Refresh"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/8 text-white/55 shadow-sm transition-all hover:border-emerald-500/40 hover:text-emerald-400 disabled:opacity-40">
-            {loading
-              ? <Loader2 size={14} className="animate-spin" />
-              : <RefreshCw size={14} />
-            }
-          </button>
-
-          {/* Active filters summary */}
-          {(activeKey !== "all" || search) && (
-            <button
-              onClick={resetFilters}
-              className={"flex items-center gap-1.5 rounded-2xl border border-[#2E8B57]/25 bg-[#2E8B57]/8 px-3.5 py-2.5 text-xs font-bold text-[#2E8B57] transition-all hover:bg-[#2E8B57]/15 " + font}>
-              ✕ {language === "ar" ? "إزالة الفلاتر" : language === "fr" ? "Effacer" : "Clear filters"}
-            </button>
-          )}
-        </div>
+              )}
+            </div>
 
         {/* ── Error state ── */}
         {error && !loading && (
@@ -1042,6 +1153,9 @@ export default function HomePage() {
             </div>
           </>
         )}
+
+          </div>
+        </div>
 
         {/* ?? Trust strip ?? */}
         {!loading && !error && (
