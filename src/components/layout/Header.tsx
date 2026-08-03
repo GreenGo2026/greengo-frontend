@@ -3,11 +3,14 @@ import { useState, useRef, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import {
   ShoppingCart, Menu, X, MessageCircle,
-  User, Package, MapPin, ChevronDown, Headphones,
+  User, Package, MapPin, ChevronDown, Headphones, Search,
 } from "lucide-react";
 import { useCartStore } from "../../store/cartStore";
 import { useLanguage } from "../../contexts/LanguageContext";
 import type { SupportedLanguage } from "../../utils/translations";
+import { getProducts } from "../../services/api";
+import type { DBProduct } from "../../services/api";
+import GlobalSearchBar from "./GlobalSearchBar";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const WA_SUPPORT = "https://wa.me/212664500789";
@@ -208,12 +211,20 @@ export default function Header() {
   const totalPrice = useCartStore((s) => s.totalPrice);
   const totalItems = cart.reduce((n, i) => n + (i.cartQuantity || 0), 0);
 
-  const [mobileOpen,  setMobileOpen]  = useState(false);
-  const [langOpen,    setLangOpen]    = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
+  const [mobileOpen,      setMobileOpen]      = useState(false);
+  const [langOpen,        setLangOpen]        = useState(false);
+  const [accountOpen,     setAccountOpen]     = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [products, setProducts] = useState<DBProduct[]>([]);
 
   const accountRef = useRef<HTMLDivElement>(null);
   const langRef    = useRef<HTMLDivElement>(null);
+
+  // Fetched once — Header persists across route changes (mounted outside
+  // <Routes>), so this doesn't refetch per page.
+  useEffect(() => {
+    getProducts().then(setProducts).catch(() => {});
+  }, []);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -230,6 +241,7 @@ export default function Header() {
         setAccountOpen(false);
         setLangOpen(false);
         setMobileOpen(false);
+        setMobileSearchOpen(false);
       }
     }
     document.addEventListener("keydown", handleKey);
@@ -259,10 +271,11 @@ export default function Header() {
     language === "fr" ? "Mon compte" :
     "My Account";
 
-  function closeAll()     { setMobileOpen(false); setLangOpen(false); setAccountOpen(false); }
-  function toggleMobile() { setMobileOpen((p) => !p); setLangOpen(false); setAccountOpen(false); }
+  function closeAll()     { setMobileOpen(false); setLangOpen(false); setAccountOpen(false); setMobileSearchOpen(false); }
+  function toggleMobile() { setMobileOpen((p) => !p); setLangOpen(false); setAccountOpen(false); setMobileSearchOpen(false); }
   function toggleLang()   { setLangOpen((p) => !p); setAccountOpen(false); }
   function toggleAccount(){ setAccountOpen((p) => !p); setLangOpen(false); }
+  function toggleMobileSearch() { setMobileSearchOpen((p) => !p); setMobileOpen(false); setLangOpen(false); setAccountOpen(false); }
   function pickLang(code: SupportedLanguage)       { setLanguage(code); setLangOpen(false); }
   function pickMobileLang(code: SupportedLanguage) { setLanguage(code); closeAll(); }
 
@@ -311,6 +324,11 @@ export default function Header() {
         >
           <HeaderLogo />
         </Link>
+
+        {/* Global search — desktop */}
+        <div className="hidden md:flex flex-1 max-w-xl mx-4">
+          <GlobalSearchBar products={products} />
+        </div>
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-0 lg:flex">
@@ -375,6 +393,13 @@ export default function Header() {
             )}
           </div>
 
+          {/* Mobile search toggle */}
+          <button onClick={toggleMobileSearch}
+            aria-label={language === "ar" ? "بحث" : language === "fr" ? "Rechercher" : "Search"}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/8 bg-white/[0.04] text-white/70 transition-all hover:bg-white/10 hover:text-white md:hidden">
+            {mobileSearchOpen ? <X size={18} /> : <Search size={18} />}
+          </button>
+
           {/* Cart button */}
           <Link to="/cart" aria-label={t("nav_cart")}
             className="relative flex items-center gap-2 rounded-xl bg-[#2E8B57] px-3.5 py-2 text-sm font-bold text-white shadow-lg shadow-[#2E8B57]/30 transition-all hover:bg-[#267a4c] hover:shadow-[#2E8B57]/50 hover:shadow-xl active:scale-95">
@@ -402,6 +427,14 @@ export default function Header() {
 
       {/* Zellige accent */}
       <div className="zellige-border" />
+
+      {/* ── Mobile search panel ── */}
+      {mobileSearchOpen && (
+        <div dir={dir} className="border-t border-white/8 px-4 py-3 md:hidden"
+          style={{ background: "linear-gradient(180deg,#0a2820 0%,#061510 100%)" }}>
+          <GlobalSearchBar products={products} />
+        </div>
+      )}
 
       {/* ── Mobile drawer ── */}
       {mobileOpen && (

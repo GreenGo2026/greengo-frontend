@@ -13,6 +13,7 @@ import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useSeo } from "../hooks/useSeo";
 import { getUrgencySignal, getDiscountedPrice } from "../utils/urgencySignals";
+import { scoreProduct } from "../utils/normalize";
 
 // ── Niche category definitions ───────────────────────────────────────────────
 export interface NicheCategory {
@@ -858,15 +859,23 @@ export default function HomePage() {
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState("");
   const [activeKey, setActiveKey] = useState<string>(() => searchParams.get("cat") || "all");
-  const [search,       setSearch]       = useState("");
-  const [searchInput,  setSearchInput]  = useState(""); // raw input value
+  const [search,       setSearch]       = useState(() => searchParams.get("q") || "");
+  const [searchInput,  setSearchInput]  = useState(() => searchParams.get("q") || ""); // raw input value
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSearchChange = useCallback((val: string) => {
     setSearchInput(val);
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => setSearch(val), 180);
-  }, []);
+    searchTimer.current = setTimeout(() => {
+      setSearch(val);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (val.trim()) next.set("q", val);
+        else next.delete("q");
+        return next;
+      }, { replace: true });
+    }, 180);
+  }, [setSearchParams]);
   const [sortKey,   setSortKey]   = useState<SortKey>("default");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [onSaleOnly,  setOnSaleOnly]  = useState(false);
@@ -892,19 +901,25 @@ export default function HomePage() {
 
   useEffect(() => { load(); }, []);
 
-  // Keep activeKey in sync with ?cat= — covers links from CategoryNavBand
-  // navigating into an already-mounted HomePage (no remount, so the
-  // useState initializer above won't re-run).
+  // Keep activeKey/search in sync with ?cat=/?q= — covers links from
+  // CategoryNavBand or the header GlobalSearchBar navigating into an
+  // already-mounted HomePage (no remount, so the useState initializers
+  // above won't re-run).
   useEffect(() => {
     setActiveKey(searchParams.get("cat") || "all");
+    const q = searchParams.get("q") || "";
+    setSearchInput((prev) => (prev === q ? prev : q));
+    setSearch((prev) => (prev === q ? prev : q));
   }, [searchParams]);
 
   function handleCategoryChange(key: string) {
     setActiveKey(key);
-    const next = new URLSearchParams(searchParams);
-    if (key === "all") next.delete("cat");
-    else next.set("cat", key);
-    setSearchParams(next, { replace: true });
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (key === "all") next.delete("cat");
+      else next.set("cat", key);
+      return next;
+    }, { replace: true });
   }
 
   const filtered = useMemo(() => {
@@ -920,27 +935,28 @@ export default function HomePage() {
       }
     }
 
-    // Search
-    const q = search.trim().toLowerCase();
-    if (q) {
-      list = list.filter((p) =>
-        (p.name_ar  ?? "").toLowerCase().includes(q) ||
-        (p.name_fr  ?? "").toLowerCase().includes(q) ||
-        (p.category ?? "").toLowerCase().includes(q)
-      );
-    }
-
     // In-stock filter
     if (inStockOnly) list = list.filter((p) => p.in_stock !== false);
 
     // On-sale filter
     if (onSaleOnly) list = list.filter((p) => p.on_sale === true);
 
-    // Sort — always in-stock first
-    list.sort((a, b) => (b.in_stock ? 1 : 0) - (a.in_stock ? 1 : 0));
-    if (sortKey === "price_asc")  list.sort((a, b) => (b.in_stock === a.in_stock ? a.price_mad - b.price_mad : (b.in_stock ? 1 : -1)));
-    if (sortKey === "price_desc") list.sort((a, b) => (b.in_stock === a.in_stock ? b.price_mad - a.price_mad : (b.in_stock ? 1 : -1)));
-    if (sortKey === "name_az")    list.sort((a, b) => (b.in_stock === a.in_stock ? (a.name_ar ?? "").localeCompare(b.name_ar ?? "") : (b.in_stock ? 1 : -1)));
+    const q = search.trim();
+    if (q) {
+      // Scored, ranked, typo-tolerant, cross-language (AR/FR) search —
+      // relevance ranking takes priority over sortKey while a query is active.
+      list = list
+        .map((p) => ({ p, score: scoreProduct(p, q) }))
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(({ p }) => p);
+    } else {
+      // Sort — always in-stock first
+      list.sort((a, b) => (b.in_stock ? 1 : 0) - (a.in_stock ? 1 : 0));
+      if (sortKey === "price_asc")  list.sort((a, b) => (b.in_stock === a.in_stock ? a.price_mad - b.price_mad : (b.in_stock ? 1 : -1)));
+      if (sortKey === "price_desc") list.sort((a, b) => (b.in_stock === a.in_stock ? b.price_mad - a.price_mad : (b.in_stock ? 1 : -1)));
+      if (sortKey === "name_az")    list.sort((a, b) => (b.in_stock === a.in_stock ? (a.name_ar ?? "").localeCompare(b.name_ar ?? "") : (b.in_stock ? 1 : -1)));
+    }
 
     return list;
   }, [products, activeKey, search, inStockOnly, onSaleOnly, sortKey]);
@@ -956,9 +972,15 @@ export default function HomePage() {
   const inStockCount = filtered.filter((p) => p.in_stock).length;
 
   function resetFilters() {
-    handleCategoryChange("all");
+    setActiveKey("all");
     setSearch("");
     setSearchInput("");
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("cat");
+      next.delete("q");
+      return next;
+    }, { replace: true });
     setInStockOnly(false);
     setOnSaleOnly(false);
     setSortKey("default");
