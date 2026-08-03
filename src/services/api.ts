@@ -179,6 +179,11 @@ export async function getReviews(params?: { product?: string; category?: string 
 }
 
 // ── Order tracking ───────────────────────────────────────────────────────────
+export interface TrackedOrderHistoryEntry {
+  to:        string;
+  timestamp: string;
+}
+
 export interface TrackedOrder {
   order_ref:           string;
   status:              string;
@@ -189,6 +194,7 @@ export interface TrackedOrder {
   driver_name:         string | null;
   driver_phone:        string | null;
   estimated_delivery:  string | null;
+  status_history:      TrackedOrderHistoryEntry[];
 }
 
 export async function trackOrder(params: { order_ref?: string; phone?: string }): Promise<TrackedOrder[]> {

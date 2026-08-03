@@ -6,6 +6,11 @@ import { trackOrder } from "../services/api";
 
 type L = "fr" | "ar" | "en";
 
+interface TrackingHistoryEntry {
+  to:        string;
+  timestamp: string;
+}
+
 interface TrackingData {
   order_ref:           string;
   status:              string;
@@ -13,6 +18,7 @@ interface TrackingData {
   driver_phone:        string | null;
   estimated_delivery:  string | null;
   created_at:          string;
+  status_history:      TrackingHistoryEntry[];
 }
 
 const T = {
@@ -42,7 +48,25 @@ const RANK: Record<string, number> = {
   pending: 0, preparing: 1, out_for_delivery: 2, delivered: 3, completed: 3, cancelled: -1,
 };
 
-function StatusTimeline({ status, lang }: { status: string; lang: string }) {
+function stepTimestamp(history: TrackingHistoryEntry[], stepKey: string): string | null {
+  // Last matching entry wins -- an order can theoretically revisit a status
+  // (e.g. corrected back to "Preparing"), and the most recent change is the
+  // one a customer cares about.
+  const entry = [...history].reverse().find((h) => h.to === stepKey);
+  return entry?.timestamp || null;
+}
+
+function formatStepTime(iso: string, lang: string): string {
+  try {
+    return new Date(iso).toLocaleString(lang === "ar" ? "ar-MA" : "fr-MA", {
+      day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+}
+
+function StatusTimeline({ status, lang, history, createdAt }: { status: string; lang: string; history: TrackingHistoryEntry[]; createdAt: string }) {
   const l = lang as L;
   const rank = RANK[status] ?? 0;
 
@@ -69,8 +93,12 @@ function StatusTimeline({ status, lang }: { status: string; lang: string }) {
           style={{ width: rank === 0 ? "0%" : rank === 1 ? "33%" : rank === 2 ? "66%" : "100%" }}
         />
         {STEPS.map((step) => {
-          const done   = RANK[step.key] < rank;
-          const active = step.key === status || (status === "completed" && step.key === "delivered");
+          const done    = RANK[step.key] < rank;
+          const active  = step.key === status || (status === "completed" && step.key === "delivered");
+          const reached = done || active;
+          const ts = reached
+            ? (stepTimestamp(history, step.key) || (step.key === "pending" ? createdAt : null))
+            : null;
           return (
             <div key={step.key} className="relative flex flex-col items-center gap-2 z-10">
               <div className={
@@ -87,6 +115,11 @@ function StatusTimeline({ status, lang }: { status: string; lang: string }) {
               }>
                 {step.label[l]}
               </span>
+              {ts && (
+                <span className="text-[9px] text-white/35 text-center max-w-[70px] leading-tight font-latin">
+                  {formatStepTime(ts, l)}
+                </span>
+              )}
             </div>
           );
         })}
@@ -209,7 +242,7 @@ export default function TrackOrderPage() {
 
             {/* Status timeline */}
             <div className="bg-white/[0.04] border border-green-800/20 rounded-2xl p-5">
-              <StatusTimeline status={order.status} lang={language} />
+              <StatusTimeline status={order.status} lang={language} history={order.status_history || []} createdAt={order.created_at} />
             </div>
 
             {/* Driver info */}
