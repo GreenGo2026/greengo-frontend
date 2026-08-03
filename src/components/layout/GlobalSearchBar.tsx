@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Search, X } from "lucide-react";
-import { scoreProduct } from "../../utils/normalize";
+import { scoreProduct, MIN_RELEVANT_SCORE } from "../../utils/normalize";
 import { useLanguage } from "../../contexts/LanguageContext";
 import type { DBProduct } from "../../services/api";
 
@@ -57,7 +57,7 @@ export default function GlobalSearchBar({ products = [] }: Props) {
       const scored = products
         .filter((p) => p.in_stock !== false)
         .map((p) => ({ p, score: scoreProduct(p, query.trim()) }))
-        .filter(({ score }) => score > 0)
+        .filter(({ score }) => score >= MIN_RELEVANT_SCORE)
         .sort((a, b) => b.score - a.score)
         .slice(0, 6)
         .map(({ p }) => p);

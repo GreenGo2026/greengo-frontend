@@ -13,7 +13,7 @@ import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useSeo } from "../hooks/useSeo";
 import { getUrgencySignal, getDiscountedPrice } from "../utils/urgencySignals";
-import { scoreProduct } from "../utils/normalize";
+import { scoreProduct, MIN_RELEVANT_SCORE } from "../utils/normalize";
 
 // ── Niche category definitions ───────────────────────────────────────────────
 export interface NicheCategory {
@@ -947,7 +947,7 @@ export default function HomePage() {
       // relevance ranking takes priority over sortKey while a query is active.
       list = list
         .map((p) => ({ p, score: scoreProduct(p, q) }))
-        .filter(({ score }) => score > 0)
+        .filter(({ score }) => score >= MIN_RELEVANT_SCORE)
         .sort((a, b) => b.score - a.score)
         .map(({ p }) => p);
     } else {

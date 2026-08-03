@@ -146,6 +146,15 @@ interface ScorableProduct {
   description_fr?: string | null;
 }
 
+// A description_fr substring hit alone (15) is too weak to count as a real
+// match on its own -- templated marketing copy mentions common ingredients
+// as recipe pairings (e.g. olives' description mentioning "salades de
+// tomates"), unrelated to the product itself. Callers should filter with
+// `score >= MIN_RELEVANT_SCORE` rather than `score > 0` so a description
+// mention alone doesn't surface a product; it still adds a scoring bump on
+// top of a genuine name/category match, when it's not the only signal.
+export const MIN_RELEVANT_SCORE = 20;
+
 /**
  * Score a product against a search query across name_fr, name_ar, category,
  * description_fr, and cross-language terms. 0 = no match.
