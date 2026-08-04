@@ -57,7 +57,7 @@ export const NICHE_CATS: NicheCategory[] = [
 // matching is done on name_ar. Kept as top 10 (not just top 6) so a
 // temporarily out-of-stock bestseller (e.g. "أناناس") is backfilled by the
 // next name in rank order — the displayed row below still slices to 6.
-const BESTSELLER_NAMES = [
+export const BESTSELLER_NAMES = [
   "برتقال",
   "جزر",
   "أناناس",

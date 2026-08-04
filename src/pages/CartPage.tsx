@@ -1,5 +1,5 @@
 // src/pages/CartPage.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Trash2, Plus, Minus, ShoppingCart, ArrowRight,
@@ -11,12 +11,23 @@ import { useCartStore, getUnitStep, formatQuantity, DELIVERY_FEES } from "../sto
 import type { DeliveryZone } from "../store/cartStore";
 import { computeLineTotal } from "../utils/pricing";
 import { getProducts } from "../services/api";
+import type { DBProduct } from "../services/api";
 import { isValidMoroccanPhone, normalizeForValidation } from "../utils/validation";
 import type { CartItem } from "../store/cartStore";
 import { useLanguage } from "../contexts/LanguageContext";
+import { BESTSELLER_NAMES } from "./HomePage";
 
 const API_BASE  = `${import.meta.env.VITE_API_URL || ""}/api/v1`;
 const WA_NUMBER = "212664397031";
+
+// Resolve image URL — prepend API root for relative /static/ paths (same
+// convention as HomePage.tsx's resolveImg).
+const _IMG_ROOT = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
+function resolveImg(url: string | null | undefined): string {
+  if (!url || url.trim() === "") return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return _IMG_ROOT + (url.startsWith("/") ? url : "/" + url);
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface GPS { lat: number; lng: number; }
@@ -373,6 +384,7 @@ export default function CartPage() {
   const font = language === "ar" ? "font-arabic" : "font-latin";
 
   const cart              = useCartStore((s) => s.cart);
+  const addToCart         = useCartStore((s) => s.addToCart);
   const totalPrice        = useCartStore((s) => s.totalPrice);
   const clearCart         = useCartStore((s) => s.clearCart);
   const refreshPrices     = useCartStore((s) => s.refreshPrices);
@@ -382,13 +394,17 @@ export default function CartPage() {
   const totalWithDelivery = useCartStore((s) => s.totalWithDelivery);
 
   const [priceUpdateNotice, setPriceUpdateNotice] = useState("");
+  const [products, setProducts] = useState<DBProduct[]>([]);
 
   // Cart persists in localStorage indefinitely -- re-validate against the
   // live catalog on mount so the total shown here can never silently diverge
-  // from what the backend computes at order-submission time.
+  // from what the backend computes at order-submission time. The same fetch
+  // also seeds the "frequently bought together" suggestions below -- no
+  // second network call needed.
   useEffect(() => {
     getProducts()
       .then((products) => {
+        setProducts(products);
         const changes = refreshPrices(products);
         if (changes.length > 0) {
           setPriceUpdateNotice(
@@ -422,6 +438,31 @@ export default function CartPage() {
   const itemCount   = cart.length;
   const phoneValid = phone.trim() !== "" && isValidMoroccanPhone(normalizeForValidation(phone));
   const isValid   = itemCount > 0 && name.trim().length > 1 && phoneValid && address.trim().length > 5 && !!paymentMethod;
+
+  // "Frequently bought together" -- best-sellers not already in the cart,
+  // falling back to any other in-stock product to always fill 3 slots.
+  // Cart items are keyed by name_ar (see CartRow/QuantityControl's `add`
+  // calls), not a product id, so membership is checked the same way.
+  const cartNames = useMemo(() => new Set(cart.map((i) => i.name)), [cart]);
+  const suggestions = useMemo(() => {
+    if (!products.length) return [];
+    const fromBestsellers = BESTSELLER_NAMES
+      .map((name) => products.find((p) => p.name_ar === name))
+      .filter((p): p is DBProduct => !!p && p.in_stock !== false && !cartNames.has(p.name_ar))
+      .slice(0, 3);
+
+    if (fromBestsellers.length >= 3) return fromBestsellers;
+
+    const fill = products
+      .filter((p) =>
+        p.in_stock !== false &&
+        !cartNames.has(p.name_ar) &&
+        !fromBestsellers.find((x) => x.id === p.id)
+      )
+      .slice(0, 3 - fromBestsellers.length);
+
+    return [...fromBestsellers, ...fill];
+  }, [products, cartNames]);
 
   // ── GPS ──────────────────────────────────────────────────────────────────────
   function handleGetLocation() {
@@ -665,6 +706,41 @@ export default function CartPage() {
               <ul className="space-y-3">
                 {cart.map((item, i) => <CartRow key={item.name + i} item={item} />)}
               </ul>
+
+              {suggestions.length > 0 && (
+                <div className="rounded-2xl bg-white p-4 shadow-sm">
+                  <h3 className="mb-3 text-xs font-black uppercase tracking-wider text-gray-400">
+                    🛒 {language === "ar" ? "غالباً ما تُشترى معاً" : language === "fr" ? "Souvent achetés ensemble" : "Frequently bought together"}
+                  </h3>
+                  <div className="space-y-2">
+                    {suggestions.map((product) => (
+                      <div key={product.id} className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-gray-50">
+                        {product.image_url ? (
+                          <img src={resolveImg(product.image_url)} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+                        ) : (
+                          <div className="h-10 w-10 shrink-0 rounded-lg bg-emerald-50" />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p dir="rtl" className="truncate text-xs font-bold text-gray-800 font-arabic text-right">
+                            {product.name_ar}
+                          </p>
+                          <p className="text-xs text-gray-400 font-latin">{product.price_mad.toFixed(2)} MAD</p>
+                        </div>
+                        <button
+                          onClick={() => addToCart(
+                            { name: product.name_ar, price_per_unit: product.price_mad, unit: product.unit, available: product.in_stock, variant_label: null },
+                            getUnitStep(product.unit, product)
+                          )}
+                          aria-label={language === "ar" ? "أضف للسلة" : language === "fr" ? "Ajouter au panier" : "Add to cart"}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2E8B57] text-white transition-colors hover:bg-[#1F6B40] active:scale-90">
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="my-4 divider-zellige" />
               <Link to="/" className={"flex items-center gap-2 text-sm font-semibold text-[#2E8B57] transition-colors hover:underline " + (dir === "rtl" ? "justify-end" : "justify-start")}>
                 <ArrowRight size={14} className={dir === "rtl" ? "" : "rotate-180"} />
