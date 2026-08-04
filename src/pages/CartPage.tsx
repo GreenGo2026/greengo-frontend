@@ -464,6 +464,16 @@ export default function CartPage() {
     return [...fromBestsellers, ...fill];
   }, [products, cartNames]);
 
+  // Best-sellers shown on the empty-cart state -- no "already in cart"
+  // exclusion needed since this only renders when the cart has zero items.
+  const bestSellerProducts = useMemo(() => {
+    if (!products.length) return [];
+    return BESTSELLER_NAMES
+      .map((name) => products.find((p) => p.name_ar === name))
+      .filter((p): p is DBProduct => !!p && p.in_stock !== false)
+      .slice(0, 6);
+  }, [products]);
+
   // ── GPS ──────────────────────────────────────────────────────────────────────
   function handleGetLocation() {
     if (!navigator.geolocation) {
@@ -659,7 +669,7 @@ export default function CartPage() {
     return (
       <>
         <CartHeroStrip />
-        <div dir={dir} className={"flex min-h-[60vh] flex-col items-center justify-center gap-6 px-6 text-center " + font}>
+        <div dir={dir} className={"flex flex-col items-center gap-6 px-6 py-12 text-center " + font}>
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#2E8B57]/8 shadow-inner">
             <ShoppingCart size={44} className="text-[#2E8B57] opacity-40" />
           </div>
@@ -669,6 +679,49 @@ export default function CartPage() {
             <ArrowRight size={16} className={dir === "rtl" ? "" : "rotate-180"} />
             {t("back_to_catalog")}
           </Link>
+
+          {bestSellerProducts.length > 0 && (
+            <div className="mt-4 w-full max-w-4xl">
+              <h3 className="mb-4 px-1 text-sm font-semibold uppercase tracking-wider text-gray-500">
+                🏆 {language === "ar" ? "الأكثر مبيعاً" : language === "fr" ? "Nos best-sellers" : "Best-sellers"}
+              </h3>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {bestSellerProducts.map((product) => (
+                  <div key={product.id} className="overflow-hidden rounded-xl border border-gray-100 bg-white text-left">
+                    {product.image_url ? (
+                      <div className="aspect-[4/3]">
+                        <img src={resolveImg(product.image_url)} alt={product.name_fr || ""} className="h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="aspect-[4/3] bg-emerald-50" />
+                    )}
+                    <div className="p-3">
+                      <p dir="rtl" className="mb-1 truncate text-xs font-medium text-[#0c3228] font-arabic text-right">
+                        {product.name_ar}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-500 font-latin">{product.price_mad.toFixed(2)} MAD</p>
+                        <button
+                          onClick={() => addToCart(
+                            { name: product.name_ar, price_per_unit: product.price_mad, unit: product.unit, available: product.in_stock, variant_label: null },
+                            getUnitStep(product.unit, product)
+                          )}
+                          aria-label={language === "ar" ? "أضف للسلة" : language === "fr" ? "Ajouter au panier" : "Add to cart"}
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#2E8B57] text-sm font-bold text-white transition-colors hover:bg-[#1F6B40]">
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 text-center">
+                <Link to="/shop" className={CLS.backBtn}>
+                  {language === "ar" ? "عرض كل الكتالوج ←" : language === "fr" ? "Voir tout le catalogue →" : "See full catalog →"}
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </>
     );
