@@ -184,6 +184,14 @@ export interface TrackedOrderHistoryEntry {
   timestamp: string;
 }
 
+export interface TrackedOrderItem {
+  name:           string;
+  quantity:       number;
+  unit:           string;
+  price_per_unit: number;
+  variant_label:  string | null;
+}
+
 export interface TrackedOrder {
   order_ref:           string;
   status:              string;
@@ -191,6 +199,7 @@ export interface TrackedOrder {
   total_price:         number;
   customer_name:       string;
   items_count:         number;
+  items:               TrackedOrderItem[];
   driver_name:         string | null;
   driver_phone:        string | null;
   estimated_delivery:  string | null;

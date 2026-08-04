@@ -1,14 +1,23 @@
 // src/pages/TrackOrderPage.tsx
 import { useState, useEffect } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { trackOrder } from "../services/api";
+import { useCartStore, getUnitStep } from "../store/cartStore";
 
 type L = "fr" | "ar" | "en";
 
 interface TrackingHistoryEntry {
   to:        string;
   timestamp: string;
+}
+
+interface TrackingOrderItem {
+  name:           string;
+  quantity:       number;
+  unit:           string;
+  price_per_unit: number;
+  variant_label:  string | null;
 }
 
 interface TrackingData {
@@ -19,6 +28,7 @@ interface TrackingData {
   estimated_delivery:  string | null;
   created_at:          string;
   status_history:      TrackingHistoryEntry[];
+  items:               TrackingOrderItem[];
 }
 
 const T = {
@@ -35,6 +45,10 @@ const T = {
   help:      { fr: "Besoin d'aide ?",              ar: "هل تحتاج مساعدة؟",          en: "Need help?"                  },
   help_sub:  { fr: "Contactez-nous sur WhatsApp pour toute question.", ar: "تواصل معنا عبر واتساب لأي استفسار.", en: "Contact us on WhatsApp for any question." },
   wa_btn:    { fr: "Contacter le support",         ar: "تواصل مع الدعم",            en: "Contact support"             },
+  reorder:        { fr: "🔄 Commander à nouveau",       ar: "🔄 اطلب من جديد",            en: "🔄 Order again"                },
+  reorder_sub:    { fr: "🔄 Recommander les mêmes articles", ar: "🔄 اطلب نفس المنتجات مرة أخرى", en: "🔄 Reorder the same items"     },
+  reordered:      { fr: "✓ Produits ajoutés au panier !", ar: "✓ تمت إضافة المنتجات للسلة", en: "✓ Items added to cart!"       },
+  reordered_sub:  { fr: "✓ Ajouté au panier",          ar: "✓ تمت الإضافة للسلة",        en: "✓ Added to cart"              },
 };
 
 const STEPS: { key: string; label: Record<L, string>; emoji: string }[] = [
@@ -133,11 +147,32 @@ export default function TrackOrderPage() {
   const l = language as L;
   const { orderId: paramId } = useParams<{ orderId?: string }>();
   const [searchParams]       = useSearchParams();
+  const navigate              = useNavigate();
+  const addToCart             = useCartStore((s) => s.addToCart);
 
   const [orderId, setOrderId] = useState(paramId || searchParams.get("id") || "");
   const [order,   setOrder]   = useState<TrackingData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
+  const [reordered, setReordered] = useState(false);
+
+  function handleReorder() {
+    if (!order?.items?.length) return;
+    for (const item of order.items) {
+      addToCart(
+        {
+          name:           item.name,
+          price_per_unit: item.price_per_unit,
+          unit:           item.unit,
+          available:      true,
+          variant_label:  item.variant_label ?? null,
+        },
+        item.variant_label ? 1 : getUnitStep(item.unit)
+      );
+    }
+    setReordered(true);
+    setTimeout(() => navigate("/cart"), 800);
+  }
 
   async function fetchOrder(id: string) {
     const value = id.trim();
@@ -274,6 +309,28 @@ export default function TrackOrderPage() {
                 </div>
               )}
             </div>
+
+            {/* Reorder -- statuses are normalized lowercase snake_case by the
+                backend (see track_order_public in orders.py), not the
+                capitalized "Delivered"/"Completed" the DB stores internally. */}
+            {["delivered", "completed"].includes(order.status) && order.items?.length > 0 && (
+              <button
+                onClick={handleReorder}
+                disabled={reordered}
+                className={"w-full py-3 rounded-xl font-bold text-sm transition-all " + (reordered ? "bg-green-500 text-white" : "bg-gradient-to-r from-green-700 to-green-900 border border-green-600/50 text-white hover:opacity-90")}
+              >
+                {reordered ? T.reordered[l] : T.reorder[l]}
+              </button>
+            )}
+            {!["delivered", "completed"].includes(order.status) && order.items?.length > 0 && (
+              <button
+                onClick={handleReorder}
+                disabled={reordered}
+                className="w-full py-2.5 rounded-xl text-sm border border-green-700/40 text-green-400 font-medium hover:bg-green-900/20 transition-colors"
+              >
+                {reordered ? T.reordered_sub[l] : T.reorder_sub[l]}
+              </button>
+            )}
 
           </section>
         )}
