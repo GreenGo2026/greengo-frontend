@@ -13,6 +13,7 @@ import SocialProofStrip from "../components/ui/SocialProofStrip";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useSeo } from "../hooks/useSeo";
 import { getUrgencySignal, getDiscountedPrice } from "../utils/urgencySignals";
+import { useDeliveryUrgency } from "../hooks/useDeliveryUrgency";
 import { scoreProduct, MIN_RELEVANT_SCORE } from "../utils/normalize";
 
 // ── Niche category definitions ───────────────────────────────────────────────
@@ -609,6 +610,7 @@ function ProductCard({ product, rank, compact = false }: { product: DBProduct; r
   const add    = useCartStore((s) => s.addToCart);
   const cart   = useCartStore((s) => s.cart);
   const signal = getUrgencySignal(product);
+  const deliveryUrgency = useDeliveryUrgency();
   // "Rupture de stock" and "Frais du jour" already have dedicated badges on this
   // card (top-right stock pill, bottom-right Maroc/fresh pill) — only surface the
   // discount and low-stock signals here to avoid showing the same thing twice.
@@ -786,6 +788,11 @@ function ProductCard({ product, rank, compact = false }: { product: DBProduct; r
               </div>
             )}
           </div>
+          {!compact && deliveryUrgency.isAvailable && deliveryUrgency.isUrgent && (
+            <p className="text-[10px] font-medium text-orange-500 -mt-1">
+              ⚡ {deliveryUrgency.message}
+            </p>
+          )}
           <div className="mt-auto">
             {product.variants && product.variants.length > 0
               ? <VariantCardControl product={product} />

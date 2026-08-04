@@ -16,6 +16,7 @@ import { isValidMoroccanPhone, normalizeForValidation } from "../utils/validatio
 import type { CartItem } from "../store/cartStore";
 import { useLanguage } from "../contexts/LanguageContext";
 import { BESTSELLER_NAMES } from "./HomePage";
+import { useDeliveryUrgency } from "../hooks/useDeliveryUrgency";
 
 const API_BASE  = `${import.meta.env.VITE_API_URL || ""}/api/v1`;
 const WA_NUMBER = "212664397031";
@@ -382,6 +383,10 @@ function SuccessScreen({ orderId, lastCart }: { orderId: string; lastCart: any[]
 export default function CartPage() {
   const { t, dir, language } = useLanguage();
   const font = language === "ar" ? "font-arabic" : "font-latin";
+  // Called unconditionally at the top (Rules of Hooks) -- the banner using
+  // it is only rendered in the "full cart" branch below, after two early
+  // returns (success / empty states).
+  const urgency = useDeliveryUrgency();
 
   const cart              = useCartStore((s) => s.cart);
   const addToCart         = useCartStore((s) => s.addToCart);
@@ -733,6 +738,16 @@ export default function CartPage() {
       <CartHeroStrip />
       <div dir={dir} className={"min-h-screen px-4 py-6 md:py-8 " + font} style={{ background: "#FAF7F2" }}>
         <div className="mx-auto max-w-5xl space-y-6">
+
+          {urgency.isAvailable && (
+            <div className={"flex items-center gap-3 rounded-xl px-4 py-3 text-sm " + (urgency.isUrgent ? "border border-orange-200 bg-orange-50" : "border border-green-200 bg-green-50")}>
+              <span className="shrink-0 text-xl">🚚</span>
+              <div>
+                <p className={"font-bold " + (urgency.isUrgent ? "text-orange-700" : "text-green-700")}>{urgency.message}</p>
+                <p className={"text-xs " + (urgency.isUrgent ? "text-orange-600" : "text-green-600")}>{urgency.subMessage}</p>
+              </div>
+            </div>
+          )}
 
           <div className={"flex flex-wrap items-center justify-between gap-3 " + rowDir}>
             <p className="text-sm text-gray-500">
