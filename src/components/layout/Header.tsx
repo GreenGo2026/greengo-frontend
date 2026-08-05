@@ -19,6 +19,13 @@ const WA_ORDERS  = "https://wa.me/212664397031";
 const PHONE_247_HREF = "tel:+212666521313";
 const REL        = "noopener noreferrer";
 
+const ZONE_LABELS: Record<string, { fr: string; ar: string; en: string }> = {
+  laayayda: { fr: "Salé (Laâyayda) — gratuit", ar: "سلا (العيايدة) — مجاني", en: "Salé (Laayayda) — free" },
+  sale:     { fr: "Salé",                      ar: "سلا",                    en: "Salé"    },
+  rabat:    { fr: "Rabat",                     ar: "الرباط",                 en: "Rabat"   },
+  temara:   { fr: "Témara",                    ar: "تمارة",                  en: "Témara"  },
+};
+
 const LANGS: { code: SupportedLanguage; label: string }[] = [
   { code: "ar", label: "العربية" },
   { code: "fr", label: "Français" },
@@ -207,9 +214,10 @@ function AccountDropdown({ language, isRTL, onClose }: {
 // ── Header ────────────────────────────────────────────────────────────────────
 export default function Header() {
   const { t, language, setLanguage, isRTL } = useLanguage();
-  const cart       = useCartStore((s) => s.cart);
-  const totalPrice = useCartStore((s) => s.totalPrice);
-  const totalItems = cart.reduce((n, i) => n + (i.cartQuantity || 0), 0);
+  const cart         = useCartStore((s) => s.cart);
+  const totalPrice   = useCartStore((s) => s.totalPrice);
+  const deliveryZone = useCartStore((s) => s.deliveryZone);
+  const totalItems   = cart.reduce((n, i) => n + (i.cartQuantity || 0), 0);
 
   const [mobileOpen,      setMobileOpen]      = useState(false);
   const [langOpen,        setLangOpen]        = useState(false);
@@ -287,12 +295,13 @@ export default function Header() {
       {/* ── Top utility bar ── */}
       <div className="hidden border-b border-white/[0.06] md:block" style={{ background: "rgba(0,0,0,0.25)" }}>
         <div dir={dir} className="mx-auto flex max-w-7xl items-center justify-between px-5 py-1.5">
-          <p className={"text-[10px] text-white/45 " + font}>
-            {language === "ar"
-              ? "توصيل سريع لسلا | واتساب: 0664397031"
-              : language === "fr"
-              ? "Livraison rapide à Salé | WhatsApp: 0664397031"
-              : "Fast delivery in Salé | WhatsApp: 0664397031"}
+          <p className={"flex items-center gap-1.5 text-[10px] text-white/45 " + font}>
+            <MapPin size={10} className="shrink-0 text-white/40" />
+            {language === "ar" ? "التوصيل — " : language === "fr" ? "Livraison — " : "Delivery — "}
+            <span className="font-semibold text-white/70">
+              {(ZONE_LABELS[deliveryZone] ?? ZONE_LABELS.sale)[language === "ar" ? "ar" : language === "fr" ? "fr" : "en"]}
+            </span>
+            {" | WhatsApp: 0664397031"}
           </p>
           <div className={"flex items-center gap-4 " + (isRTL ? "flex-row-reverse" : "")}>
             <a href={WA_SUPPORT} target="_blank" rel={REL}
