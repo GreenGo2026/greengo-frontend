@@ -548,7 +548,7 @@ export default function CartPage() {
 
       // 2. Backend lookup
       const API_URL = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
-      fetch(API_URL + "/api/v1/customers/" + encodeURIComponent(normalized))
+      fetch(API_URL + "/api/v1/customers/" + encodeURIComponent(normalized) + "/public")
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (data && data.name) {

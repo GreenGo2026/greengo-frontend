@@ -168,6 +168,7 @@ function PublicShell() {
           <Route path="/profile/user" element={<UserDashboard />}   />
           <Route path="/orders"       element={<UserDashboard />}   />
           <Route path="/addresses"    element={<UserDashboard />}   />
+          <Route path="/mon-compte"   element={<UserDashboard />}   />
 
           {/* ── Legal pages ── */}
           <Route path="/legal/cgu"     element={<CGUPage />} />

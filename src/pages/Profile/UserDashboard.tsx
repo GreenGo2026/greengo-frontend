@@ -36,7 +36,14 @@ const STATUS_CONFIG: Record<string, { label_fr: string; label_ar: string; icon: 
   preparing:        { label_fr: "En préparation",  label_ar: "قيد التحضير",   icon: Truck,        bg: "bg-purple-50",  text: "text-purple-700", border: "border-purple-200" },
   out_for_delivery: { label_fr: "En livraison",    label_ar: "في الطريق",     icon: Truck,        bg: "bg-indigo-50",  text: "text-indigo-700", border: "border-indigo-200" },
   delivered:        { label_fr: "Livré",           label_ar: "تم التسليم",    icon: CheckCircle2, bg: "bg-green-50",   text: "text-[#2E8B57]",  border: "border-green-200"  },
+  completed:        { label_fr: "Terminée",        label_ar: "مكتملة",         icon: CheckCircle2, bg: "bg-green-50",   text: "text-[#2E8B57]",  border: "border-green-200"  },
   cancelled:        { label_fr: "Annulée",         label_ar: "ملغاة",          icon: XCircle,      bg: "bg-red-50",     text: "text-red-600",    border: "border-red-200"    },
+};
+
+const SEGMENT_CONFIG: Record<string, { label_fr: string; label_ar: string }> = {
+  vip:     { label_fr: "Client VIP 🥇",      label_ar: "عميل مميز 🥇" },
+  regular: { label_fr: "Client régulier ⭐", label_ar: "عميل منتظم ⭐" },
+  new:     { label_fr: "Nouveau client 🌱",  label_ar: "عميل جديد 🌱" },
 };
 
 function getStatus(raw: string) {
@@ -210,18 +217,20 @@ export default function UserDashboard() {
     setLoading(true);
     setError("");
     try {
-      // Load customer profile
-      const pr = await fetch(`${API}/api/v1/customers/${encodeURIComponent(normalized)}`);
+      // Load customer profile -- public, safe-fields-only endpoint (the
+      // plain /customers/{phone} route requires admin auth and returns
+      // admin CRM fields like notes; it 401s for a real customer here).
+      const pr = await fetch(`${API}/api/v1/customers/${encodeURIComponent(normalized)}/public`);
       if (pr.ok) {
         const data = await pr.json();
         setProfile(data);
         setNameVal(data.name || "");
       }
-      // Load orders by phone
-      const or = await fetch(`${API}/api/v1/orders?phone=${encodeURIComponent(normalized)}&limit=20`);
+      // Load orders by phone -- public endpoint, same rationale.
+      const or = await fetch(`${API}/api/v1/orders/by-phone/${encodeURIComponent(normalized)}?limit=20`);
       if (or.ok) {
         const data = await or.json();
-        setOrders(Array.isArray(data) ? data : []);
+        setOrders(Array.isArray(data?.orders) ? data.orders : []);
       }
     } catch {
       setError(l === "fr" ? "Impossible de charger vos données." : "تعذر تحميل بياناتك.");
@@ -294,6 +303,11 @@ export default function UserDashboard() {
                   </div>
                 )}
                 <p className="text-white/50 text-xs font-latin mt-0.5">{shortPhone}</p>
+                {profile?.segment && (
+                  <span className="inline-block mt-1.5 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-bold text-white">
+                    {(SEGMENT_CONFIG[profile.segment] ?? SEGMENT_CONFIG.new)[l === "ar" ? "label_ar" : "label_fr"]}
+                  </span>
+                )}
               </div>
             </div>
             <button onClick={handleLogout} className="text-white/40 hover:text-white/70 transition-colors" title="Déconnexion">
