@@ -976,6 +976,17 @@ export default function HomePage() {
       .slice(0, 6);
   }, [products]);
 
+  // Same 7-day cutoff as ProductCard's own "Nouveau" badge (isNewArrival,
+  // urgencySignals import not needed here -- computed inline there) so a
+  // product shown in this strip always carries the matching badge.
+  const newArrivals = useMemo(() => {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    return products
+      .filter((p) => p.in_stock !== false && p.created_at && new Date(p.created_at) > cutoff)
+      .sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime())
+      .slice(0, 8);
+  }, [products]);
+
   const inStockCount = filtered.filter((p) => p.in_stock).length;
 
   function resetFilters() {
@@ -1039,6 +1050,35 @@ export default function HomePage() {
           </>
         )}
       </nav>
+
+      {!loading && newArrivals.length > 0 && (
+        <section dir={dir} className={"max-w-7xl mx-auto px-4 pt-2 " + font}>
+          <div className={"flex items-center justify-between mb-3 " + (isRTL ? "flex-row-reverse" : "")}>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              🌿 {language === "ar" ? "وصل حديثاً" : language === "fr" ? "Arrivages du jour" : "New arrivals"}
+              <span className="text-xs font-normal text-white/40">
+                ({newArrivals.length} {language === "ar" ? "منتج" : language === "fr" ? (newArrivals.length > 1 ? "produits" : "produit") : (newArrivals.length > 1 ? "products" : "product")})
+              </span>
+            </h2>
+            <button
+              onClick={() => document.getElementById("catalogue")?.scrollIntoView({ behavior: "smooth" })}
+              className="text-sm text-[#F97316] font-semibold hover:underline">
+              {language === "ar" ? "عرض الكل ←" : language === "fr" ? "Voir tout →" : "See all →"}
+            </button>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
+            {newArrivals.map((product, i) => (
+              <div key={product.id} className="flex-shrink-0 w-44 snap-start">
+                {/* rank starts at 1, not 0: ProductCard shows a "TOP" star
+                    badge for rank===0, which belongs to best-sellers, not
+                    newest arrivals -- isNewArrival (the "Nouveau" badge) is
+                    computed from created_at independently, unaffected by this. */}
+                <ProductCard product={product} rank={i + 1} compact />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {!loading && bestSellers.length > 0 && (
         <section dir={dir} className={"max-w-7xl mx-auto px-4 pt-2 " + font}>
