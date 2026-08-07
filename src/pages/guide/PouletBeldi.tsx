@@ -85,17 +85,8 @@ export default function PouletBeldi() {
     <div className="min-h-screen bg-gray-50">
 
       {/* Hero */}
-      <div className="relative bg-[#0c3228] text-white py-14 px-4 text-center overflow-hidden">
-        <img
-          src="/assets/images/guide-header-phone.webp"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center opacity-15 mix-blend-luminosity"
-          width={1677}
-          height={992}
-          loading="lazy"
-        />
-        <div className="relative z-10 max-w-2xl mx-auto">
+      <div className="bg-[#0c3228] text-white py-14 px-4 text-center">
+        <div className="max-w-2xl mx-auto">
           <span className="text-xs bg-green-800 text-green-200 px-3 py-1 rounded-full font-medium uppercase tracking-wide">
             Guide produit · الدجاج البلدي
           </span>
