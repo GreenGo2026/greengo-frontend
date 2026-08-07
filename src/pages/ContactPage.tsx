@@ -1,5 +1,6 @@
 ﻿// src/pages/ContactPage.tsx
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone, MessageCircle, Send, CheckCircle, AlertCircle, Clock } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 
@@ -10,6 +11,41 @@ const PHONE_HREF = "tel:+212664500789";
 // Additional 24/7 support line -- alongside PHONE_HREF, not a replacement.
 const PHONE_247      = "+212 666-521-313";
 const PHONE_247_HREF = "tel:+212666521313";
+
+// Top 5 questions, condensed from src/pages/Legal/FAQPage.tsx -- kept in
+// sync manually (zone fees, /suivi-commande route, /mon-compte for points).
+const CONTACT_FAQ = [
+  {
+    q_fr: "Quelles sont vos zones de livraison ?",
+    q_ar: "ما هي مناطق التوصيل؟",
+    a_fr: "Salé, Rabat et Témara. Gratuite à Salé (Laâyayda), 20 MAD à Salé (autres quartiers), 30 MAD à Rabat, 40 MAD à Témara.",
+    a_ar: "سلا والرباط وتمارة. مجاني في سلا (لعيايدة)، 20 درهم في سلا (أحياء أخرى)، 30 درهم في الرباط، 40 درهم في تمارة.",
+  },
+  {
+    q_fr: "Quel est le délai de livraison ?",
+    q_ar: "ما هي مدة التوصيل؟",
+    a_fr: "30 minutes après confirmation, 7j/7 de 8h à 21h.",
+    a_ar: "30 دقيقة بعد التأكيد، 7 أيام في الأسبوع من 8ص إلى 9م.",
+  },
+  {
+    q_fr: "Comment annuler une commande ?",
+    q_ar: "كيف ألغي طلبية؟",
+    a_fr: `Contactez-nous sur WhatsApp au ${PHONE_247} avant que la commande soit en préparation.`,
+    a_ar: `تواصل معنا عبر واتساب على ${PHONE_247} قبل أن تدخل الطلبية مرحلة التحضير.`,
+  },
+  {
+    q_fr: "Acceptez-vous le paiement à la livraison ?",
+    q_ar: "هل تقبلون الدفع عند التوصيل؟",
+    a_fr: "Oui, en espèces à la livraison ou par carte bancaire via terminal TPE.",
+    a_ar: "نعم، نقداً عند التسليم أو ببطاقة بنكية عبر جهاز TPE.",
+  },
+  {
+    q_fr: "Comment voir mes points de fidélité ?",
+    q_ar: "كيف أرى نقاط ولائي؟",
+    a_fr: "Rendez-vous sur mygreengoo.com/mon-compte avec votre numéro de téléphone.",
+    a_ar: "توجه إلى mygreengoo.com/mon-compte برقم هاتفك.",
+  },
+];
 
 export default function ContactPage() {
   const { dir, language, isRTL } = useLanguage();
@@ -22,6 +58,7 @@ export default function ContactPage() {
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState("");
   const [focused,   setFocused]   = useState("");
+  const [openFaq,   setOpenFaq]   = useState<number | null>(null);
 
   const T = {
     heroTag:    ar ? "تواصل معنا"         : fr ? "Contactez-nous"               : "Contact us",
@@ -52,6 +89,10 @@ export default function ContactPage() {
     okBody:     ar ? "شكراً على تواصلك. سنرد عليك قريباً." : fr ? "Merci de nous avoir contactés. Nous vous répondrons bientôt." : "Thank you for reaching out. We will reply soon.",
     waBtn:      ar ? "تواصل عبر واتساب"  : fr ? "Contacter via WhatsApp"        : "Contact via WhatsApp",
     orLabel:    ar ? "أو"                : fr ? "ou"                            : "or",
+    faqTitle:   ar ? "الأسئلة الشائعة"    : fr ? "Questions fréquentes"          : "Frequently asked questions",
+    faqSub:     ar ? "لم تجد إجابتك؟ املأ النموذج أدناه." : fr ? "Vous ne trouvez pas la réponse ? Remplissez le formulaire ci-dessous." : "Can't find your answer? Fill out the form below.",
+    faqMore:    ar ? "لمزيد من الأسئلة:" : fr ? "Pour plus de réponses :"        : "For more answers:",
+    faqLink:    ar ? "استشر الأسئلة الشائعة كاملة ←" : fr ? "consulter notre FAQ complète →" : "see our full FAQ →",
   };
 
   function update(field: string, value: string) {
@@ -92,6 +133,43 @@ export default function ContactPage() {
       </section>
 
       <div className="mx-auto max-w-5xl px-4 py-12">
+
+        {/* Inline FAQ — top 5 questions, above the contact form */}
+        <div dir={dir} className="mb-10">
+          <h2 className={"text-lg font-bold text-gray-800 mb-1 " + (isRTL ? "text-right" : "text-left")}>{T.faqTitle}</h2>
+          <p className={"text-sm text-gray-400 mb-4 " + (isRTL ? "text-right" : "text-left")}>{T.faqSub}</p>
+          <div className="space-y-2">
+            {CONTACT_FAQ.map((item, i) => {
+              const isOpen = openFaq === i;
+              return (
+                <div key={i} className="bg-white/70 rounded-xl overflow-hidden ring-1 ring-black/5">
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : i)}
+                    className={"w-full flex items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-white/90 " + (isRTL ? "flex-row-reverse text-right" : "text-left")}>
+                    <span className={"text-sm font-medium text-gray-800 " + font}>
+                      {ar ? item.q_ar : item.q_fr}
+                    </span>
+                    <span className={"text-[#0c3228] flex-shrink-0 transition-transform duration-150 text-lg " + (isOpen ? "rotate-45" : "")}>
+                      +
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <div className={"px-4 pb-3 text-sm text-gray-600 " + font + " " + (isRTL ? "text-right" : "text-left")}>
+                      {ar ? item.a_ar : item.a_fr}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p className={"text-xs text-gray-400 mt-3 " + (isRTL ? "text-right" : "text-left")}>
+            {T.faqMore}{" "}
+            <Link to="/faq" className="text-[#F97316] hover:underline font-medium">
+              {T.faqLink}
+            </Link>
+          </p>
+        </div>
+
         <div dir={dir} className="grid gap-6 md:grid-cols-5 md:gap-8">
 
           <div className="space-y-4 md:col-span-2">
