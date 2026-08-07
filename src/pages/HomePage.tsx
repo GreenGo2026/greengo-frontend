@@ -1103,6 +1103,80 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* ── HOW IT WORKS ── */}
+      <section className="max-w-7xl mx-auto px-4 py-10">
+        <div className="text-center mb-8">
+          <h2 className="text-lg font-bold text-white">
+            {language === "ar" ? "كيف يعمل GreenGo؟" : language === "fr" ? "Comment ça marche ?" : "How it works?"}
+          </h2>
+          <p className="text-xs text-white/40 mt-1" dir="rtl">
+            كيف يعمل GreenGo؟
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          {/* Step 1 — COMMANDE.webp */}
+          <div className="flex flex-col items-center text-center">
+            <div className="relative w-full rounded-2xl overflow-hidden bg-gray-50 border border-white/10" style={{ aspectRatio: "4/3" }}>
+              <span className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-[#0c3228] text-[#C9A96E] font-bold flex items-center justify-center text-sm">
+                1
+              </span>
+              <img
+                src="/assets/images/step1-phone-mockup.webp"
+                alt={language === "ar" ? "اطلب عبر الهاتف" : language === "fr" ? "Commandez depuis votre téléphone" : "Order from your phone"}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                width={840}
+                height={616}
+              />
+            </div>
+            <h3 className="mt-4 font-semibold text-white text-sm">
+              {language === "ar" ? "اطلب عبر الهاتف" : language === "fr" ? "Commandez en ligne" : "Order online"}
+            </h3>
+            <p className="text-xs text-white/40 mt-0.5" dir="rtl">اطلب عبر الهاتف</p>
+            <p className="text-sm text-white/60 mt-1">
+              {language === "fr" ? "Choisissez vos produits frais depuis chez vous" : language === "ar" ? "اختر منتجاتك الطازجة من منزلك" : "Choose your fresh products from home"}
+            </p>
+          </div>
+
+          {/* Step 2 — placeholder (no verified image yet) */}
+          <div className="flex flex-col items-center text-center">
+            <div className="relative w-full rounded-2xl overflow-hidden bg-[#0c3228]/40 border border-white/10 flex items-center justify-center" style={{ aspectRatio: "4/3" }}>
+              <span className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-[#0c3228] text-[#C9A96E] font-bold flex items-center justify-center text-sm">
+                2
+              </span>
+              <span className="text-5xl">📦</span>
+            </div>
+            <h3 className="mt-4 font-semibold text-white text-sm">
+              {language === "ar" ? "نحضر طلبيتك" : language === "fr" ? "On prépare pour vous" : "We prepare it for you"}
+            </h3>
+            <p className="text-xs text-white/40 mt-0.5" dir="rtl">نحضر طلبيتك</p>
+            <p className="text-sm text-white/60 mt-1">
+              {language === "fr" ? "Nos équipes sélectionnent les meilleurs produits" : language === "ar" ? "فريقنا يختار أفضل المنتجات" : "Our team selects the best products"}
+            </p>
+          </div>
+
+          {/* Step 3 — placeholder (no verified image yet) */}
+          <div className="flex flex-col items-center text-center">
+            <div className="relative w-full rounded-2xl overflow-hidden bg-[#F97316]/15 border border-white/10 flex items-center justify-center" style={{ aspectRatio: "4/3" }}>
+              <span className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-[#0c3228] text-[#C9A96E] font-bold flex items-center justify-center text-sm">
+                3
+              </span>
+              <span className="text-5xl">🛵</span>
+            </div>
+            <h3 className="mt-4 font-semibold text-white text-sm">
+              {language === "ar" ? "توصيل في 30 دقيقة" : language === "fr" ? "Livré en 30 min" : "Delivered in 30 min"}
+            </h3>
+            <p className="text-xs text-white/40 mt-0.5" dir="rtl">توصيل في 30 دقيقة</p>
+            <p className="text-sm text-white/60 mt-1">
+              {language === "fr" ? "Reçu chez vous, frais et dans les meilleurs délais" : language === "ar" ? "يصلك طازجاً في أسرع وقت" : "Delivered fresh, as fast as possible"}
+            </p>
+          </div>
+
+        </div>
+      </section>
+
       <div id="catalogue" className="mx-auto max-w-7xl px-4 py-6 space-y-5">
 
         {/* ?? WhatsApp CTA banner ?? */}
