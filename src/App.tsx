@@ -26,6 +26,7 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 const SuperAdminPage   = lazy(() => import("./pages/SuperAdminPage"));
 const AboutPage        = lazy(() => import("./pages/AboutPage"));
 const WhyUsPage        = lazy(() => import("./pages/WhyUsPage"));
+const GuidesIndexPage  = lazy(() => import("./pages/GuidesIndexPage"));
 const MielArtisanal    = lazy(() => import("./pages/guide/MielArtisanal"));
 const HuileOlive       = lazy(() => import("./pages/guide/HuileOlive"));
 const PouletBeldi      = lazy(() => import("./pages/guide/PouletBeldi"));
@@ -154,6 +155,7 @@ function PublicShell() {
           <Route path="/about"        element={<AboutPage />}       />
           <Route path="/notre-histoire" element={<AboutPage />}    />
           <Route path="/pourquoi-nous" element={<WhyUsPage />}     />
+          <Route path="/guides"       element={<GuidesIndexPage />} />
           <Route path="/guide/miel-artisanal-maroc" element={<MielArtisanal />} />
           <Route path="/guide/huile-olive-marocaine" element={<HuileOlive />} />
           <Route path="/guide/poulet-beldi" element={<PouletBeldi />} />

@@ -270,6 +270,7 @@ export default function Header() {
     { to: "/shop",    label: language === "ar" ? "الكتالوج" : language === "fr" ? "Catalogue" : "Catalog" },
     { to: "/offres",      label: language === "ar" ? "🔥 العروض"  : language === "fr" ? "🔥 Offres"   : "🔥 Deals",   highlight: true },
     { to: "/panier-type", label: language === "ar" ? "🛒 السلات"  : language === "fr" ? "🛒 Paniers"  : "🛒 Baskets" },
+    { to: "/guides",  label: language === "ar" ? "الأدلة"   : language === "fr" ? "Guides"    : "Guides"  },
     { to: "/about",   label: language === "ar" ? "عنا"      : language === "fr" ? "À propos"  : "About"   },
     { to: "/contact", label: t("nav_contact") },
   ];
