@@ -21,14 +21,15 @@ export default function AnnouncementBar() {
       <p className="leading-relaxed">
         {/* Full text — desktop */}
         <span className="hidden sm:inline">
-          ⚡ Livraison en 30 min — <span className="font-semibold">Salé 20 MAD</span> ·{" "}
+          🎉 Livraison <span className="font-bold text-[#C9A96E]">GRATUITE</span> à Laâyayda —{" "}
+          <span className="font-semibold">Salé 20 MAD</span> ·{" "}
           <span className="font-semibold">Rabat 30 MAD</span> ·{" "}
           <span className="font-semibold">Témara 40 MAD</span> ·{" "}
           <span className="text-green-300">7j/7 de 8h à 21h</span>
         </span>
         {/* Short text — mobile */}
         <span className="sm:hidden">
-          ⚡ 30 min · Salé 20 · Rabat 30 · Témara 40 MAD
+          🎉 <span className="font-bold text-[#C9A96E]">GRATUIT</span> à Laâyayda · Salé 20 · Rabat 30 · Témara 40 MAD
         </span>
       </p>
 
