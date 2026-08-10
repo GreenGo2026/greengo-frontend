@@ -87,8 +87,8 @@ const FAQS = [
       {
         q_fr: "Quels modes de paiement acceptez-vous ?",
         q_ar: "\u0645\u0627 \u0647\u064a \u0637\u0631\u0642 \u0627\u0644\u062f\u0641\u0639 \u0627\u0644\u0645\u062a\u0627\u062d\u0629\u061f",
-        a_fr: "Nous acceptons le paiement en especes a la livraison (COD) et par carte bancaire via terminal TPE. Selectionnez votre mode lors de la commande.",
-        a_ar: "\u0646\u0642\u0628\u0644 \u0627\u0644\u062f\u0641\u0639 \u0646\u0642\u062f\u0627\u064b \u0639\u0646\u062f \u0627\u0644\u062a\u0633\u0644\u064a\u0645 \u0623\u0648 \u0628\u0628\u0637\u0627\u0642\u0629 \u0628\u0646\u0643\u064a\u0629 \u0639\u0628\u0631 TPE. \u0627\u062e\u062a\u0631 \u0637\u0631\u064a\u0642\u0629 \u0627\u0644\u062f\u0641\u0639 \u0639\u0646\u062f \u0627\u0644\u0637\u0644\u0628.",
+        a_fr: "Nous acceptons le paiement en especes a la livraison (COD).",
+        a_ar: "\u0646\u0642\u0628\u0644 \u0627\u0644\u062f\u0641\u0639 \u0646\u0642\u062f\u0627\u064b \u0639\u0646\u062f \u0627\u0644\u062a\u0633\u0644\u064a\u0645 (COD).",
       },
       {
         q_fr: "Puis-je obtenir une facture ?",

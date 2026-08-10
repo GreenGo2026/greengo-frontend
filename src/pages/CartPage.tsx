@@ -427,7 +427,7 @@ export default function CartPage() {
   const [address,        setAddress]        = useState("");
   const [isReturning,    setIsReturning]    = useState(false);
   const [savedProfile,   setSavedProfile]   = useState<{name:string;address:string} | null>(null);
-  const [paymentMethod,  setPaymentMethod]  = useState<"COD" | "CARD_TPE">("COD");
+  const [paymentMethod,  setPaymentMethod]  = useState<"COD">("COD");
   const [customerPoints, setCustomerPoints] = useState<number>(0);
   const [usePoints,      setUsePoints]      = useState(false);
   const [location,       setLocation]       = useState<GPS | null>(null);
@@ -1050,7 +1050,7 @@ export default function CartPage() {
                     </svg>
                     {language === "ar" ? "طريقة الدفع *" : language === "fr" ? "Mode de paiement *" : "Payment method *"}
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2">
                     {/* COD */}
                     <button type="button" onClick={() => setPaymentMethod("COD")}
                       className={"flex flex-col items-center gap-1.5 rounded-xl border-2 px-3 py-3 text-center transition-all " + (
@@ -1061,18 +1061,6 @@ export default function CartPage() {
                       <span className="text-xl" aria-hidden="true">💵</span>
                       <span className={"text-[10px] font-bold leading-tight " + font + (paymentMethod === "COD" ? " text-[#2E8B57]" : " text-gray-600")}>
                         {language === "ar" ? "دفع عند التسليم" : language === "fr" ? "Espèces à la livraison" : "Cash on delivery"}
-                      </span>
-                    </button>
-                    {/* CARD_TPE */}
-                    <button type="button" onClick={() => setPaymentMethod("CARD_TPE")}
-                      className={"flex flex-col items-center gap-1.5 rounded-xl border-2 px-3 py-3 text-center transition-all " + (
-                        paymentMethod === "CARD_TPE"
-                          ? "border-[#2E8B57] bg-[#2E8B57]/8"
-                          : "border-gray-200 bg-gray-50 hover:border-gray-300"
-                      )}>
-                      <span className="text-xl" aria-hidden="true">💳</span>
-                      <span className={"text-[10px] font-bold leading-tight " + font + (paymentMethod === "CARD_TPE" ? " text-[#2E8B57]" : " text-gray-600")}>
-                        {language === "ar" ? "بطاقة مع المندوب" : language === "fr" ? "Carte TPE chez le livreur" : "Card with TPE at door"}
                       </span>
                     </button>
                   </div>

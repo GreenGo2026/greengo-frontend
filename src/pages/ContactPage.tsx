@@ -36,8 +36,8 @@ const CONTACT_FAQ = [
   {
     q_fr: "Acceptez-vous le paiement à la livraison ?",
     q_ar: "هل تقبلون الدفع عند التوصيل؟",
-    a_fr: "Oui, en espèces à la livraison ou par carte bancaire via terminal TPE.",
-    a_ar: "نعم، نقداً عند التسليم أو ببطاقة بنكية عبر جهاز TPE.",
+    a_fr: "Oui, en espèces à la livraison.",
+    a_ar: "نعم، نقداً عند التسليم.",
   },
   {
     q_fr: "Comment voir mes points de fidélité ?",
