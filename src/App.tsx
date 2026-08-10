@@ -6,6 +6,7 @@ import StickyCartBar from "./components/ui/StickyCartBar";
 import CookieBanner               from "./components/ui/CookieBanner";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop                from "./components/ScrollToTop";
+import ReferralCapture            from "./components/ReferralCapture";
 import { LanguageProvider }       from "./contexts/LanguageContext";
 import { useCartStore }           from "./store/cartStore";
 import AnnouncementBar             from "./components/layout/AnnouncementBar";
@@ -211,6 +212,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <ReferralCapture />
       <LanguageProvider>
         <Suspense fallback={<PageLoader />}>
           <Routes>

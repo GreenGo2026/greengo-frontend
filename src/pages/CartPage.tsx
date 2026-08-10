@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useCartStore, getUnitStep, formatQuantity, DELIVERY_FEES } from "../store/cartStore";
 import type { DeliveryZone } from "../store/cartStore";
+import { useReferralStore } from "../store/referralStore";
 import { computeLineTotal } from "../utils/pricing";
 import { getProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
@@ -444,6 +445,18 @@ export default function CartPage() {
   const phoneValid = phone.trim() !== "" && isValidMoroccanPhone(normalizeForValidation(phone));
   const isValid   = itemCount > 0 && name.trim().length > 1 && phoneValid && address.trim().length > 5 && !!paymentMethod;
 
+  // Referral discount -- optimistic display only. isReturning (set once the
+  // customer types a phone that matches an existing account, see
+  // handlePhoneChange below) is used to hide/skip it client-side, but the
+  // backend is the actual authority: a returning customer's code is silently
+  // ignored there regardless of what's shown here.
+  const referralCode         = useReferralStore((s) => s.code);
+  const referralReferrerName = useReferralStore((s) => s.referrerName);
+  const clearReferral        = useReferralStore((s) => s.clear);
+  const referralActive       = !!referralCode && !isReturning;
+  const referralDiscount     = referralActive ? Math.min(15, total) : 0;
+  const displayTotal         = Math.round((total - referralDiscount) * 100) / 100;
+
   // "Frequently bought together" -- best-sellers not already in the cart,
   // falling back to any other in-stock product to always fill 3 slots.
   // Cart items are keyed by name_ar (see CartRow/QuantityControl's `add`
@@ -620,6 +633,7 @@ export default function CartPage() {
       payment_method: paymentMethod,
       use_points:     usePoints && customerPoints >= 50,
       points_used:    usePoints && customerPoints >= 50 ? 50 : 0,
+      referral_code:  referralActive ? referralCode : undefined,
     };
 
     try {
@@ -634,6 +648,7 @@ export default function CartPage() {
       }
       const data = await res.json();
       const id   = data.order_id ?? "";
+      if (data.referral_discount_applied > 0) clearReferral();
       // Save customer profile for returning customer recognition
       try {
         const normalizedKey = "+212" + phone.trim().replace(/^0/, "").replace(/^\+212/, "");
@@ -854,10 +869,20 @@ export default function CartPage() {
                         : `${deliveryFee.toFixed(2)} MAD`}
                     </span>
                   </div>
+                  {referralActive && (
+                    <div className={"flex items-center justify-between text-sm " + rowDir}>
+                      <span className={"text-[#C9A96E] font-semibold " + font}>
+                        {language === "ar" ? "كود الإحالة" : language === "fr" ? "Code de parrainage" : "Referral code"}
+                      </span>
+                      <span className="font-latin font-semibold text-[#C9A96E]">
+                        -{referralDiscount.toFixed(2)} MAD
+                      </span>
+                    </div>
+                  )}
                   <div className={"flex items-center justify-between rounded-xl px-4 py-3 " + rowDir}
                     style={{ background: "linear-gradient(135deg,#fdf8ef,#f9efda)" }}>
                     <span className={"text-2xl font-extrabold text-[#2E8B57] " + font}>
-                      {total.toFixed(2)} MAD
+                      {displayTotal.toFixed(2)} MAD
                     </span>
                     <span className={"text-sm font-semibold text-gray-500 " + font}>{t("total")}</span>
                   </div>
@@ -1065,6 +1090,34 @@ export default function CartPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* ── Referral code banner ── */}
+                {referralActive && (
+                  <div className="rounded-2xl border-2 border-[#C9A96E] bg-[#fdf8ef] p-4">
+                    <div className={"flex items-center justify-between " + (language === "ar" ? "flex-row-reverse" : "")}>
+                      <div className={"flex items-center gap-2.5 " + (language === "ar" ? "flex-row-reverse" : "")}>
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#C9A96E20" }}>
+                          <span className="text-lg">🎁</span>
+                        </div>
+                        <div className={language === "ar" ? "text-right" : ""}>
+                          <p className={"text-xs font-extrabold text-[#C9A96E] " + font}>
+                            {referralReferrerName
+                              ? (language === "ar" ? `كود ${referralReferrerName}` : language === "fr" ? `Code de ${referralReferrerName}` : `${referralReferrerName}'s code`)
+                              : (language === "ar" ? "كود إحالة" : language === "fr" ? "Code de parrainage" : "Referral code")}
+                          </p>
+                          <p className={"text-[10px] " + font + " text-gray-400 mt-0.5"}>
+                            {language === "ar" ? "-15 درهم على هذه الطلبية" : language === "fr" ? "-15 MAD sur cette commande" : "-15 MAD on this order"}
+                          </p>
+                        </div>
+                      </div>
+                      <button type="button" onClick={clearReferral}
+                        aria-label={language === "ar" ? "إلغاء" : language === "fr" ? "Retirer" : "Remove"}
+                        className="shrink-0 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                        <XCircle size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* ── Loyalty points redemption ── */}
                 {customerPoints >= 50 && (

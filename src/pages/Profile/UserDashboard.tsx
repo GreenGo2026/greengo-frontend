@@ -6,7 +6,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import {
   Package, ChevronRight, Clock, Truck, CheckCircle2,
   XCircle, Phone, Star, MessageCircle, ShoppingCart,
-  RefreshCw, Loader2, LogOut, Edit3, Check,
+  RefreshCw, Loader2, LogOut, Edit3, Check, Copy, Gift,
 } from "lucide-react";
 
 type L = "fr" | "ar" | "en";
@@ -94,6 +94,56 @@ function LoyaltyCard({ points, lang }: { points: number; lang: string }) {
           ? `${nextTier - points} نقطة للحصول على: ${reward}`
           : `${nextTier - points} pts to: ${reward}`}
       </p>
+    </div>
+  );
+}
+
+// ── Referral code card ───────────────────────────────────────────────────────
+function ReferralCard({ code, lang }: { code: string; lang: string }) {
+  const l = lang as L;
+  const [copied, setCopied] = useState(false);
+  const shareUrl = `https://mygreengoo.com/?ref=${code}`;
+  const shareText = l === "fr"
+    ? `Utilise mon code ${code} et profite de -15 MAD sur ta 1ère commande GreenGo Market 🌿 ${shareUrl}`
+    : l === "ar"
+    ? `استعمل الكود ديالي ${code} وربح -15 درهم على أول طلبية ديالك من GreenGo Market 🌿 ${shareUrl}`
+    : `Use my code ${code} and get -15 MAD off your first GreenGo Market order 🌿 ${shareUrl}`;
+
+  function copyCode() {
+    navigator.clipboard?.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
+
+  return (
+    <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg,#f0fdf4,#e7f9ee)", border: "1px solid rgba(46,139,87,0.2)" }}>
+      <div className="flex items-center gap-2 mb-3">
+        <Gift size={16} className="text-[#2E8B57]" />
+        <span className="text-sm font-extrabold text-[#0c3228]">
+          {l === "fr" ? "Mon code de parrainage" : l === "ar" ? "كود الإحالة ديالي" : "My referral code"}
+        </span>
+      </div>
+      <p className="text-[11px] text-gray-500 mb-3">
+        {l === "fr" ? "Partage-le : -15 MAD pour ton ami, +50 points pour toi." :
+         l === "ar" ? "شاركو: -15 درهم لصاحبك، +50 نقطة ليك." :
+         "Share it: -15 MAD for your friend, +50 points for you."}
+      </p>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 rounded-xl bg-white border border-[#2E8B57]/20 px-3 py-2 text-center">
+          <span className="text-lg font-black tracking-widest text-[#2E8B57] font-latin">{code}</span>
+        </div>
+        <button onClick={copyCode}
+          className="shrink-0 rounded-xl bg-white border border-[#2E8B57]/20 p-2.5 text-[#2E8B57] hover:bg-[#2E8B57]/5 transition-colors"
+          title={l === "fr" ? "Copier" : "نسخ"}>
+          {copied ? <Check size={16} /> : <Copy size={16} />}
+        </button>
+      </div>
+      <a href={"https://wa.me/?text=" + encodeURIComponent(shareText)} target="_blank" rel="noopener noreferrer"
+        className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-[#25D366] py-2.5 text-sm font-bold text-white hover:brightness-105 transition-all">
+        <MessageCircle size={14} />
+        {l === "fr" ? "Partager sur WhatsApp" : l === "ar" ? "شارك على واتساب" : "Share on WhatsApp"}
+      </a>
     </div>
   );
 }
@@ -355,6 +405,11 @@ export default function UserDashboard() {
 
         {/* ── Loyalty points ── */}
         <LoyaltyCard points={points} lang={language} />
+
+        {/* ── Referral code -- only once the backend has issued one (3rd order) ── */}
+        {profile?.referral_code && (
+          <ReferralCard code={profile.referral_code} lang={language} />
+        )}
 
         {/* ── Tabs ── */}
         <div className="flex gap-2 bg-white rounded-2xl p-1.5 border border-gray-100 shadow-sm">
