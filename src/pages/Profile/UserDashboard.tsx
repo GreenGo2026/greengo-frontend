@@ -41,6 +41,7 @@ const STATUS_CONFIG: Record<string, { label_fr: string; label_ar: string; icon: 
 };
 
 const SEGMENT_CONFIG: Record<string, { label_fr: string; label_ar: string }> = {
+  elite:   { label_fr: "Client Elite 👑",    label_ar: "عميل النخبة 👑" },
   vip:     { label_fr: "Client VIP 🥇",      label_ar: "عميل مميز 🥇" },
   regular: { label_fr: "Client régulier ⭐", label_ar: "عميل منتظم ⭐" },
   new:     { label_fr: "Nouveau client 🌱",  label_ar: "عميل جديد 🌱" },
@@ -144,6 +145,58 @@ function ReferralCard({ code, lang }: { code: string; lang: string }) {
         <MessageCircle size={14} />
         {l === "fr" ? "Partager sur WhatsApp" : l === "ar" ? "شارك على واتساب" : "Share on WhatsApp"}
       </a>
+    </div>
+  );
+}
+
+// ── Weekly challenges card ───────────────────────────────────────────────────
+function ChallengesCard({ challenges, stats, lang }: { challenges: any[]; stats: { total_possible_points: number; total_earned_this_week: number } | null; lang: string }) {
+  const l = lang as L;
+  return (
+    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-bold text-[#0c3228] text-sm">
+          🎯 {l === "fr" ? "Challenges de la semaine" : l === "ar" ? "تحديات الأسبوع" : "This week's challenges"}
+        </h3>
+        {stats && (
+          <span className="text-xs text-gray-400 font-latin">
+            {stats.total_earned_this_week}/{stats.total_possible_points} pts
+          </span>
+        )}
+      </div>
+      <div className="space-y-3">
+        {challenges.map((ch: any) => (
+          <div key={ch.id} className={"rounded-xl p-4 border " + (ch.completed ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-100")}>
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">{ch.completed ? "✅" : ch.icon}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className={"text-sm font-medium text-gray-800 " + (l === "ar" ? "font-arabic" : "font-latin")}>
+                    {l === "ar" ? ch.title_ar : ch.title_fr}
+                  </p>
+                  <span className="text-xs font-bold text-[#C9A96E] shrink-0 font-latin">+{ch.points_reward} pts</span>
+                </div>
+                <p className={"text-xs text-gray-500 mt-0.5 " + (l === "ar" ? "font-arabic" : "font-latin")}>
+                  {l === "ar" ? ch.description_ar : ch.description_fr}
+                </p>
+                {!ch.completed && ch.progress && (
+                  <div className="mt-2">
+                    <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#0c3228] rounded-full transition-all" style={{ width: `${ch.progress.pct}%` }} />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1 font-latin">{ch.progress.current}/{ch.progress.target}</p>
+                  </div>
+                )}
+                {ch.completed && (
+                  <p className="text-xs text-green-600 mt-1">
+                    {l === "fr" ? "✓ Complété cette semaine" : l === "ar" ? "✓ تم إنجازه هذا الأسبوع" : "✓ Completed this week"}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -261,6 +314,8 @@ export default function UserDashboard() {
   const [editName,  setEditName]  = useState(false);
   const [nameVal,   setNameVal]   = useState("");
   const [activeTab, setActiveTab] = useState<"orders" | "profile">("orders");
+  const [challenges, setChallenges] = useState<any[]>([]);
+  const [challengeStats, setChallengeStats] = useState<{ total_possible_points: number; total_earned_this_week: number } | null>(null);
 
   const loadData = useCallback(async (ph: string) => {
     const normalized = normalizePhone(ph);
@@ -282,6 +337,16 @@ export default function UserDashboard() {
         const data = await or.json();
         setOrders(Array.isArray(data?.orders) ? data.orders : []);
       }
+      // Weekly challenges -- best-effort, page still works if this fails.
+      fetch(`${API}/api/v1/challenges?phone=${encodeURIComponent(normalized)}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) {
+            setChallenges(Array.isArray(data.challenges) ? data.challenges : []);
+            setChallengeStats({ total_possible_points: data.total_possible_points, total_earned_this_week: data.total_earned_this_week });
+          }
+        })
+        .catch(() => {});
     } catch {
       setError(l === "fr" ? "Impossible de charger vos données." : "تعذر تحميل بياناتك.");
     } finally {
@@ -409,6 +474,11 @@ export default function UserDashboard() {
         {/* ── Referral code -- only once the backend has issued one (3rd order) ── */}
         {profile?.referral_code && (
           <ReferralCard code={profile.referral_code} lang={language} />
+        )}
+
+        {/* ── Weekly challenges ── */}
+        {challenges.length > 0 && (
+          <ChallengesCard challenges={challenges} stats={challengeStats} lang={language} />
         )}
 
         {/* ── Tabs ── */}
