@@ -437,6 +437,22 @@ export default function CartPage() {
   const [submitError,    setSubmitError]    = useState("");
   const [phoneError,     setPhoneError]     = useState("");
   const [orderId,        setOrderId]        = useState("");
+  const [welcomeDiscount, setWelcomeDiscount] = useState<{ amount: number; email: string } | null>(null);
+
+  // Exit-intent welcome offer -- expires after 48h so an old stored discount
+  // doesn't linger forever if the customer never checks out.
+  useEffect(() => {
+    const stored = localStorage.getItem("greengo_welcome_discount");
+    if (!stored) return;
+    try {
+      const d = JSON.parse(stored);
+      if (Date.now() - d.createdAt < 48 * 60 * 60 * 1000) {
+        setWelcomeDiscount(d);
+      } else {
+        localStorage.removeItem("greengo_welcome_discount");
+      }
+    } catch { /* ignore malformed value */ }
+  }, []);
 
   const subtotal    = totalPrice();
   const deliveryFee = deliveryFeeFn();
@@ -455,7 +471,14 @@ export default function CartPage() {
   const clearReferral        = useReferralStore((s) => s.clear);
   const referralActive       = !!referralCode && !isReturning;
   const referralDiscount     = referralActive ? Math.min(15, total) : 0;
-  const displayTotal         = Math.round((total - referralDiscount) * 100) / 100;
+
+  // Welcome (exit-intent) discount -- same first-order gating as referral,
+  // and never stacks with it (not combinable, per the offer terms).
+  const welcomeActive        = !!welcomeDiscount && !referralActive && !isReturning;
+  const welcomeDiscountAmt   = welcomeActive ? Math.min(welcomeDiscount!.amount, total - referralDiscount) : 0;
+
+  const totalDiscount        = referralDiscount + welcomeDiscountAmt;
+  const displayTotal         = Math.round((total - totalDiscount) * 100) / 100;
 
   // "Frequently bought together" -- best-sellers not already in the cart,
   // falling back to any other in-stock product to always fill 3 slots.
@@ -634,6 +657,7 @@ export default function CartPage() {
       use_points:     usePoints && customerPoints >= 50,
       points_used:    usePoints && customerPoints >= 50 ? 50 : 0,
       referral_code:  referralActive ? referralCode : undefined,
+      welcome_discount: welcomeActive ? welcomeDiscountAmt : 0,
     };
 
     try {
@@ -649,6 +673,7 @@ export default function CartPage() {
       const data = await res.json();
       const id   = data.order_id ?? "";
       if (data.referral_discount_applied > 0) clearReferral();
+      if (data.welcome_discount_applied > 0) { setWelcomeDiscount(null); localStorage.removeItem("greengo_welcome_discount"); }
       // Save customer profile for returning customer recognition
       try {
         const normalizedKey = "+212" + phone.trim().replace(/^0/, "").replace(/^\+212/, "");
@@ -876,6 +901,16 @@ export default function CartPage() {
                       </span>
                       <span className="font-latin font-semibold text-[#C9A96E]">
                         -{referralDiscount.toFixed(2)} MAD
+                      </span>
+                    </div>
+                  )}
+                  {welcomeActive && (
+                    <div className={"flex items-center justify-between text-sm " + rowDir}>
+                      <span className={"text-[#F97316] font-semibold " + font}>
+                        {language === "ar" ? "عرض الترحيب" : language === "fr" ? "Offre de bienvenue" : "Welcome offer"}
+                      </span>
+                      <span className="font-latin font-semibold text-[#F97316]">
+                        -{welcomeDiscountAmt.toFixed(2)} MAD
                       </span>
                     </div>
                   )}
@@ -1111,6 +1146,32 @@ export default function CartPage() {
                         </div>
                       </div>
                       <button type="button" onClick={clearReferral}
+                        aria-label={language === "ar" ? "إلغاء" : language === "fr" ? "Retirer" : "Remove"}
+                        className="shrink-0 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                        <XCircle size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Welcome (exit-intent) discount banner ── */}
+                {welcomeActive && (
+                  <div className="rounded-2xl border-2 border-[#F97316] bg-orange-50 p-4">
+                    <div className={"flex items-center justify-between " + (language === "ar" ? "flex-row-reverse" : "")}>
+                      <div className={"flex items-center gap-2.5 " + (language === "ar" ? "flex-row-reverse" : "")}>
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#F9731620" }}>
+                          <span className="text-lg">🎉</span>
+                        </div>
+                        <div className={language === "ar" ? "text-right" : ""}>
+                          <p className={"text-xs font-extrabold text-[#F97316] " + font}>
+                            {language === "ar" ? "عرض الترحيب" : language === "fr" ? "Offre de bienvenue" : "Welcome offer"}
+                          </p>
+                          <p className={"text-[10px] " + font + " text-gray-400 mt-0.5"}>
+                            {language === "ar" ? `-${welcomeDiscountAmt.toFixed(0)} درهم على هذه الطلبية` : language === "fr" ? `-${welcomeDiscountAmt.toFixed(0)} MAD sur cette commande` : `-${welcomeDiscountAmt.toFixed(0)} MAD on this order`}
+                          </p>
+                        </div>
+                      </div>
+                      <button type="button" onClick={() => { setWelcomeDiscount(null); localStorage.removeItem("greengo_welcome_discount"); }}
                         aria-label={language === "ar" ? "إلغاء" : language === "fr" ? "Retirer" : "Remove"}
                         className="shrink-0 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
                         <XCircle size={16} />

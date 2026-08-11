@@ -14,8 +14,7 @@ import Header                     from "./components/layout/Header";
 import CategoryNavBand            from "./components/layout/CategoryNavBand";
 import Footer                     from "./components/layout/Footer";
 import MobileBottomNav            from "./components/layout/MobileBottomNav";
-import NewsletterModal            from "./components/ui/NewsletterModal";
-import WelcomePopup               from "./components/ui/WelcomePopup";
+import ExitIntentPopup            from "./components/ExitIntentPopup";
 const HeroLandingPage  = lazy(() => import("./pages/HeroLandingPage"));
 const HomePage         = lazy(() => import("./pages/HomePage"));
 const CartPage         = lazy(() => import("./pages/CartPage"));
@@ -198,8 +197,7 @@ function PublicShell() {
       </main>
       <Footer />
       <MobileBottomNav />
-      <WelcomePopup />
-      <NewsletterModal />
+      <ExitIntentPopup />
       <StickyCartBar />
     </div>
   );
