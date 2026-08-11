@@ -197,7 +197,8 @@ function PublicShell() {
       </main>
       <Footer />
       <MobileBottomNav />
-      <ExitIntentPopup />
+      {/* <ExitIntentPopup /> */}
+      {/* Temporarily disabled — re-enable when approved */}
       <StickyCartBar />
     </div>
   );
