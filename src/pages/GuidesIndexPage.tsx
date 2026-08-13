@@ -29,6 +29,13 @@ const GUIDES = [
     sub_fr:   "Guide complet", sub_ar:   "دليل شامل",
     read_fr:  "6 min de lecture", read_ar: "6 دقائق قراءة",
   },
+  {
+    to: "/recettes",
+    emoji: "🍽️",
+    title_fr: "Recettes Marocaines", title_ar: "وصفات مغربية",
+    sub_fr:   "Ingrédients livrés en 30 min", sub_ar:   "المكونات توصل في 30 دقيقة",
+    read_fr:  "4 recettes", read_ar: "4 وصفات",
+  },
 ];
 
 export default function GuidesIndexPage() {

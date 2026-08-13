@@ -351,6 +351,7 @@ export default function Footer() {
                 { to: "/guide/miel-artisanal-maroc", fr: "🍯 Guide du miel marocain", ar: "🍯 دليل العسل المغربي" },
                 { to: "/guide/huile-olive-marocaine", fr: "🫒 Guide huile d'olive marocaine", ar: "🫒 دليل زيت الزيتون المغربي" },
                 { to: "/guide/poulet-beldi", fr: "🐔 Guide poulet beldi", ar: "🐔 دليل الدجاج البلدي" },
+                { to: "/recettes",      fr: "🍽️ Recettes marocaines", ar: "🍽️ وصفات مغربية" },
                 { to: "/recrutement",   fr: "Recrutement",            ar: "التوظيف" },
               ].map((item) => (
                 <li key={item.to}>

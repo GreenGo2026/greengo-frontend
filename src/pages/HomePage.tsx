@@ -1080,6 +1080,38 @@ export default function HomePage() {
         </section>
       )}
 
+      <section dir={dir} className={"max-w-7xl mx-auto px-4 pt-2 " + font}>
+        <div className={"flex items-center justify-between mb-3 " + (isRTL ? "flex-row-reverse" : "")}>
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            🍽️ {language === "ar" ? "وصفات مغربية" : language === "fr" ? "Recettes marocaines" : "Moroccan recipes"}
+            <span className="text-xs font-normal text-white/50 mt-0.5">
+              {language === "ar" ? "المكونات توصل في 30 دقيقة" : language === "fr" ? "Ingrédients livrés en 30 min" : "Ingredients delivered in 30 min"}
+            </span>
+          </h2>
+          <Link to="/recettes" className="text-sm text-[#F97316] font-medium hover:underline">
+            {language === "ar" ? "عرض الكل ←" : language === "fr" ? "Voir tout →" : "See all →"}
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { slug: "couscous-vendredi", emoji: "🫕", name_fr: "Couscous", name_ar: "كسكس" },
+            { slug: "tajine-poulet-olives", emoji: "🍗", name_fr: "Tajine", name_ar: "طاجين" },
+            { slug: "rfissa", emoji: "🐔", name_fr: "Rfissa", name_ar: "رفيسة" },
+            { slug: "salade-marocaine", emoji: "🥗", name_fr: "Salade", name_ar: "سلطة" },
+          ].map((r) => (
+            <Link key={r.slug} to={`/recettes/${r.slug}`}
+              className="bg-white/10 hover:bg-white/20 rounded-2xl p-4 text-center transition-colors group">
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform duration-200">
+                {r.emoji}
+              </div>
+              <p className="text-sm font-medium text-white">
+                {language === "ar" ? r.name_ar : r.name_fr}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {!loading && bestSellers.length > 0 && (
         <section dir={dir} className={"max-w-7xl mx-auto px-4 pt-2 " + font}>
           <div className={"flex items-center justify-between mb-3 " + (isRTL ? "flex-row-reverse" : "")}>

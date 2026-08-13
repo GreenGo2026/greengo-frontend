@@ -50,6 +50,8 @@ const FAQPage        = lazy(() => import("./pages/Legal/FAQPage"));
 const TestimonialsPage = lazy(() => import("./pages/TestimonialsPage"));
 const LivraisonSalePage = lazy(() => import("./pages/LivraisonSalePage"));
 const LivraisonRabatPage = lazy(() => import("./pages/LivraisonRabatPage"));
+const RecipesPage       = lazy(() => import("./pages/RecipesPage"));
+const RecipeDetailPage  = lazy(() => import("./pages/RecipeDetailPage"));
 
 // ── Anti-scraping / anti-inspect protection ──────────────────────────────────
 function useAntiScraping() {
@@ -159,6 +161,8 @@ function PublicShell() {
           <Route path="/guide/miel-artisanal-maroc" element={<MielArtisanal />} />
           <Route path="/guide/huile-olive-marocaine" element={<HuileOlive />} />
           <Route path="/guide/poulet-beldi" element={<PouletBeldi />} />
+          <Route path="/recettes"          element={<RecipesPage />} />
+          <Route path="/recettes/:slug"    element={<RecipeDetailPage />} />
           <Route path="/contact"      element={<ContactPage />}     />
 
           {/* Admin routes are handled at the root level (outside this shell) */}
