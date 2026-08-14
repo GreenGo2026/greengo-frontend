@@ -11,7 +11,7 @@ import { useCartStore, getUnitStep, formatQuantity, DELIVERY_FEES } from "../sto
 import type { DeliveryZone } from "../store/cartStore";
 import { useReferralStore } from "../store/referralStore";
 import { computeLineTotal } from "../utils/pricing";
-import { getProducts } from "../services/api";
+import { getProducts, apiClient } from "../services/api";
 import type { DBProduct } from "../services/api";
 import { isValidMoroccanPhone, normalizeForValidation } from "../utils/validation";
 import type { CartItem } from "../store/cartStore";
@@ -437,6 +437,9 @@ export default function CartPage() {
   const [submitError,    setSubmitError]    = useState("");
   const [phoneError,     setPhoneError]     = useState("");
   const [orderId,        setOrderId]        = useState("");
+  const [sharing,        setSharing]        = useState(false);
+  const [shareUrl,       setShareUrl]       = useState<string | null>(null);
+  const [shareCopied,    setShareCopied]    = useState(false);
   const [welcomeDiscount, setWelcomeDiscount] = useState<{ amount: number; email: string } | null>(null);
 
   // Exit-intent welcome offer -- expires after 48h so an old stored discount
@@ -690,6 +693,31 @@ export default function CartPage() {
       setSubmitError(err instanceof Error ? err.message : "Requête échouée. Le serveur est-il démarré ?");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  // ── Share cart via WhatsApp ──────────────────────────────────────────────────
+  async function handleShareCart() {
+    if (!cart.length) return;
+    setSharing(true);
+    setShareUrl(null);
+
+    try {
+      const res = await apiClient.post("/cart/share", {
+        items: cart.map((item) => ({
+          name:           item.name,
+          price_per_unit: item.price_per_unit,
+          unit:           item.unit,
+          cartQuantity:   item.cartQuantity,
+          variant_label:  item.variant_label || null,
+        })),
+        shared_by_name: name.trim() || null,
+      });
+      setShareUrl(res.data.share_url);
+    } catch {
+      // Share is a nice-to-have, not the checkout path -- fail silently.
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -1225,6 +1253,55 @@ export default function CartPage() {
                   Votre commande sera enregistrée et une facture PDF sera disponible.
                 </p>
               </div>
+
+              {/* Cart share -- send this cart's contents to someone else via WhatsApp */}
+              {cart.length > 0 && (
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                  {!shareUrl ? (
+                    <button
+                      onClick={handleShareCart}
+                      disabled={sharing}
+                      className="w-full flex items-center justify-center gap-2 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 font-medium hover:border-[#0c3228] hover:text-[#0c3228] disabled:opacity-50 transition-colors">
+                      {sharing ? "⏳ Génération du lien..." : "📤 Partager ce panier sur WhatsApp"}
+                    </button>
+                  ) : (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-3">
+                      <p className="text-sm font-semibold text-green-700">
+                        ✅ Lien de partage prêt !
+                      </p>
+
+                      <div className="flex items-center gap-2 bg-white border border-green-200 rounded-lg px-3 py-2">
+                        <span className="text-xs text-gray-500 flex-1 truncate">{shareUrl}</span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(shareUrl);
+                            setShareCopied(true);
+                            setTimeout(() => setShareCopied(false), 2000);
+                          }}
+                          className="text-xs text-[#0c3228] font-medium shrink-0 hover:underline">
+                          {shareCopied ? "✓ Copié" : "Copier"}
+                        </button>
+                      </div>
+
+                      <a
+                        href={"https://wa.me/?text=" + encodeURIComponent(
+                          `🛒 Voici mon panier GreenGo !\n\nClique ici pour commander les mêmes produits frais en 30 min :\n${shareUrl}\n\n🌿 Épicerie fraîche — Salé · Rabat · Témara`
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366] text-white font-semibold text-sm hover:bg-green-600 transition-colors">
+                        📱 Envoyer via WhatsApp
+                      </a>
+
+                      <button
+                        onClick={() => setShareUrl(null)}
+                        className="text-xs text-gray-400 hover:text-gray-600 w-full text-center">
+                        Générer un nouveau lien
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* SECONDARY: Commander via WhatsApp (bypasses site confirmation) */}
               <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm space-y-2">

@@ -52,6 +52,7 @@ const LivraisonSalePage = lazy(() => import("./pages/LivraisonSalePage"));
 const LivraisonRabatPage = lazy(() => import("./pages/LivraisonRabatPage"));
 const RecipesPage       = lazy(() => import("./pages/RecipesPage"));
 const RecipeDetailPage  = lazy(() => import("./pages/RecipeDetailPage"));
+const SharedCartPage    = lazy(() => import("./pages/SharedCartPage"));
 
 // ── Anti-scraping / anti-inspect protection ──────────────────────────────────
 function useAntiScraping() {
@@ -188,6 +189,7 @@ function PublicShell() {
           <Route path="/produit/:id"    element={<ProductPage />} />
           <Route path="/menu"           element={<MenuPage />} />
           <Route path="/panier-type"    element={<PanierTypePage />} />
+          <Route path="/panier/:shareId" element={<SharedCartPage />} />
           <Route path="/offres"         element={<OffresPage />} />
           <Route path="/track/:orderId?" element={<TrackOrderPage />} />
           <Route path="/suivi-commande" element={<TrackOrderPage />} />
