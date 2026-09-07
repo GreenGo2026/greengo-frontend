@@ -13,6 +13,7 @@ import ProductsTab from "./ProductsTab";
 import CustomersTab from "../components/admin/CustomersTab";
 import NotificationsTab from "../components/admin/NotificationsTab";
 import RecipesTab from "../components/admin/RecipesTab";
+import LivreursTab from "../components/admin/LivreursTab";
 import {
   updateProductById, updateOrderStatus, getOrders, getProducts, sendCatalogToWhatsApp,
   type DBProduct, type OrderStatus, type Order, type CatalogBroadcastResult,
@@ -33,7 +34,7 @@ function normalizeStatus(raw: string | undefined | null): OrderStatus {
     .replace(/-/g, "_")          // "out-for-delivery" -> "out_for_delivery"
     .trim() as OrderStatus;
 }
-type AdminTab = "orders" | "prices" | "paniers" | "produits" | "whatsapp" | "clients" | "notifications" | "recipes";
+type AdminTab = "orders" | "prices" | "paniers" | "produits" | "whatsapp" | "clients" | "notifications" | "recipes" | "livreurs";
 type Lang     = "fr" | "ar";
 
 interface EditableProduct extends DBProduct {
@@ -146,16 +147,21 @@ function sCfg(lang: Lang): Record<OrderStatus,{label:string;color:string;bg:stri
     confirmed:        {label:L.status_confirmed, color:"text-cyan-700",   bg:"bg-cyan-100",    ring:"ring-cyan-300",   dot:"#06B6D4",icon:<CheckCircle size={11}/>},
     preparing:        {label:L.status_preparing, color:"text-blue-700",   bg:"bg-blue-100",    ring:"ring-blue-300",   dot:"#3B82F6",icon:<CheckSquare size={11}/>},
     out_for_delivery: {label:L.status_ofd,       color:"text-violet-700", bg:"bg-violet-100",  ring:"ring-violet-300", dot:"#7C3AED",icon:<Bike size={11}/>},
+    pending_confirmation:{label:lang==="ar"?"في انتظار التأكيد":"À confirmer",color:"text-lime-800",bg:"bg-lime-100",ring:"ring-lime-400",dot:"#65A30D",icon:<CheckSquare size={11}/>},
     delivered:        {label:L.status_delivered, color:"text-emerald-700",bg:"bg-emerald-100", ring:"ring-emerald-300",dot:"#10B981",icon:<CheckCircle size={11}/>},
     completed:        {label:L.status_completed, color:"text-[#2E8B57]",  bg:"bg-[#edfbf3]",   ring:"ring-[#a3ebca]",  dot:"#2E8B57",icon:<CheckCircle size={11}/>},
     cancelled:        {label:L.status_cancelled, color:"text-red-600",    bg:"bg-red-100",     ring:"ring-red-300",    dot:"#EF4444",icon:<XCircle size={11}/>},
   };
 }
 
+// Mirrors STATUS_TRANSITIONS in app/routes/orders.py -- the backend rejects
+// anything this allows by mistake, so keep the two in step.
 const NEXT_STATES: Record<OrderStatus,OrderStatus[]> = {
   pending:["confirmed","cancelled"], confirmed:["preparing","cancelled"],
   preparing:["out_for_delivery","cancelled"],
-  out_for_delivery:["delivered","cancelled"], delivered:["completed"],
+  out_for_delivery:["delivered","pending_confirmation","cancelled"],
+  pending_confirmation:["delivered","cancelled"],
+  delivered:["completed"],
   completed:[], cancelled:[],
 };
 
@@ -268,6 +274,9 @@ function OrderCard({order,lang,isOldest,onStatusChange,showToast,onRefresh}:{ord
             {localStatus==="confirmed"&&(<button onClick={()=>go("preparing")} disabled={loading!==null} className={"flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading?"#9ca3af":"linear-gradient(135deg,#06B6D4,#0891B2)"}}>{loading?<Loader2 size={14} className="animate-spin"/>:<CheckSquare size={14}/>}{loading?L.starting:L.start_prep}</button>)}
             {localStatus==="preparing"&&(<button onClick={()=>go("out_for_delivery")} disabled={loading!==null} className={"flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading?"#9ca3af":"linear-gradient(135deg,#FF9800,#e68900)"}}>{loading?<Loader2 size={14} className="animate-spin"/>:<Bike size={14}/>}{loading?L.approving:L.assign_livreur}</button>)}
             {localStatus==="out_for_delivery"&&(<div className="rounded-2xl bg-violet-50 p-4 ring-2 ring-violet-200 space-y-3"><p className={"text-center text-sm font-bold text-violet-700 "+font} dir={lang==="ar"?"rtl":"ltr"}>{L.payment_q}</p><button onClick={()=>go("delivered")} disabled={loading!==null} className={"flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading?"#9ca3af":"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>{loading?<Loader2 size={14} className="animate-spin"/>:<DollarSign size={14}/>}{loading?L.approving:L.confirm_payment}</button></div>)}
+            {/* Driver submitted this delivery -- admin signs it off. The driver
+                cannot reach "delivered" itself, so this is the only way out. */}
+            {localStatus==="pending_confirmation"&&(<div className="rounded-2xl bg-lime-50 p-4 ring-2 ring-lime-300 space-y-3"><p className={"text-center text-sm font-bold text-lime-800 "+font} dir={lang==="ar"?"rtl":"ltr"}>{lang==="ar"?"أعلن الموصّل أن هذه الطلبية تم توصيلها":"Le livreur a marqué cette commande comme livrée"}</p><button onClick={()=>go("delivered")} disabled={loading!==null} className={"flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading?"#9ca3af":"linear-gradient(135deg,#65A30D,#4d7c0f)"}}>{loading?<Loader2 size={14} className="animate-spin"/>:<CheckCircle size={14}/>}{loading?L.approving:(lang==="ar"?"تأكيد التوصيل":"Confirmer la livraison")}</button></div>)}
             {localStatus==="delivered"&&(<button onClick={()=>go("completed")} disabled={loading!==null} className={"flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-extrabold text-white shadow-md transition-all hover:shadow-lg active:scale-95 "+font+(loading!==null?" opacity-60 cursor-not-allowed":"")} style={{background:loading?"#9ca3af":"linear-gradient(135deg,#2E8B57,#1a6b42)"}}>{loading?<Loader2 size={14} className="animate-spin"/>:<CheckCircle size={14}/>}{loading?L.approving:L.complete}</button>)}
           </div>
         )}
@@ -492,12 +501,23 @@ export default function AdminPage() {
     {value:"all",label:L.filter_all},{value:"pending",label:L.status_pending},
     {value:"confirmed",label:L.status_confirmed},
     {value:"preparing",label:L.status_preparing},{value:"out_for_delivery",label:L.status_ofd},
+    {value:"pending_confirmation",label:lang==="ar"?"في انتظار التأكيد":"À confirmer"},
     {value:"delivered",label:L.status_delivered},{value:"completed",label:L.status_completed},
     {value:"cancelled",label:L.status_cancelled},
   ];
   const pendingCount=orders.filter(o=>normalizeStatus(o.status)==="pending").length;
+  // Driver-submitted deliveries awaiting admin sign-off.
+  const confirmCount=orders.filter(o=>normalizeStatus(o.status)==="pending_confirmation").length;
   function isToday(s:string){try{const d=new Date(s),t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear();}catch{return false;}}
-  const filteredOrders=orders.filter(o=>dateFilter==="all"||isToday(o.created_at));
+  // Orders a driver marked delivered float to the top -- they're blocking a
+  // driver's queue and are the only status needing an explicit admin action.
+  const filteredOrders=orders
+    .filter(o=>dateFilter==="all"||isToday(o.created_at))
+    .sort((a,b)=>{
+      const aC=normalizeStatus(a.status)==="pending_confirmation"?0:1;
+      const bC=normalizeStatus(b.status)==="pending_confirmation"?0:1;
+      return aC-bC;
+    });
   const dirtyCount=products.filter(p=>p.isDirty).length;
   const oldestPendingId=[...orders].filter(o=>normalizeStatus(o.status)==="pending").sort((a,b)=>new Date(a.created_at).getTime()-new Date(b.created_at).getTime())[0]?.id;
 
@@ -510,11 +530,13 @@ export default function AdminPage() {
           <div className={"flex items-center gap-3 "+(lang==="ar"?"flex-row-reverse":"")}>
             <LangToggle lang={lang} setLang={setLang}/>
             <div className="flex items-center gap-0.5 rounded-xl border border-white/10 bg-white/5 p-1">
-              {(["orders","prices","paniers","produits","whatsapp","clients","notifications","recipes"]as AdminTab[]).map(tab=>(
+              {(["orders","prices","paniers","produits","whatsapp","clients","notifications","recipes","livreurs"]as AdminTab[]).map(tab=>(
                 <button key={tab} onClick={()=>setActiveTab(tab)} className={"relative flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all "+(activeTab===tab?"bg-[#2E8B57] text-white":"text-white/50 hover:text-white")}>
-                  {tab==="orders"?<ShoppingBag size={12}/>:tab==="prices"?<TrendingUp size={12}/>:tab==="whatsapp"?<MessageCircle size={12}/>:tab==="clients"?<Users size={12}/>:tab==="notifications"?<Bell size={12}/>:tab==="recipes"?<span>🍽️</span>:<Package size={12}/>}
-                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:tab==="paniers"?"Paniers":tab==="whatsapp"?"WhatsApp":tab==="clients"?"Clients":tab==="notifications"?"🔔 Notifications":tab==="recipes"?"🍽️ Recettes":"🌿 Produits"}
+                  {tab==="orders"?<ShoppingBag size={12}/>:tab==="prices"?<TrendingUp size={12}/>:tab==="whatsapp"?<MessageCircle size={12}/>:tab==="clients"?<Users size={12}/>:tab==="notifications"?<Bell size={12}/>:tab==="recipes"?<span>🍽️</span>:tab==="livreurs"?<Bike size={12}/>:<Package size={12}/>}
+                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:tab==="paniers"?"Paniers":tab==="whatsapp"?"WhatsApp":tab==="clients"?"Clients":tab==="notifications"?"🔔 Notifications":tab==="recipes"?"🍽️ Recettes":tab==="livreurs"?"Livreurs":"🌿 Produits"}
                   {tab==="orders"&&pendingCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-extrabold text-white">{pendingCount}</span>}
+                  {/* Deliveries a driver submitted that still need an admin sign-off. */}
+                  {tab==="orders"&&confirmCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-lime-500 px-1 text-[10px] font-extrabold text-white">{confirmCount}</span>}
                   {tab==="prices"&&dirtyCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-orange-400 px-1 text-[10px] font-extrabold text-white">{dirtyCount}</span>}
                 </button>
               ))}
@@ -566,6 +588,7 @@ export default function AdminPage() {
         {activeTab==="clients"&&<CustomersTab/>}
         {activeTab==="notifications"&&<NotificationsTab/>}
         {activeTab==="recipes"&&<RecipesTab/>}
+        {activeTab==="livreurs"&&<LivreursTab/>}
       </div>
     </div>
   );

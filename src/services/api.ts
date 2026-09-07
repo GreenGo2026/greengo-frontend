@@ -120,6 +120,9 @@ export type OrderStatus =
   | "confirmed"
   | "preparing"
   | "out_for_delivery"
+  // Driver submitted the delivery; awaiting admin sign-off. Only an admin
+  // moves it on to "delivered" -- see STATUS_TRANSITIONS in app/routes/orders.py.
+  | "pending_confirmation"
   | "delivered"
   | "completed"
   | "cancelled";

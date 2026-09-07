@@ -24,6 +24,7 @@ const POSPage          = lazy(() => import("./pages/Admin/POSPage"));
 const AddProductPage   = lazy(() => import("./pages/AddProductPage"));
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 const SuperAdminPage   = lazy(() => import("./pages/SuperAdminPage"));
+const LivreurPage      = lazy(() => import("./pages/Livreur/LivreurPage"));
 const AboutPage        = lazy(() => import("./pages/AboutPage"));
 const WhyUsPage        = lazy(() => import("./pages/WhyUsPage"));
 const GuidesIndexPage  = lazy(() => import("./pages/GuidesIndexPage"));
@@ -230,6 +231,8 @@ export default function App() {
             <Route path="/gestion/orders" element={<AdminOrders />}    />
             <Route path="/gestion/pos"    element={<POSPage />}        />
             <Route path="/gestion/products/new" element={<ProtectedAdminRoute><AddProductPage /></ProtectedAdminRoute>} />
+            {/* Driver portal — standalone like the admin routes, no public shell */}
+            <Route path="/livreur"        element={<LivreurPage />}    />
             {/* All public-facing routes get the shell (Header + Footer) */}
             <Route path="/*" element={<PublicShell />} />
           </Routes>

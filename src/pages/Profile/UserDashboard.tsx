@@ -35,6 +35,10 @@ const STATUS_CONFIG: Record<string, { label_fr: string; label_ar: string; icon: 
   confirmed:        { label_fr: "Confirmée",       label_ar: "مؤكد",          icon: CheckCircle2, bg: "bg-blue-50",    text: "text-blue-700",   border: "border-blue-200"   },
   preparing:        { label_fr: "En préparation",  label_ar: "قيد التحضير",   icon: Truck,        bg: "bg-purple-50",  text: "text-purple-700", border: "border-purple-200" },
   out_for_delivery: { label_fr: "En livraison",    label_ar: "في الطريق",     icon: Truck,        bg: "bg-indigo-50",  text: "text-indigo-700", border: "border-indigo-200" },
+  // Driver submitted the delivery, admin hasn't signed it off yet. Shown as
+  // "En livraison" rather than "Livré" -- it isn't confirmed delivered -- and
+  // definitely not the "En attente" the unknown-status fallback would give.
+  pending_confirmation: { label_fr: "En livraison", label_ar: "في الطريق",  icon: Truck,        bg: "bg-indigo-50",  text: "text-indigo-700", border: "border-indigo-200" },
   delivered:        { label_fr: "Livré",           label_ar: "تم التسليم",    icon: CheckCircle2, bg: "bg-green-50",   text: "text-[#2E8B57]",  border: "border-green-200"  },
   completed:        { label_fr: "Terminée",        label_ar: "مكتملة",         icon: CheckCircle2, bg: "bg-green-50",   text: "text-[#2E8B57]",  border: "border-green-200"  },
   cancelled:        { label_fr: "Annulée",         label_ar: "ملغاة",          icon: XCircle,      bg: "bg-red-50",     text: "text-red-600",    border: "border-red-200"    },
