@@ -480,7 +480,33 @@ export default function CartPage() {
   const welcomeActive        = !!welcomeDiscount && !referralActive && !isReturning;
   const welcomeDiscountAmt   = welcomeActive ? Math.min(welcomeDiscount!.amount, total - referralDiscount) : 0;
 
-  const totalDiscount        = referralDiscount + welcomeDiscountAmt;
+  // Loyalty redemption -- display only, and deliberately mirrors the server
+  // rule in _resolve_points_redemption (app/routes/orders.py). The backend
+  // re-derives the authoritative amount from the DB balance and ignores
+  // whatever we send, so this must stay in step with it or the customer sees
+  // one figure and gets charged another.
+  const LOYALTY_PTS_PER_BLOCK = 100;
+  const LOYALTY_MAD_PER_BLOCK = 4;
+  const LOYALTY_MIN_ORDER     = 120;
+  const LOYALTY_MAX_PCT       = 10;
+
+  // Discounts stack in the same order as the backend: referral/welcome first,
+  // then points capped against what's left.
+  const firstOrderDiscount   = referralDiscount + welcomeDiscountAmt;
+  const pointsEligible       = customerPoints >= LOYALTY_PTS_PER_BLOCK && subtotal >= LOYALTY_MIN_ORDER;
+  const pointsCapMad         = Math.round(subtotal * LOYALTY_MAX_PCT) / 100;
+  const pointsBlocks         = pointsEligible
+    ? Math.min(
+        Math.floor(customerPoints / LOYALTY_PTS_PER_BLOCK),
+        Math.floor(pointsCapMad / LOYALTY_MAD_PER_BLOCK),
+      )
+    : 0;
+  const pointsToRedeem       = pointsBlocks * LOYALTY_PTS_PER_BLOCK;
+  const pointsDiscount       = usePoints && pointsBlocks > 0
+    ? Math.min(pointsBlocks * LOYALTY_MAD_PER_BLOCK, total - firstOrderDiscount)
+    : 0;
+
+  const totalDiscount        = firstOrderDiscount + pointsDiscount;
   const displayTotal         = Math.round((total - totalDiscount) * 100) / 100;
 
   // "Frequently bought together" -- best-sellers not already in the cart,
@@ -657,8 +683,8 @@ export default function CartPage() {
       delivery_fee:  deliveryFee,
       total_price: total,
       payment_method: paymentMethod,
-      use_points:     usePoints && customerPoints >= 50,
-      points_used:    usePoints && customerPoints >= 50 ? 50 : 0,
+      use_points:     usePoints && pointsToRedeem > 0,
+      points_used:    usePoints && pointsToRedeem > 0 ? pointsToRedeem : 0,
       referral_code:  referralActive ? referralCode : undefined,
       welcome_discount: welcomeActive ? welcomeDiscountAmt : 0,
     };
@@ -942,6 +968,20 @@ export default function CartPage() {
                       </span>
                     </div>
                   )}
+                  {pointsDiscount > 0 && (
+                    <div className={"flex items-center justify-between text-sm " + rowDir}>
+                      <span className={"text-[#C9A96E] font-semibold " + font}>
+                        {language === "ar"
+                          ? `نقاط الولاء (${pointsToRedeem})`
+                          : language === "fr"
+                          ? `Points fidélité (${pointsToRedeem})`
+                          : `Loyalty points (${pointsToRedeem})`}
+                      </span>
+                      <span className="font-latin font-semibold text-[#C9A96E]">
+                        -{pointsDiscount.toFixed(2)} MAD
+                      </span>
+                    </div>
+                  )}
                   <div className={"flex items-center justify-between rounded-xl px-4 py-3 " + rowDir}
                     style={{ background: "linear-gradient(135deg,#fdf8ef,#f9efda)" }}>
                     <span className={"text-2xl font-extrabold text-[#2E8B57] " + font}>
@@ -1209,7 +1249,21 @@ export default function CartPage() {
                 )}
 
                 {/* ── Loyalty points redemption ── */}
-                {customerPoints >= 50 && (
+                {/* Has redeemable points but the cart is under the floor -- say so,
+                    rather than silently showing nothing. */}
+                {customerPoints >= LOYALTY_PTS_PER_BLOCK && subtotal < LOYALTY_MIN_ORDER && (
+                  <div className="rounded-2xl border-2 border-dashed border-[#C9A96E]/40 bg-[#fdf8ef] p-3">
+                    <p className={"text-[11px] font-bold text-[#C9A96E] " + font + (language === "ar" ? " text-right" : "")}>
+                      {language === "ar"
+                        ? `لديك ${customerPoints} نقطة — أضف ${(LOYALTY_MIN_ORDER - subtotal).toFixed(2)} درهم لاستعمالها`
+                        : language === "fr"
+                        ? `Vous avez ${customerPoints} pts — ajoutez ${(LOYALTY_MIN_ORDER - subtotal).toFixed(2)} MAD pour les utiliser`
+                        : `You have ${customerPoints} pts — add ${(LOYALTY_MIN_ORDER - subtotal).toFixed(2)} MAD to redeem them`}
+                    </p>
+                  </div>
+                )}
+
+                {pointsEligible && (
                   <div className={"rounded-2xl border-2 p-4 transition-all " + (usePoints ? "border-[#C9A96E] bg-[#fdf8ef]" : "border-gray-200 bg-gray-50")}>
                     <div className={"flex items-center justify-between " + (language === "ar" ? "flex-row-reverse" : "")}>
                       <div className={"flex items-center gap-2.5 " + (language === "ar" ? "flex-row-reverse" : "")}>
@@ -1222,7 +1276,11 @@ export default function CartPage() {
                             {language === "ar" ? `لديك ${customerPoints} نقطة` : language === "fr" ? `Vous avez ${customerPoints} points` : `You have ${customerPoints} points`}
                           </p>
                           <p className={"text-[10px] " + font + " text-gray-400 mt-0.5"}>
-                            {language === "ar" ? "استخدم 50 نقطة = خصم 5 درهم" : language === "fr" ? "Utiliser 50 pts = -5 MAD sur cette commande" : "Use 50 pts = -5 MAD discount"}
+                            {language === "ar"
+                              ? `استخدم ${pointsToRedeem} نقطة = خصم ${(pointsBlocks * LOYALTY_MAD_PER_BLOCK).toFixed(2)} درهم`
+                              : language === "fr"
+                              ? `Utiliser ${pointsToRedeem} pts pour -${(pointsBlocks * LOYALTY_MAD_PER_BLOCK).toFixed(2)} MAD ?`
+                              : `Use ${pointsToRedeem} pts for -${(pointsBlocks * LOYALTY_MAD_PER_BLOCK).toFixed(2)} MAD?`}
                           </p>
                         </div>
                       </div>
@@ -1235,7 +1293,11 @@ export default function CartPage() {
                       <div className={"mt-3 flex items-center gap-2 rounded-xl bg-[#C9A96E]/10 px-3 py-2 " + (language === "ar" ? "flex-row-reverse" : "")}>
                         <span className="text-sm">🎉</span>
                         <p className={"text-[11px] font-bold text-[#C9A96E] " + font}>
-                          {language === "ar" ? "-5 درهم مطبق على هذا الطلب" : language === "fr" ? "-5 MAD appliques sur cette commande" : "-5 MAD applied to this order"}
+                          {language === "ar"
+                            ? `-${pointsDiscount.toFixed(2)} درهم مطبق على هذا الطلب`
+                            : language === "fr"
+                            ? `-${pointsDiscount.toFixed(2)} MAD appliqués sur cette commande`
+                            : `-${pointsDiscount.toFixed(2)} MAD applied to this order`}
                         </p>
                       </div>
                     )}
