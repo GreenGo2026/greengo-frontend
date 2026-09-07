@@ -194,6 +194,9 @@ function PublicShell() {
           <Route path="/offres"         element={<OffresPage />} />
           <Route path="/track/:orderId?" element={<TrackOrderPage />} />
           <Route path="/suivi-commande" element={<TrackOrderPage />} />
+          {/* Alias -- links of this shape are what the sprint brief specifies
+              for WhatsApp confirmations. Same page, so old links keep working. */}
+          <Route path="/orders/:orderId/track" element={<TrackOrderPage />} />
           <Route path="/fidelite"   element={<FidelitePage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/livraison" element={<LivraisonPage />} />

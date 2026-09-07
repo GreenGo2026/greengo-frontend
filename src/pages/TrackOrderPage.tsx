@@ -1,5 +1,5 @@
 // src/pages/TrackOrderPage.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { trackOrder } from "../services/api";
@@ -59,8 +59,18 @@ const STEPS: { key: string; label: Record<L, string>; emoji: string }[] = [
 ];
 
 const RANK: Record<string, number> = {
-  pending: 0, preparing: 1, out_for_delivery: 2, delivered: 3, completed: 3, cancelled: -1,
+  // "confirmed" has no step of its own -- it sits at "Reçue" until preparation
+  // starts. "pending_confirmation" means the driver marked it delivered and an
+  // admin hasn't signed off, so it shows as "En livraison": the honest stage,
+  // and not the "Reçue" the `?? 0` fallback would otherwise give it.
+  pending: 0, confirmed: 0, preparing: 1, out_for_delivery: 2,
+  pending_confirmation: 2, delivered: 3, completed: 3, cancelled: -1,
 };
+
+// Statuses at which polling stops -- the order is finished and nothing more
+// will change.
+const TERMINAL_STATUSES = ["delivered", "completed", "cancelled"];
+const POLL_INTERVAL_MS  = 30_000;
 
 function stepTimestamp(history: TrackingHistoryEntry[], stepKey: string): string | null {
   // Last matching entry wins -- an order can theoretically revisit a status
@@ -174,24 +184,35 @@ export default function TrackOrderPage() {
     setTimeout(() => navigate("/cart"), 800);
   }
 
+  // Three possible inputs, all funneled through the same lookup:
+  //  - the raw Mongo _id (24 hex chars) -- e.g. the direct link from the
+  //    post-checkout success screen (CartPage.tsx: `/track/${orderId}`)
+  //  - the short #{ref} (last 6 chars) customers receive via WhatsApp
+  //  - a phone number, typed manually on a later visit
+  async function lookupOrder(value: string): Promise<TrackingData> {
+    const isFullMongoId = /^[0-9a-fA-F]{24}$/.test(value);
+    const isPhone = !isFullMongoId && /^[0-9+]{8,}$/.test(value.replace(/\s/g, ""));
+    const ref = isFullMongoId ? value.slice(-6) : value;
+    const results = await trackOrder(isPhone ? { phone: value } : { order_ref: ref });
+    if (results.length === 0) throw new Error("not found");
+    return results[0];
+  }
+
+  // The identifier that last resolved, so polling can re-run the same lookup
+  // without depending on the input box (which the customer may have edited).
+  const polledId = useRef<string>("");
+
   async function fetchOrder(id: string) {
     const value = id.trim();
     if (!value) return;
     setLoading(true); setError(""); setOrder(null);
     try {
-      // Three possible inputs, all funneled through the same lookup:
-      //  - the raw Mongo _id (24 hex chars) -- e.g. the direct link from the
-      //    post-checkout success screen (CartPage.tsx: `/track/${orderId}`)
-      //  - the short #{ref} (last 6 chars) customers receive via WhatsApp
-      //  - a phone number, typed manually on a later visit
-      const isFullMongoId = /^[0-9a-fA-F]{24}$/.test(value);
-      const isPhone = !isFullMongoId && /^[0-9+]{8,}$/.test(value.replace(/\s/g, ""));
-      const ref = isFullMongoId ? value.slice(-6) : value;
-      const results = await trackOrder(isPhone ? { phone: value } : { order_ref: ref });
-      if (results.length === 0) throw new Error("not found");
-      setOrder(results[0]);
+      const found = await lookupOrder(value);
+      setOrder(found);
+      polledId.current = value;
     } catch {
       setError(T.not_found[l]);
+      polledId.current = "";
     } finally {
       setLoading(false);
     }
@@ -201,6 +222,31 @@ export default function TrackOrderPage() {
     if (paramId) fetchOrder(paramId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramId]);
+
+  // Live status polling. Deliberately silent: no spinner and no clearing of
+  // the current order, so a background refresh can't flash the timeline or
+  // wipe the view if the network hiccups -- a failed poll just leaves the last
+  // known state and tries again.
+  useEffect(() => {
+    const status = order?.status;
+    if (!status || !polledId.current) return;
+    if (TERMINAL_STATUSES.includes(status)) return;
+
+    let cancelled = false;
+    const timer = window.setInterval(async () => {
+      try {
+        const fresh = await lookupOrder(polledId.current);
+        if (!cancelled) setOrder(fresh);
+      } catch {
+        // Keep the last known state and retry on the next tick.
+      }
+    }, POLL_INTERVAL_MS);
+
+    return () => { cancelled = true; window.clearInterval(timer); };
+  // Re-armed whenever the status changes, so reaching a terminal status stops
+  // the interval on the next run.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.status]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
