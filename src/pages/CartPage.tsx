@@ -440,6 +440,7 @@ export default function CartPage() {
   const [sharing,        setSharing]        = useState(false);
   const [shareUrl,       setShareUrl]       = useState<string | null>(null);
   const [shareCopied,    setShareCopied]    = useState(false);
+  const [cartSessionId,  setCartSessionId]  = useState<string | null>(null);
   const [welcomeDiscount, setWelcomeDiscount] = useState<{ amount: number; email: string } | null>(null);
 
   // Exit-intent welcome offer -- expires after 48h so an old stored discount
@@ -587,7 +588,41 @@ export default function CartPage() {
       setPhoneError("Numéro invalide. Utilisez le format 06XXXXXXXX ou +212 6XXXXXXXX");
     } else {
       setPhoneError("");
+      void recordCartSession();
     }
+  }
+
+  // Abandoned-cart session. Recorded on blur of a valid phone so the recovery
+  // sweep can follow up if this cart is never checked out. Entirely
+  // best-effort: any failure is swallowed, because nothing about checkout may
+  // depend on it. Guarded so re-blurring the field doesn't re-post.
+  async function recordCartSession() {
+    if (cartSessionId || cart.length === 0) return;
+    const normalized = phone.trim().startsWith("+212")
+      ? phone.trim()
+      : "+212" + phone.trim().replace(/^0/, "");
+    try {
+      const res = await fetch(API_BASE + "/cart-sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: normalized,
+          items_summary: `${itemCount} article${itemCount === 1 ? "" : "s"} — ${displayTotal.toFixed(2)} MAD`,
+          // Same field mapping as the order payload below -- quantity lives on
+          // cartQuantity, not quantity.
+          cart_snapshot: cart.map(i => ({
+            name:           i.name,
+            quantity:       Number(i.cartQuantity),
+            unit:           (i.unit ?? "kg").trim(),
+            price_per_unit: Number(i.price_per_unit ?? 0),
+            variant_label:  i.variant_label ?? null,
+          })),
+        }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.session_id) setCartSessionId(data.session_id);
+    } catch { /* best-effort only */ }
   }
 
   function handlePhoneChange(val: string) {
@@ -701,6 +736,15 @@ export default function CartPage() {
       }
       const data = await res.json();
       const id   = data.order_id ?? "";
+      // Close the abandoned-cart session so the recovery sweep never messages
+      // a customer who just ordered. Fire-and-forget: the order already
+      // succeeded, so a failure here must not surface as a checkout error.
+      // The sweep also cross-checks orders by phone, which covers this failing.
+      if (cartSessionId) {
+        void fetch(`${API_BASE}/cart-sessions/${cartSessionId}/convert`, { method: "PATCH" })
+          .catch(() => { /* best-effort */ });
+        setCartSessionId(null);
+      }
       if (data.referral_discount_applied > 0) clearReferral();
       if (data.welcome_discount_applied > 0) { setWelcomeDiscount(null); localStorage.removeItem("greengo_welcome_discount"); }
       // Save customer profile for returning customer recognition
