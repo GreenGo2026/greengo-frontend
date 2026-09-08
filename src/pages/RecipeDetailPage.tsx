@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useSeo, useJsonLd } from "../hooks/useSeo";
 import { apiClient } from "../services/api";
-import { useCartStore } from "../store/cartStore";
+import { useCartStore, getUnitStep } from "../store/cartStore";
 
 interface Ingredient {
   name_fr: string;
@@ -12,6 +12,7 @@ interface Ingredient {
   optional: boolean;
   note_fr: string | null;
   not_in_catalog: boolean;
+  unmatched?: boolean;
   product: {
     id: string;
     name_fr: string | null;
@@ -21,6 +22,37 @@ interface Ingredient {
     image_url: string | null;
     in_stock: boolean;
   } | null;
+}
+
+// Recipe quantities are absolute ("500 g carottes"); the cart adds in
+// getUnitStep increments and the product unit may differ from the recipe
+// unit. Convert to the product's unit, then round to the nearest valid step
+// (never below one step).
+function recipeQtyToCartStep(quantity: number, recipeUnit: string, productUnit: string): number {
+  const r = (recipeUnit || "").toLowerCase().trim();
+  const p = (productUnit || "").toLowerCase().trim();
+  let qty = quantity;
+  if (r === "g" && (p === "kg" || p === "kilo")) qty = quantity / 1000;
+  if ((r === "kg" || r === "kilo") && p === "g") qty = quantity * 1000;
+  const step = getUnitStep(productUnit);
+  const rounded = Math.round(qty / step) * step;
+  return rounded > 0 ? Math.round(rounded * 1000) / 1000 : step;
+}
+
+// Three distinct states the warn-then-add modal must show separately:
+//   available   — matched to a catalog product that is in stock
+//   unavailable — matched, but the product is temporarily out of stock
+//   notCarried  — no catalog match (unmatched) or deliberately excluded
+function partitionIngredients(ingredients: Ingredient[]) {
+  const available: Ingredient[] = [];
+  const unavailable: Ingredient[] = [];
+  const notCarried: Ingredient[] = [];
+  for (const ing of ingredients) {
+    if (ing.product && ing.product.in_stock) available.push(ing);
+    else if (ing.product && !ing.product.in_stock) unavailable.push(ing);
+    else notCarried.push(ing);
+  }
+  return { available, unavailable, notCarried };
 }
 
 interface Recipe {
@@ -42,8 +74,14 @@ export default function RecipeDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
-  const [added, setAdded] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [toast, setToast] = useState("");
   const addToCart = useCartStore((s) => s.addToCart);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 3000);
+  }
 
   useEffect(() => {
     if (!slug) return;
@@ -78,29 +116,34 @@ export default function RecipeDetailPage() {
     "publisher": { "@type": "Organization", "name": "GreenGo Market", "url": "https://www.mygreengoo.com" },
   } : {}) ;
 
-  function handleAddAll() {
-    if (!recipe) return;
-
-    let count = 0;
-    recipe.ingredients.forEach((ing) => {
-      if (!ing.product || !ing.product.in_stock) return;
-
+  function addAvailableToCart(available: Ingredient[]) {
+    available.forEach((ing) => {
+      if (!ing.product) return;
       // addToCart expects the app's Product shape (name/price_per_unit/unit/
       // available/variant_label) -- not the recipe API's richer ingredient
       // shape, so this is built explicitly rather than passed through.
+      const step = recipeQtyToCartStep(ing.quantity, ing.unit, ing.product.unit || "piece");
       addToCart({
         name:           ing.product.name_ar || ing.product.name_fr || "",
         price_per_unit: ing.product.price_mad,
         unit:           ing.product.unit || "piece",
         available:      true,
         variant_label:  null,
-      }, 1);
-      count++;
+      }, step);
     });
+    if (available.length > 0) {
+      showToast(`${available.length} ingrédient${available.length > 1 ? "s" : ""} ajouté${available.length > 1 ? "s" : ""} à votre panier ✅`);
+    }
+  }
 
-    if (count > 0) {
-      setAdded(true);
-      setTimeout(() => setAdded(false), 3000);
+  function handleAddAll() {
+    if (!recipe) return;
+    const { available, unavailable, notCarried } = partitionIngredients(recipe.ingredients);
+
+    if (unavailable.length === 0 && notCarried.length === 0) {
+      addAvailableToCart(available);
+    } else {
+      setModalOpen(true);
     }
   }
 
@@ -123,8 +166,9 @@ export default function RecipeDetailPage() {
     );
   }
 
-  const availableIngredients = recipe.ingredients.filter((i) => i.product && i.product.in_stock);
-  const unavailableIngredients = recipe.ingredients.filter((i) => !i.product || i.not_in_catalog);
+  const { available: availableIngredients, unavailable: unavailableIngredients, notCarried: notCarriedIngredients } =
+    partitionIngredients(recipe.ingredients);
+  const missingCount = unavailableIngredients.length + notCarriedIngredients.length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -199,24 +243,20 @@ export default function RecipeDetailPage() {
           {/* Add all button */}
           <button
             onClick={handleAddAll}
-            disabled={availableIngredients.length === 0 || added}
+            disabled={availableIngredients.length === 0}
             className={
               "w-full py-4 rounded-xl font-bold text-sm transition-all " +
-              (added
-                ? "bg-green-500 text-white"
-                : availableIngredients.length === 0
+              (availableIngredients.length === 0
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : "bg-[#0c3228] text-white hover:bg-green-900")
             }
           >
-            {added
-              ? `✓ ${availableIngredients.length} ingrédients ajoutés !`
-              : `🛒 Ajouter ${availableIngredients.length} ingrédients au panier`}
+            🛒 Ajouter tous les ingrédients
           </button>
 
-          {unavailableIngredients.length > 0 && (
+          {missingCount > 0 && (
             <p className="text-xs text-gray-400 text-center mt-2">
-              {unavailableIngredients.length} ingrédient{unavailableIngredients.length > 1 ? "s" : ""} à compléter en épicerie locale
+              {missingCount} ingrédient{missingCount > 1 ? "s" : ""} non disponible{missingCount > 1 ? "s" : ""} chez GreenGo
             </p>
           )}
         </div>
@@ -240,6 +280,87 @@ export default function RecipeDetailPage() {
         </div>
 
       </div>
+
+      {/* Warn-then-add modal */}
+      {modalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4"
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-bold text-[#0c3228] text-lg mb-1">
+              Certains ingrédients ne sont pas disponibles
+            </h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Vous pouvez ajouter les ingrédients disponibles maintenant et compléter le reste vous-même.
+            </p>
+
+            {availableIngredients.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-green-700 mb-2">
+                  ✅ Disponibles ({availableIngredients.length})
+                </p>
+                <ul className="space-y-1">
+                  {availableIngredients.map((ing, i) => (
+                    <li key={i} className="flex justify-between text-sm text-gray-700">
+                      <span>{ing.quantity} {ing.unit} {ing.name_fr}</span>
+                      <span className="text-gray-400">{ing.product?.price_mad} MAD</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {(unavailableIngredients.length > 0 || notCarriedIngredients.length > 0) && (
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-gray-400 mb-2">
+                  ⬜ Non disponibles ({unavailableIngredients.length + notCarriedIngredients.length})
+                </p>
+                <ul className="space-y-1">
+                  {unavailableIngredients.map((ing, i) => (
+                    <li key={"u" + i} className="flex justify-between text-sm text-gray-500">
+                      <span>{ing.quantity} {ing.unit} {ing.name_fr}</span>
+                      <span className="text-gray-400">Rupture de stock</span>
+                    </li>
+                  ))}
+                  {notCarriedIngredients.map((ing, i) => (
+                    <li key={"n" + i} className="flex justify-between text-sm text-gray-500">
+                      <span>{ing.quantity} {ing.unit} {ing.name_fr}</span>
+                      <span className="text-gray-400">{ing.not_in_catalog ? "Épicerie locale" : "Non livré"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setModalOpen(false)}
+                className="flex-1 py-3 rounded-xl font-semibold text-sm bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => { addAvailableToCart(availableIngredients); setModalOpen(false); }}
+                disabled={availableIngredients.length === 0}
+                className="flex-1 py-3 rounded-xl font-bold text-sm bg-[#0c3228] text-white hover:bg-green-900 disabled:bg-gray-200 disabled:text-gray-400 transition-colors"
+              >
+                Ajouter les disponibles ({availableIngredients.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#0c3228] text-white text-sm font-medium px-5 py-3 rounded-full shadow-lg">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
