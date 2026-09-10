@@ -169,11 +169,11 @@ function BottomNav({ tab, setTab }: { tab: AppTab; setTab: (t: AppTab) => void }
     { key: "profile", label: "Profil",    icon: User        },
   ];
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 flex w-full max-w-md -translate-x-1/2 border-t border-slate-700 bg-slate-900">
+    <nav className="fixed bottom-0 left-1/2 z-50 flex w-full max-w-md -translate-x-1/2 border-t border-emerald-900/30 bg-[#041A12]">
       {items.map(({ key, label, icon: Icon }) => (
         <button key={key} onClick={() => setTab(key)}
           className={"flex flex-1 flex-col items-center gap-1 py-3 text-[10px] font-semibold uppercase tracking-wider transition-colors " +
-            (tab === key ? "text-emerald-400" : "text-slate-500 hover:text-slate-300")}>
+            (tab === key ? "text-emerald-400" : "text-emerald-900/60 hover:text-emerald-500")}>
           <Icon size={20} strokeWidth={tab === key ? 2.5 : 1.8} />
           {label}
         </button>
@@ -252,12 +252,12 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex border-b border-slate-700 bg-slate-900">
+      <div className="flex border-b border-emerald-900/30 bg-[#041A12]">
         {(["new", "processing", "delivered"] as OrderTab[]).map((t) => (
           <button key={t} onClick={() => setOrderTab(t)}
             className={"flex-1 border-b-2 py-3 text-xs font-bold uppercase tracking-wider transition-colors " +
               (orderTab === t
-                ? "border-[#2E8B57] text-[#3CAE6E]"
+                ? "border-emerald-500 text-emerald-400"
                 : "border-transparent text-slate-500 hover:text-slate-300")}>
             {t === "new" ? "Nouvelles" : t === "processing" ? "En cours" : "Livrées"}
           </button>
@@ -273,7 +273,7 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
               Activation du GPS obligatoire pour recevoir les commandes de livraison.
             </p>
             <button onClick={() => void gps.requestGPS()}
-              className="rounded-xl bg-[#2E8B57] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#1F6B40]">
+              className="rounded-xl bg-[#10B981] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#059669]">
               Autoriser le GPS
             </button>
           </div>
@@ -286,8 +286,8 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
         )}
         {!loading && orders.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-20 text-center">
-            <ShoppingBag size={40} className="text-slate-600" />
-            <p className="font-semibold text-slate-400">
+            <ShoppingBag size={40} className="text-emerald-900/50" />
+            <p className="font-semibold text-emerald-200/50">
               {orderTab === "new" ? "Aucune nouvelle commande"
                 : orderTab === "processing" ? "Aucune commande en cours"
                 : "Aucune livraison terminée"}
@@ -296,8 +296,8 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
         )}
 
         {orders.map((order) => (
-          <div key={order.id} className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
-            <div className="flex items-center justify-between border-b border-slate-700 px-4 py-3">
+          <div key={order.id} className="overflow-hidden rounded-2xl border border-emerald-900/40 bg-[#08281C]">
+            <div className="flex items-center justify-between border-b border-emerald-900/40 px-4 py-3">
               <span className="font-mono text-xs text-slate-500">#{order.id.slice(-6).toUpperCase()}</span>
               <StatusPill status={order.status} />
             </div>
@@ -305,13 +305,13 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
             <div className="space-y-3 p-4">
               <div>
                 <p className="text-base font-bold text-slate-100">{order.customer_name || "Client"}</p>
-                <p className="mt-0.5 text-sm text-slate-400">{order.address || "Adresse non renseignée"}</p>
+                <p className="mt-0.5 text-sm text-emerald-200/60">{order.address || "Adresse non renseignée"}</p>
               </div>
 
               <div className="flex items-center gap-2">
                 {order.customer_phone && (
                   <a href={"tel:" + order.customer_phone}
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-600 bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-600">
+                    className="flex items-center gap-1.5 rounded-xl border border-emerald-900/50 bg-[#08281C] px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-[#0A3826] hover:text-white">
                     <Phone size={13} /> Appeler
                   </a>
                 )}
@@ -320,23 +320,23 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
                     ? `https://www.google.com/maps?q=${order.gps_coordinates.lat},${order.gps_coordinates.lng}`
                     : `https://www.google.com/maps/search/${encodeURIComponent(order.address || "")}`}
                   target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-600 bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-600">
+                  className="flex items-center gap-1.5 rounded-xl border border-emerald-900/50 bg-[#08281C] px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-[#0A3826] hover:text-white">
                   <MapPin size={13} /> Maps
                 </a>
                 <div className="ml-auto text-right">
-                  <p className="font-latin text-lg font-extrabold text-emerald-400">
+                  <p className="font-latin text-lg font-extrabold text-[#10B981]">
                     {order.driver_payout_mad.toFixed(0)} MAD
                   </p>
-                  <p className="text-[10px] text-slate-500">commission</p>
+                  <p className="text-[10px] text-slate-300">commission</p>
                 </div>
               </div>
 
-              <div className="rounded-xl bg-slate-700/50 px-3 py-2">
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Articles</p>
+              <div className="rounded-xl bg-[#051E15] px-3 py-2">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-700/70">Articles</p>
                 {order.items.slice(0, 3).map((item, i) => (
                   <div key={i} className="flex items-center justify-between py-0.5">
-                    <span dir="rtl" className="flex-1 font-arabic text-sm text-slate-100">{item.name}</span>
-                    <span className="ml-2 shrink-0 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-2 py-0.5 font-latin text-[10px] font-bold text-emerald-300">
+                    <span dir="rtl" className="flex-1 font-arabic text-sm text-white">{item.name}</span>
+                    <span className="ml-2 shrink-0 rounded-full border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 font-latin text-[10px] font-bold text-emerald-300">
                       {item.quantity} {item.unit}
                     </span>
                   </div>
@@ -347,15 +347,15 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
               </div>
 
               {order.status === "ready" && (
-                <div className="flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/15 px-3 py-2">
-                  <CheckCircle2 size={14} className="shrink-0 text-purple-400" />
-                  <span className="text-xs font-bold text-purple-300">Panier prêt — venez chercher</span>
+                <div className="flex items-center gap-2 rounded-xl border border-emerald-700/30 bg-emerald-900/30 px-3 py-2">
+                  <CheckCircle2 size={14} className="shrink-0 text-emerald-400" />
+                  <span className="text-xs font-bold text-emerald-300">Panier prêt — venez chercher</span>
                 </div>
               )}
 
               {orderTab === "new" && (
                 <button onClick={() => handleClaim(order.id)} disabled={claimingId === order.id}
-                  className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-4 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/25 transition-all hover:bg-[#1F6B40] active:scale-[0.98] disabled:opacity-60">
+                  className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#10B981] py-4 text-sm font-extrabold text-white shadow-lg shadow-emerald-900/30 transition-all hover:bg-[#059669] active:scale-[0.98] disabled:opacity-60">
                   {claimingId === order.id
                     ? <><Loader2 size={16} className="animate-spin" /> Prise en charge…</>
                     : <><Truck size={16} /> Accepter la livraison</>}
@@ -373,7 +373,7 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
 
               {orderTab === "processing" && order.status === "out_for_delivery" && (
                 <button onClick={() => handleDeliver(order.id)} disabled={deliveringId === order.id}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/25 transition-all hover:bg-[#1F6B40] active:scale-[0.98] disabled:opacity-60">
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#10B981] py-3.5 text-sm font-extrabold text-white shadow-lg shadow-emerald-900/30 transition-all hover:bg-[#059669] active:scale-[0.98] disabled:opacity-60">
                   {deliveringId === order.id
                     ? <><Loader2 size={16} className="animate-spin" /> Confirmation…</>
                     : <><CheckCircle2 size={16} /> Marquer comme livré</>}
@@ -381,7 +381,7 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
               )}
 
               {order.status === "pending_confirmation" && (
-                <div className="flex items-center gap-2 rounded-2xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3">
+                <div className="flex items-center gap-2 rounded-2xl border border-amber-700/30 bg-amber-900/20 px-4 py-3">
                   <Clock size={14} className="shrink-0 text-yellow-400" />
                   <span className="text-xs font-semibold text-yellow-300">En attente de confirmation admin ✓</span>
                 </div>
@@ -424,19 +424,19 @@ function GainsView({ api }: { api: AuthedFetch }) {
           { label: "Cette semaine", value: earnings.week_mad  },
           { label: "Total",         value: earnings.total_mad },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-2xl border border-slate-700 bg-slate-800 p-3 text-center">
+          <div key={label} className="rounded-2xl border border-emerald-900/40 bg-[#08281C] p-3 text-center">
             <p className="font-latin text-2xl font-extrabold leading-none text-emerald-400">
               {value.toFixed(0)}
               <span className="ml-0.5 text-sm font-semibold text-emerald-600">MAD</span>
             </p>
-            <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
+            <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-emerald-800/80">{label}</p>
           </div>
         ))}
       </div>
 
       {earnings.chart.length > 0 && (
-        <div className="rounded-2xl border border-slate-700 bg-slate-800 p-4">
-          <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Gains par jour</p>
+        <div className="rounded-2xl border border-emerald-900/40 bg-[#08281C] p-4">
+          <p className="mb-3 text-xs font-bold uppercase tracking-wider text-emerald-800/80">Gains par jour</p>
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={earnings.chart} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
               <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5)}
@@ -448,17 +448,17 @@ function GainsView({ api }: { api: AuthedFetch }) {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
-        <div className="border-b border-slate-700 px-4 py-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Activité récente</p>
+      <div className="overflow-hidden rounded-2xl border border-emerald-900/40 bg-[#08281C]">
+        <div className="border-b border-emerald-900/40 px-4 py-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800/80">Activité récente</p>
         </div>
         {earnings.recent.length === 0 ? (
-          <p className="px-4 py-6 text-center text-sm text-slate-500">Aucune livraison pour l'instant</p>
+          <p className="px-4 py-6 text-center text-sm text-emerald-900/60">Aucune livraison pour l'instant</p>
         ) : (
           <ul>
             {earnings.recent.map((e, i) => (
               <li key={i} className={"flex items-center justify-between px-4 py-3 " +
-                (i < earnings.recent.length - 1 ? "border-b border-slate-700/50" : "")}>
+                (i < earnings.recent.length - 1 ? "border-b border-emerald-900/30" : "")}>
                 <div>
                   <p className="text-xs font-bold text-slate-300">{e.date}</p>
                   <p className="font-mono text-[10px] text-slate-500">#{e.order_id.slice(-6).toUpperCase()}</p>
@@ -525,14 +525,14 @@ function ProfileView({ api, gps, onLogout }: { api: AuthedFetch; gps: GPSBundle;
 
   return (
     <div className="space-y-4 overflow-y-auto p-4 pb-24">
-      <div className="rounded-2xl border border-slate-700 bg-slate-800 p-5">
+      <div className="rounded-2xl border border-emerald-900/40 bg-[#08281C] p-5">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#2E8B57] text-xl font-extrabold text-white">
             {profile.name.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1">
             <p className="text-base font-extrabold text-slate-100">{profile.name}</p>
-            <p className="font-latin text-sm text-slate-400">{profile.phone}</p>
+            <p className="font-latin text-sm text-emerald-200/60">{profile.phone}</p>
           </div>
           <div className="flex flex-col items-center gap-1">
             <button onClick={toggleAvailability} disabled={toggling || gps.gpsStatus === "requesting"}
@@ -557,7 +557,7 @@ function ProfileView({ api, gps, onLogout }: { api: AuthedFetch; gps: GPSBundle;
         )}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
+      <div className="overflow-hidden rounded-2xl border border-emerald-900/40 bg-[#08281C]">
         {[
           { label: "Type de véhicule", value: profile.vehicle_type || "—", icon: Truck },
           { label: "CIN",              value: profile.cin_masked || "—",   icon: Shield },
@@ -565,10 +565,10 @@ function ProfileView({ api, gps, onLogout }: { api: AuthedFetch; gps: GPSBundle;
         ].map(({ label, value, icon: Icon }, i, arr) => (
           <div key={label}
             className={"flex items-center justify-between px-4 py-3.5 " +
-              (i < arr.length - 1 ? "border-b border-slate-700/50" : "")}>
+              (i < arr.length - 1 ? "border-b border-emerald-900/30" : "")}>
             <div className="flex items-center gap-2.5">
-              <Icon size={14} className="shrink-0 text-slate-500" />
-              <p className="text-xs font-semibold text-slate-500">{label}</p>
+              <Icon size={14} className="shrink-0 text-emerald-700/70" />
+              <p className="text-xs font-semibold text-emerald-800/80">{label}</p>
             </div>
             <p className="text-sm font-semibold text-slate-200">{value}</p>
           </div>
@@ -724,15 +724,15 @@ export default function LivreurPage() {
   if (token) {
     return (
       <div className="flex h-screen flex-col bg-[#041A12] text-slate-100">
-        <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden bg-slate-900 shadow-2xl">
-          <div className="flex items-center justify-between border-b border-slate-700 bg-slate-900 px-4 py-3">
+        <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden bg-[#041A12] shadow-2xl">
+          <div className="flex items-center justify-between border-b border-emerald-900/40 bg-[#041A12] px-4 py-3.5">
             <div className="flex items-center gap-2">
               <img src="/greengo-logo.svg" alt="GreenGo" className="h-5" />
-              <span className="text-xs font-semibold text-slate-500">· Livreur</span>
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-400">Livreur</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-              <span className="text-xs text-slate-400">{name || "Livreur"}</span>
+              <span className="text-xs text-emerald-200/60">{name || "Livreur"}</span>
             </div>
           </div>
 
