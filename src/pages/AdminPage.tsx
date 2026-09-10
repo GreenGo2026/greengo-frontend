@@ -144,8 +144,10 @@ function sCfg(lang: Lang): Record<OrderStatus,{label:string;color:string;bg:stri
   const L = I[lang];
   return {
     pending:          {label:L.status_pending,   color:"text-amber-700",  bg:"bg-amber-100",   ring:"ring-amber-300",  dot:"#F59E0B",icon:<Clock size={11}/>},
+    assigned:         {label:lang==="ar"?"معيَّن":"Assigné",              color:"text-blue-700", bg:"bg-blue-100",   ring:"ring-blue-300",   dot:"#3B82F6",icon:<Bike size={11}/>},
     confirmed:        {label:L.status_confirmed, color:"text-cyan-700",   bg:"bg-cyan-100",    ring:"ring-cyan-300",   dot:"#06B6D4",icon:<CheckCircle size={11}/>},
     preparing:        {label:L.status_preparing, color:"text-blue-700",   bg:"bg-blue-100",    ring:"ring-blue-300",   dot:"#3B82F6",icon:<CheckSquare size={11}/>},
+    ready:            {label:lang==="ar"?"جاهز":"Prêt",                   color:"text-purple-700",bg:"bg-purple-100",ring:"ring-purple-300", dot:"#A855F7",icon:<CheckSquare size={11}/>},
     out_for_delivery: {label:L.status_ofd,       color:"text-violet-700", bg:"bg-violet-100",  ring:"ring-violet-300", dot:"#7C3AED",icon:<Bike size={11}/>},
     pending_confirmation:{label:lang==="ar"?"في انتظار التأكيد":"À confirmer",color:"text-lime-800",bg:"bg-lime-100",ring:"ring-lime-400",dot:"#65A30D",icon:<CheckSquare size={11}/>},
     delivered:        {label:L.status_delivered, color:"text-emerald-700",bg:"bg-emerald-100", ring:"ring-emerald-300",dot:"#10B981",icon:<CheckCircle size={11}/>},
@@ -157,8 +159,11 @@ function sCfg(lang: Lang): Record<OrderStatus,{label:string;color:string;bg:stri
 // Mirrors STATUS_TRANSITIONS in app/routes/orders.py -- the backend rejects
 // anything this allows by mistake, so keep the two in step.
 const NEXT_STATES: Record<OrderStatus,OrderStatus[]> = {
-  pending:["confirmed","cancelled"], confirmed:["preparing","cancelled"],
-  preparing:["out_for_delivery","cancelled"],
+  pending:["confirmed","assigned","cancelled"],
+  assigned:["ready","preparing","cancelled"],
+  confirmed:["preparing","ready","cancelled"],
+  preparing:["ready","cancelled"],
+  ready:["out_for_delivery","cancelled"],
   out_for_delivery:["delivered","pending_confirmation","cancelled"],
   pending_confirmation:["delivered","cancelled"],
   delivered:["completed"],

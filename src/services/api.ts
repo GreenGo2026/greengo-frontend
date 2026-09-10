@@ -117,8 +117,12 @@ export interface CheckoutOrderResponse {
 
 export type OrderStatus =
   | "pending"
+  // Driver self-claimed the order from the available pool (vs. admin-assigned).
+  | "assigned"
   | "confirmed"
   | "preparing"
+  // Staff packed the basket; waiting for driver pickup.
+  | "ready"
   | "out_for_delivery"
   // Driver submitted the delivery; awaiting admin sign-off. Only an admin
   // moves it on to "delivered" -- see STATUS_TRANSITIONS in app/routes/orders.py.
