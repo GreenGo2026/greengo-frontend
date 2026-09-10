@@ -593,7 +593,7 @@ export default function LivreurPage() {
   const [authErr, setAuthErr] = useState("");
 
   const [view, setView] = useState<"login" | "register" | "pending">("login");
-  const [reg, setReg] = useState({ name: "", phone: "", vehicle_type: "moto", cin: "" });
+  const [reg, setReg] = useState({ name: "", phone: "", vehicle_type: "moto" });
   const [regBusy, setRegBusy] = useState(false);
   const [regErr,  setRegErr]  = useState("");
   const [registeredPhone, setRegisteredPhone] = useState("");
@@ -688,7 +688,7 @@ export default function LivreurPage() {
   async function submitRegistration(e?: React.FormEvent) {
     e?.preventDefault();
     if (regBusy) return;
-    if (reg.name.trim().length < 2 || reg.phone.trim().length < 6 || reg.cin.trim().length < 4) {
+    if (reg.name.trim().length < 2 || reg.phone.trim().length < 6) {
       setRegErr("Remplissez tous les champs correctement.");
       return;
     }
@@ -702,7 +702,6 @@ export default function LivreurPage() {
           name: reg.name.trim(),
           phone: reg.phone.trim(),
           vehicle_type: reg.vehicle_type,
-          cin: reg.cin.trim(),
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -711,7 +710,7 @@ export default function LivreurPage() {
         return;
       }
       setRegisteredPhone(reg.phone.trim());
-      setReg({ name: "", phone: "", vehicle_type: "moto", cin: "" });
+      setReg({ name: "", phone: "", vehicle_type: "moto" });
       setView("pending");
     } catch {
       setRegErr("Connexion impossible. Vérifiez votre réseau.");
@@ -785,38 +784,32 @@ export default function LivreurPage() {
               <p className="mt-1 text-xs text-slate-400">Remplissez le formulaire ci-dessous</p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <input
                 value={reg.name}
                 onChange={e => { setReg(r => ({ ...r, name: e.target.value })); setRegErr(""); }}
                 placeholder="Nom complet"
-                className="w-full rounded-xl border-2 border-emerald-500/30 bg-[#062C1E] px-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500"
+                className="w-full rounded-xl border border-emerald-500/25 bg-black/25 px-4 py-3.5 font-medium text-white outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               />
-              <div className="flex items-stretch overflow-hidden rounded-xl border-2 border-emerald-500/30 bg-[#062C1E] focus-within:border-emerald-500">
-                <span className="flex items-center bg-emerald-950/40 px-3 text-sm font-semibold text-emerald-200/70">🇲🇦 +212</span>
+              <div className="flex overflow-hidden rounded-xl border border-emerald-500/25 transition-all focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
+                <span className="flex shrink-0 items-center border-r border-emerald-500/20 bg-black/30 px-3 py-3.5 text-sm font-bold text-emerald-200/70">🇲🇦 +212</span>
                 <input
                   value={reg.phone}
                   onChange={e => { setReg(r => ({ ...r, phone: e.target.value.replace(/\D/g, "") })); setRegErr(""); }}
                   inputMode="tel"
                   placeholder="612345678"
-                  className="min-w-0 flex-1 bg-transparent px-3 py-2.5 font-latin text-sm text-white placeholder-slate-500 outline-none"
+                  className="min-w-0 flex-1 bg-transparent px-4 py-3.5 font-medium text-white outline-none placeholder:text-slate-400"
                 />
               </div>
               <select
                 value={reg.vehicle_type}
                 onChange={e => setReg(r => ({ ...r, vehicle_type: e.target.value }))}
-                className="w-full rounded-xl border-2 border-emerald-500/30 bg-[#062C1E] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-emerald-500"
+                className="w-full appearance-none rounded-xl border border-emerald-500/25 bg-black/25 px-4 py-3.5 font-medium text-white outline-none transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               >
-                <option value="moto">Moto</option>
+                <option value="moto">Moto / Scooter</option>
                 <option value="vélo">Vélo</option>
                 <option value="voiture">Voiture</option>
               </select>
-              <input
-                value={reg.cin}
-                onChange={e => { setReg(r => ({ ...r, cin: e.target.value.toUpperCase() })); setRegErr(""); }}
-                placeholder="CIN"
-                className="w-full rounded-xl border-2 border-emerald-500/30 bg-[#062C1E] px-3.5 py-2.5 font-latin text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500"
-              />
             </div>
 
             {regErr && (
@@ -828,7 +821,7 @@ export default function LivreurPage() {
             <button
               type="submit"
               disabled={regBusy}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-base font-extrabold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3.5 text-base font-extrabold text-white shadow-md shadow-emerald-950/40 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {regBusy ? <><Loader2 size={18} className="animate-spin" /> Envoi…</> : "Envoyer ma demande"}
             </button>
@@ -836,9 +829,9 @@ export default function LivreurPage() {
             <button
               type="button"
               onClick={() => { setView("login"); setRegErr(""); }}
-              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 text-sm font-semibold text-slate-400 transition-colors hover:text-emerald-400"
+              className="mt-6 block w-full text-center text-sm text-emerald-700/80 transition-colors hover:text-emerald-400"
             >
-              <ArrowLeft size={13} /> Retour à la connexion
+              ← Retour à la connexion
             </button>
           </form>
         </div>

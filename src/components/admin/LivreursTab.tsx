@@ -7,7 +7,7 @@
  * driver because PIN-only login cannot disambiguate two drivers sharing one.
  */
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, Check, Eye, Loader2, Plus, RefreshCw, Truck, X } from "lucide-react";
+import { AlertCircle, Check, Eye, Loader2, Plus, RefreshCw, Send, Truck, X } from "lucide-react";
 import { adminHeaders } from "../../services/adminJwt";
 
 const API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
@@ -49,6 +49,7 @@ export default function LivreursTab() {
 
   const [toast, setToast] = useState<{ msg: string; tone: "ok" | "warn" | "err" } | null>(null);
   const [revealedCin, setRevealedCin] = useState<Record<string, string>>({});
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   function flash(msg: string, tone: "ok" | "warn" | "err" = "ok") {
     setToast({ msg, tone });
@@ -86,6 +87,25 @@ export default function LivreursTab() {
       setError("Validation impossible. Vérifiez votre connexion.");
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function resendPin(d: Driver) {
+    setResendingId(d.id);
+    setError("");
+    try {
+      const res = await authFetch(`/api/v1/admin/drivers/${d.id}/resend-pin`, { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(body?.detail || "Renvoi impossible."); return; }
+      if (body.whatsapp_sent) {
+        flash(`✅ PIN renvoyé à ${body.driver_name} — Code : ${body.pin}`, "ok");
+      } else {
+        flash(`⚠️ WhatsApp non envoyé — PIN manuel : ${body.pin}`, "warn");
+      }
+    } catch {
+      setError("Renvoi impossible. Vérifiez votre connexion.");
+    } finally {
+      setResendingId(null);
     }
   }
 
@@ -334,6 +354,18 @@ export default function LivreursTab() {
               >
                 {d.active ? "ACTIF" : "INACTIF"}
               </span>
+              {d.active && (
+                <button
+                  onClick={() => void resendPin(d)}
+                  disabled={resendingId === d.id}
+                  className="flex items-center gap-1.5 rounded-xl border border-[#2E8B57]/30 bg-[#2E8B57]/8 px-3 py-1.5 text-xs font-bold text-[#2E8B57] transition-all hover:bg-[#2E8B57]/15 disabled:opacity-40"
+                >
+                  {resendingId === d.id
+                    ? <Loader2 size={11} className="animate-spin" />
+                    : <Send size={11} />}
+                  Renvoyer PIN
+                </button>
+              )}
               <button
                 onClick={() => void toggleActive(d)}
                 disabled={busyId === d.id}
