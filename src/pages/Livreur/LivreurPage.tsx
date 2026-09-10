@@ -723,7 +723,7 @@ export default function LivreurPage() {
   // ── Authenticated app shell ───────────────────────────────────────────────
   if (token) {
     return (
-      <div className="flex h-screen flex-col bg-slate-950 text-slate-100">
+      <div className="flex h-screen flex-col bg-[#041A12] text-slate-100">
         <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden bg-slate-900 shadow-2xl">
           <div className="flex items-center justify-between border-b border-slate-700 bg-slate-900 px-4 py-3">
             <div className="flex items-center gap-2">
@@ -751,9 +751,9 @@ export default function LivreurPage() {
   // ── Pending view ──
   if (view === "pending") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+      <div className="flex min-h-screen items-center justify-center bg-[#041A12]">
         <div className="flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5">
-          <div className="w-full rounded-3xl border border-slate-700 bg-slate-800 p-8 text-center shadow-2xl">
+          <div className="w-full rounded-3xl border border-emerald-500/15 bg-[#0A3826]/90 p-8 text-center shadow-2xl backdrop-blur-sm">
             <CheckCircle2 size={56} className="mx-auto text-emerald-400" />
             <h2 className="mt-4 text-lg font-extrabold text-slate-100">Demande envoyée ✅</h2>
             <p className="mt-2 text-sm text-slate-400">
@@ -776,11 +776,11 @@ export default function LivreurPage() {
   // ── Register view ──
   if (view === "register") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+      <div className="flex min-h-screen items-center justify-center bg-[#041A12]">
         <div className="flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5 py-10">
-          <form onSubmit={submitRegistration} className="w-full rounded-3xl border border-slate-700 bg-slate-800 p-8 shadow-2xl">
+          <form onSubmit={submitRegistration} className="w-full rounded-3xl border border-emerald-500/15 bg-[#0A3826]/90 p-8 shadow-2xl backdrop-blur-sm">
             <div className="mb-5 text-center">
-              <img src="/greengo-logo.svg" alt="GreenGo" className="mx-auto mb-3 h-8" />
+              <img src="/greengo-logo.svg" alt="GreenGo" className="mx-auto mb-1 h-11 py-2" />
               <h1 className="text-xl font-extrabold text-slate-100">Devenir livreur</h1>
               <p className="mt-1 text-xs text-slate-400">Remplissez le formulaire ci-dessous</p>
             </div>
@@ -790,10 +790,10 @@ export default function LivreurPage() {
                 value={reg.name}
                 onChange={e => { setReg(r => ({ ...r, name: e.target.value })); setRegErr(""); }}
                 placeholder="Nom complet"
-                className="w-full rounded-xl border-2 border-slate-600 bg-slate-700 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500"
+                className="w-full rounded-xl border-2 border-emerald-500/30 bg-[#062C1E] px-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500"
               />
-              <div className="flex items-stretch overflow-hidden rounded-xl border-2 border-slate-600 bg-slate-700 focus-within:border-emerald-500">
-                <span className="flex items-center bg-slate-600/50 px-3 text-sm font-semibold text-slate-300">🇲🇦 +212</span>
+              <div className="flex items-stretch overflow-hidden rounded-xl border-2 border-emerald-500/30 bg-[#062C1E] focus-within:border-emerald-500">
+                <span className="flex items-center bg-emerald-950/40 px-3 text-sm font-semibold text-emerald-200/70">🇲🇦 +212</span>
                 <input
                   value={reg.phone}
                   onChange={e => { setReg(r => ({ ...r, phone: e.target.value.replace(/\D/g, "") })); setRegErr(""); }}
@@ -805,7 +805,7 @@ export default function LivreurPage() {
               <select
                 value={reg.vehicle_type}
                 onChange={e => setReg(r => ({ ...r, vehicle_type: e.target.value }))}
-                className="w-full rounded-xl border-2 border-slate-600 bg-slate-700 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-emerald-500"
+                className="w-full rounded-xl border-2 border-emerald-500/30 bg-[#062C1E] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-emerald-500"
               >
                 <option value="moto">Moto</option>
                 <option value="vélo">Vélo</option>
@@ -815,7 +815,7 @@ export default function LivreurPage() {
                 value={reg.cin}
                 onChange={e => { setReg(r => ({ ...r, cin: e.target.value.toUpperCase() })); setRegErr(""); }}
                 placeholder="CIN"
-                className="w-full rounded-xl border-2 border-slate-600 bg-slate-700 px-3.5 py-2.5 font-latin text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500"
+                className="w-full rounded-xl border-2 border-emerald-500/30 bg-[#062C1E] px-3.5 py-2.5 font-latin text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500"
               />
             </div>
 
@@ -828,7 +828,7 @@ export default function LivreurPage() {
             <button
               type="submit"
               disabled={regBusy}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-4 text-base font-extrabold text-white shadow-lg shadow-[#2E8B57]/30 transition-all hover:bg-[#1F6B40] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-base font-extrabold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {regBusy ? <><Loader2 size={18} className="animate-spin" /> Envoi…</> : "Envoyer ma demande"}
             </button>
@@ -848,13 +848,13 @@ export default function LivreurPage() {
 
   // ── Login view ──
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950">
+    <div className="flex min-h-screen items-center justify-center bg-[#041A12]">
       <div className="flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5">
-        <form onSubmit={submitPin} className="w-full rounded-3xl border border-slate-700 bg-slate-800 p-8 shadow-2xl">
+        <form onSubmit={submitPin} className="w-full rounded-3xl border border-emerald-500/15 bg-[#0A3826]/90 p-8 shadow-2xl backdrop-blur-sm">
           <div className="mb-6 text-center">
-            <img src="/greengo-logo.svg" alt="GreenGo" className="mx-auto mb-3 h-9" />
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#3CAE6E]">Espace Livreur</p>
-            <p className="mt-1 text-xs text-slate-400">Entrez votre code PIN</p>
+            <img src="/greengo-logo.svg" alt="GreenGo" className="mx-auto mb-1 h-11 py-2" />
+            <p className="text-xs font-light uppercase tracking-[0.2em] text-emerald-400">Espace Livreur</p>
+            <p className="mt-1 text-xs text-emerald-200/50">Entrez votre code PIN</p>
           </div>
 
           <input
@@ -867,7 +867,7 @@ export default function LivreurPage() {
             onChange={e => { setPin(e.target.value.replace(/\D/g, "")); setAuthErr(""); }}
             placeholder="••••••"
             aria-label="Code PIN"
-            className="w-full rounded-2xl border-2 border-slate-600 bg-slate-700 px-4 py-4 text-center text-2xl tracking-[0.5em] text-white placeholder-slate-500 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            className="w-full rounded-2xl border-2 border-emerald-500/30 bg-[#062C1E] px-4 py-4 text-center text-2xl tracking-[0.5em] text-white placeholder-slate-500 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
           />
 
           {authErr && (
@@ -879,7 +879,7 @@ export default function LivreurPage() {
           <button
             type="submit"
             disabled={!pinValid || authing}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-4 text-base font-extrabold text-white shadow-lg shadow-[#2E8B57]/30 transition-all hover:bg-[#1F6B40] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-base font-extrabold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {authing ? <><Loader2 size={18} className="animate-spin" /> Connexion…</> : "Se connecter"}
           </button>
@@ -887,7 +887,7 @@ export default function LivreurPage() {
           <button
             type="button"
             onClick={() => { setView("register"); setAuthErr(""); }}
-            className="mt-2 w-full text-center text-sm text-slate-400 transition-colors hover:text-emerald-400"
+            className="mt-2 w-full text-center text-sm text-emerald-700/80 transition-colors hover:text-emerald-400"
           >
             Première fois ? Inscrivez-vous →
           </button>
