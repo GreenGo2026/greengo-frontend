@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, type ChangeEvent } from "react";
 
 // ─── Google Fonts injected once ──────────────────────────────────────────────
 const fontLink = document.getElementById("gg-fonts");
@@ -33,6 +33,14 @@ interface Order {
   gps_coordinates?: { lat: number; lng: number };
   driver_name?: string;
   driver_phone?: string;
+  assigned_livreur_id?: string;
+}
+
+interface Driver {
+  id:     string;
+  name:   string;
+  phone:  string;
+  active: boolean;
 }
 
 import { adminHeaders } from "../../services/adminJwt";
@@ -122,6 +130,110 @@ function getStatusMeta(apiValue: string): StatusMeta {
 // Safe ID extractor — never returns undefined
 function getId(order: Order): string {
   return (order._id ?? order.id ?? "").toString();
+}
+
+// Driver assignment cell. Dropdown of registered active drivers when any
+// exist; falls back to a free-text name/phone form when none are registered
+// yet (so an admin is never blocked from assigning a one-off driver).
+function DriverSelector({ order, drivers, onAssign, onToast }: {
+  order:    Order;
+  drivers:  Driver[];
+  onAssign: (orderId: string, driver: Driver | null) => Promise<void>;
+  onToast:  (msg: string, ok: boolean) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const orderId   = getId(order);
+  const currentId = order.assigned_livreur_id ?? "";
+  const assigned  = drivers.find((d) => d.id === currentId);
+
+  const [ftName,  setFtName]  = useState(order.driver_name  ?? "");
+  const [ftPhone, setFtPhone] = useState(order.driver_phone ?? "");
+
+  async function handleDropdownChange(e: ChangeEvent<HTMLSelectElement>): Promise<void> {
+    const val = e.target.value;
+    setLoading(true);
+    try {
+      const driver = (val && val !== "__unassign__")
+        ? (drivers.find((d) => d.id === val) ?? null)
+        : null;
+      await onAssign(orderId, driver);
+    } catch {
+      onToast("Erreur d'assignation", false);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleFreeTextSubmit(): Promise<void> {
+    if (!ftName.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch(API_BASE + "/orders/" + orderId + "/driver", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...adminHeaders() },
+        credentials: "include",
+        body: JSON.stringify({ driver_name: ftName.trim(), driver_phone: ftPhone.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      onToast("Livreur assigné", true);
+    } catch {
+      onToast("Erreur d'assignation", false);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (drivers.length > 0) {
+    return (
+      <div className={"flex items-center gap-1.5 " + (loading ? "opacity-60" : "")}>
+        <span className="shrink-0">🚗</span>
+        <select
+          value={currentId}
+          onChange={handleDropdownChange}
+          disabled={loading}
+          className={
+            "text-xs font-semibold rounded-xl border px-2.5 py-1.5 outline-none transition-all cursor-pointer " +
+            (assigned
+              ? "border-[#2E8B57]/30 bg-[#2E8B57]/8 text-[#2E8B57]"
+              : "border-gray-200 bg-gray-50 text-gray-500 hover:border-[#2E8B57]/30")
+          }
+        >
+          <option value="">— Assigner un livreur</option>
+          {drivers.map((d) => (
+            <option key={d.id} value={d.id}>{d.name} · {d.phone}</option>
+          ))}
+          {currentId && <option value="__unassign__">✕ Désassigner</option>}
+        </select>
+        {loading && <span className="text-xs text-gray-400">…</span>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <input
+        type="text"
+        placeholder="Nom livreur"
+        value={ftName}
+        onChange={(e) => setFtName(e.target.value)}
+        className="text-xs border border-gray-200 rounded-lg px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-[#2E8B57]/40"
+      />
+      <input
+        type="tel"
+        placeholder="0612345678"
+        value={ftPhone}
+        onChange={(e) => setFtPhone(e.target.value)}
+        className="text-xs border border-gray-200 rounded-lg px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-[#2E8B57]/40 font-latin"
+      />
+      <button
+        onClick={handleFreeTextSubmit}
+        disabled={loading || !ftName.trim()}
+        className="text-xs bg-[#2E8B57] text-white rounded-lg px-2 py-1 font-semibold hover:bg-[#1F6B40] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        {loading ? "..." : "Assigner"}
+      </button>
+    </div>
+  );
 }
 
 // GPS URL built outside JSX — avoids any template-literal-in-attribute parse issues
@@ -238,9 +350,22 @@ export default function AdminOrders() {
   const [search, setSearch]     = useState("");
 
   // ── Driver assignment ──────────────────────────────────────────────────────
-  const [driverForms, setDriverForms]   = useState<Record<string, { name: string; phone: string }>>({});
-  const [driverEditSet, setDriverEditSet] = useState<Set<string>>(new Set());
-  const [driverSaving, setDriverSaving] = useState<string | null>(null);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+
+  const fetchDrivers = useCallback(async () => {
+    try {
+      const res = await fetch(API_BASE + "/admin/drivers", {
+        headers: adminHeaders(),
+        credentials: "include",
+      });
+      if (!res.ok) return; // non-blocking -- orders still load without this
+      const data = await res.json();
+      const list: Driver[] = Array.isArray(data) ? data : (data.drivers ?? []);
+      setDrivers(list.filter((d) => d.active));
+    } catch {
+      /* leave drivers empty -> free-text fallback */
+    }
+  }, []);
 
   // ── Fetch all orders ───────────────────────────────────────────────────────
   const fetchOrders = useCallback(async () => {
@@ -274,7 +399,8 @@ export default function AdminOrders() {
 
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+    fetchDrivers();
+  }, [fetchOrders, fetchDrivers]);
 
   // ── PATCH /api/v1/orders/{order_id}/status ─────────────────────────────────
   async function handleStatusChange(
@@ -329,41 +455,36 @@ export default function AdminOrders() {
     setTimeout(() => setToast(null), 3500);
   }
 
-  // ── Driver assignment helpers ──────────────────────────────────────────────
-  function enterDriverEdit(orderId: string, order: Order): void {
-    setDriverForms(prev => ({
-      ...prev,
-      [orderId]: { name: order.driver_name ?? "", phone: order.driver_phone ?? "" },
-    }));
-    setDriverEditSet(prev => new Set([...prev, orderId]));
-  }
+  // ── Driver assignment ──────────────────────────────────────────────────────
+  // Assign a registered driver (driver != null) or unassign (driver == null).
+  // Sends all three fields so the backend links assigned_livreur_id -- which is
+  // what the livreur portal filters its delivery list on.
+  async function assignDriver(orderId: string, driver: Driver | null): Promise<void> {
+    const body = driver
+      ? { driver_id: driver.id, driver_name: driver.name, driver_phone: driver.phone }
+      : { driver_id: null, driver_name: "", driver_phone: "" };
 
-  async function handleAssignDriver(orderId: string): Promise<void> {
-    const form = driverForms[orderId];
-    if (!form?.name?.trim() || !form?.phone?.trim()) return;
-    setDriverSaving(orderId);
-    try {
-      const res = await fetch(API_BASE + "/orders/" + orderId + "/driver", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...adminHeaders() },
-        credentials: "include",
-        body: JSON.stringify({ driver_name: form.name.trim(), driver_phone: form.phone.trim() }),
-      });
-      if (!res.ok) throw new Error("HTTP " + res.status.toString());
-      setOrders(prev =>
-        prev.map(o =>
-          getId(o) === orderId
-            ? { ...o, driver_name: form.name.trim(), driver_phone: form.phone.trim() }
-            : o
-        )
-      );
-      setDriverEditSet(prev => { const s = new Set(prev); s.delete(orderId); return s; });
-      showToast("Livreur assigné", true);
-    } catch {
-      showToast("Erreur d'assignation", false);
-    } finally {
-      setDriverSaving(null);
-    }
+    const res = await fetch(API_BASE + "/orders/" + orderId + "/driver", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...adminHeaders() },
+      credentials: "include",
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status.toString());
+
+    setOrders(prev =>
+      prev.map(o =>
+        getId(o) === orderId
+          ? {
+              ...o,
+              assigned_livreur_id: driver?.id,
+              driver_name:  driver?.name  ?? "",
+              driver_phone: driver?.phone ?? "",
+            }
+          : o
+      )
+    );
+    showToast(driver ? "Livreur assigné : " + driver.name : "Livreur désassigné", true);
   }
 
   // ── Invoice download ───────────────────────────────────────────────────────
@@ -781,54 +902,12 @@ export default function AdminOrders() {
 
                         {/* ── Driver assignment ── */}
                         <td className="px-4 py-4 min-w-[170px]">
-                          {order.driver_name && !driverEditSet.has(orderId) ? (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-700 truncate max-w-[140px]">
-                                🚗 {order.driver_name}
-                              </p>
-                              <p className="text-xs text-[#2E8B57] font-latin mt-0.5">{order.driver_phone}</p>
-                              <button
-                                onClick={() => enterDriverEdit(orderId, order)}
-                                className="text-[10px] text-gray-400 underline hover:text-gray-600 mt-1"
-                              >
-                                Modifier
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-1">
-                              <input
-                                type="text"
-                                placeholder="Nom livreur"
-                                value={driverForms[orderId]?.name ?? ""}
-                                onChange={e =>
-                                  setDriverForms(prev => ({
-                                    ...prev,
-                                    [orderId]: { ...prev[orderId], name: e.target.value },
-                                  }))
-                                }
-                                className="text-xs border border-gray-200 rounded-lg px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-[#2E8B57]/40"
-                              />
-                              <input
-                                type="tel"
-                                placeholder="0612345678"
-                                value={driverForms[orderId]?.phone ?? ""}
-                                onChange={e =>
-                                  setDriverForms(prev => ({
-                                    ...prev,
-                                    [orderId]: { ...prev[orderId], phone: e.target.value },
-                                  }))
-                                }
-                                className="text-xs border border-gray-200 rounded-lg px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-[#2E8B57]/40 font-latin"
-                              />
-                              <button
-                                onClick={() => handleAssignDriver(orderId)}
-                                disabled={driverSaving === orderId || !driverForms[orderId]?.name?.trim() || !driverForms[orderId]?.phone?.trim()}
-                                className="text-xs bg-[#2E8B57] text-white rounded-lg px-2 py-1 font-semibold hover:bg-[#1F6B40] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                              >
-                                {driverSaving === orderId ? "..." : "Assigner"}
-                              </button>
-                            </div>
-                          )}
+                          <DriverSelector
+                            order={order}
+                            drivers={drivers}
+                            onAssign={assignDriver}
+                            onToast={showToast}
+                          />
                         </td>
 
                       </tr>
