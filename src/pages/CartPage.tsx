@@ -290,12 +290,26 @@ function GPSCapture({ status, onRequest, language }: {
 // ── CartPage ──────────────────────────────────────────────────────────────────
 
 // ── Success screen ────────────────────────────────────────────────────────────
-function SuccessScreen({ orderId, lastCart }: { orderId: string; lastCart: any[] }) {
+function SuccessScreen({ orderId, lastCart, customerPhone }: { orderId: string; lastCart: any[]; customerPhone?: string }) {
   const shortId = orderId.slice(-6).toUpperCase();
   const [dlLoading, setDlLoading] = useState(false);
   const [dlError,   setDlError]   = useState("");
   const API = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
   const [suggested, setSuggested] = useState<any[]>([]);
+  const [refCopied, setRefCopied] = useState(false);
+
+  const refCode = (customerPhone || "").replace(/\D/g, "").slice(-4);
+  const refLink = `https://www.mygreengoo.com?ref=${refCode}`;
+
+  async function copyRefLink() {
+    try {
+      await navigator.clipboard.writeText(refLink);
+      setRefCopied(true);
+      setTimeout(() => setRefCopied(false), 2500);
+    } catch {
+      /* clipboard blocked -- link is still visible for manual copy */
+    }
+  }
 
   useEffect(() => {
     if (!lastCart?.length) return;
@@ -377,6 +391,26 @@ function SuccessScreen({ orderId, lastCart }: { orderId: string; lastCart: any[]
         </svg>
         Discuter sur WhatsApp
       </a>
+
+      {refCode.length === 4 && (
+        <div className="w-full max-w-xs rounded-2xl border border-[#F97316]/25 bg-[#F97316]/8 px-5 py-4">
+          <p className="text-sm font-bold text-[#0c3228]">Parrainez un ami et gagnez 50 pts 🎁</p>
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              readOnly
+              value={refLink}
+              onFocus={(e) => e.currentTarget.select()}
+              className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-xs text-gray-500 font-latin"
+            />
+            <button
+              onClick={copyRefLink}
+              className="shrink-0 rounded-lg bg-[#0c3228] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-green-900"
+            >
+              {refCopied ? "Lien copié ✓" : "Copier"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -802,7 +836,7 @@ export default function CartPage() {
     return (
       <>
         <CartHeroStrip />
-        <SuccessScreen orderId={orderId} lastCart={cart} />
+        <SuccessScreen orderId={orderId} lastCart={cart} customerPhone={phone} />
       </>
     );
   }

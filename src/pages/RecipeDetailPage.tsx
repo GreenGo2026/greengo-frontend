@@ -68,6 +68,7 @@ interface Recipe {
   estimated_price_mad: number;
   ingredients_available: number;
   ingredients_total: number;
+  image_url?: string | null;
 }
 
 export default function RecipeDetailPage() {
@@ -112,7 +113,10 @@ export default function RecipeDetailPage() {
       "@type": "HowToStep",
       "text": "Commandez tous les ingrédients sur mygreengoo.com et recevez-les en 30 min.",
     }],
-    "image": "https://www.mygreengoo.com/og-image.jpg",
+    "image": recipe.image_url || "https://www.mygreengoo.com/og-image.jpg",
+    "recipeCategory": "Cuisine marocaine",
+    "recipeCuisine": "Moroccan",
+    "inLanguage": "fr-MA",
     "publisher": { "@type": "Organization", "name": "GreenGo Market", "url": "https://www.mygreengoo.com" },
   } : {}) ;
 
