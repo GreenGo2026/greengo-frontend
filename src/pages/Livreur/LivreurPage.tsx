@@ -16,9 +16,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle, ArrowLeft, CheckCircle2, Clock, Leaf, Loader2, LogOut, MapPin,
-  Package, Phone, ShoppingBag, TrendingUp, Truck, User,
+  Package, Phone, Shield, ShoppingBag, TrendingUp, Truck, User,
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 const API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 const LIVREUR_BASE = "/api/v1/livreur";
@@ -131,7 +131,7 @@ function BottomNav({ tab, setTab }: { tab: AppTab; setTab: (t: AppTab) => void }
     { key: "profile", label: "Profil",    icon: User        },
   ];
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-slate-700 bg-slate-900">
+    <nav className="fixed bottom-0 left-1/2 z-50 flex w-full max-w-md -translate-x-1/2 border-t border-slate-700 bg-slate-900">
       {items.map(({ key, label, icon: Icon }) => (
         <button key={key} onClick={() => setTab(key)}
           className={"flex flex-1 flex-col items-center gap-1 py-3 text-[10px] font-semibold uppercase tracking-wider transition-colors " +
@@ -263,13 +263,14 @@ function OrdersView({ api }: { api: AuthedFetch }) {
                     <Phone size={13} /> Appeler
                   </a>
                 )}
-                {order.gps_coordinates && (
-                  <a href={`https://www.google.com/maps?q=${order.gps_coordinates.lat},${order.gps_coordinates.lng}`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-600 bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-600">
-                    <MapPin size={13} /> Maps
-                  </a>
-                )}
+                <a
+                  href={order.gps_coordinates
+                    ? `https://www.google.com/maps?q=${order.gps_coordinates.lat},${order.gps_coordinates.lng}`
+                    : `https://www.google.com/maps/search/${encodeURIComponent(order.address || "")}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-xl border border-slate-600 bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-600">
+                  <MapPin size={13} /> Maps
+                </a>
                 <div className="ml-auto text-right">
                   <p className="font-latin text-lg font-extrabold text-emerald-400">
                     {order.driver_payout_mad.toFixed(0)} MAD
@@ -279,11 +280,14 @@ function OrdersView({ api }: { api: AuthedFetch }) {
               </div>
 
               <div className="rounded-xl bg-slate-700/50 px-3 py-2">
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">Articles</p>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Articles</p>
                 {order.items.slice(0, 3).map((item, i) => (
-                  <p key={i} dir="rtl" className="font-arabic text-xs text-slate-300">
-                    {item.name} × {item.quantity} {item.unit}
-                  </p>
+                  <div key={i} className="flex items-center justify-between py-0.5">
+                    <span dir="rtl" className="flex-1 font-arabic text-sm text-slate-100">{item.name}</span>
+                    <span className="ml-2 shrink-0 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-2 py-0.5 font-latin text-[10px] font-bold text-emerald-300">
+                      {item.quantity} {item.unit}
+                    </span>
+                  </div>
                 ))}
                 {order.items.length > 3 && (
                   <p className="text-xs text-slate-500">+{order.items.length - 3} autres</p>
@@ -299,7 +303,7 @@ function OrdersView({ api }: { api: AuthedFetch }) {
 
               {orderTab === "new" && (
                 <button onClick={() => handleClaim(order.id)} disabled={claimingId === order.id}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:opacity-60">
+                  className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:opacity-60">
                   {claimingId === order.id
                     ? <><Loader2 size={16} className="animate-spin" /> Prise en charge…</>
                     : <><Truck size={16} /> Accepter la livraison</>}
@@ -360,15 +364,18 @@ function GainsView({ api }: { api: AuthedFetch }) {
 
   return (
     <div className="space-y-4 overflow-y-auto p-4 pb-24">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {[
           { label: "Aujourd'hui",   value: earnings.today_mad },
           { label: "Cette semaine", value: earnings.week_mad  },
           { label: "Total",         value: earnings.total_mad },
         ].map(({ label, value }) => (
           <div key={label} className="rounded-2xl border border-slate-700 bg-slate-800 p-3 text-center">
-            <p className="font-latin text-xl font-extrabold text-emerald-400">{value.toFixed(0)}</p>
-            <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">MAD · {label}</p>
+            <p className="font-latin text-2xl font-extrabold leading-none text-emerald-400">
+              {value.toFixed(0)}
+              <span className="ml-0.5 text-sm font-semibold text-emerald-600">MAD</span>
+            </p>
+            <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
           </div>
         ))}
       </div>
@@ -376,12 +383,14 @@ function GainsView({ api }: { api: AuthedFetch }) {
       {earnings.chart.length > 0 && (
         <div className="rounded-2xl border border-slate-700 bg-slate-800 p-4">
           <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Gains par jour</p>
-          <BarChart width={320} height={160} data={earnings.chart} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
-            <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5)}
-              tick={{ fill: "#94A3B8", fontSize: 9 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "#94A3B8", fontSize: 9 }} axisLine={false} tickLine={false} />
-            <Bar dataKey="amount_mad" fill="#10B981" radius={[4, 4, 0, 0]} />
-          </BarChart>
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart data={earnings.chart} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
+              <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5)}
+                tick={{ fill: "#94A3B8", fontSize: 9 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "#94A3B8", fontSize: 9 }} axisLine={false} tickLine={false} />
+              <Bar dataKey="amount_mad" fill="#10B981" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       )}
 
@@ -474,21 +483,24 @@ function ProfileView({ api, onLogout }: { api: AuthedFetch; onLogout: () => void
 
       <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
         {[
-          { label: "Type de véhicule", value: profile.vehicle_type || "—" },
-          { label: "CIN",              value: profile.cin_masked || "—" },
-          { label: "Gains totaux",     value: `${profile.total_earnings.toFixed(0)} MAD` },
-        ].map(({ label, value }, i, arr) => (
+          { label: "Type de véhicule", value: profile.vehicle_type || "—", icon: Truck },
+          { label: "CIN",              value: profile.cin_masked || "—",   icon: Shield },
+          { label: "Gains totaux",     value: `${profile.total_earnings.toFixed(0)} MAD`, icon: TrendingUp },
+        ].map(({ label, value, icon: Icon }, i, arr) => (
           <div key={label}
             className={"flex items-center justify-between px-4 py-3.5 " +
               (i < arr.length - 1 ? "border-b border-slate-700/50" : "")}>
-            <p className="text-xs font-semibold text-slate-500">{label}</p>
+            <div className="flex items-center gap-2.5">
+              <Icon size={14} className="shrink-0 text-slate-500" />
+              <p className="text-xs font-semibold text-slate-500">{label}</p>
+            </div>
             <p className="text-sm font-semibold text-slate-200">{value}</p>
           </div>
         ))}
       </div>
 
       <button onClick={onLogout}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-800 py-3.5 text-sm font-semibold text-slate-400 transition-colors hover:border-red-500/30 hover:text-red-400">
+        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-transparent py-3.5 text-sm font-semibold text-red-400 transition-colors hover:border-red-500/40 hover:bg-red-500/10 active:scale-[0.98]">
         <LogOut size={16} /> Se déconnecter
       </button>
     </div>
@@ -634,28 +646,30 @@ export default function LivreurPage() {
   // ── Authenticated app shell ───────────────────────────────────────────────
   if (token) {
     return (
-      <div className="flex h-screen flex-col bg-slate-900 text-slate-100">
-        <div className="flex items-center justify-between border-b border-slate-700 bg-slate-900 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500">
-              <Leaf size={14} className="text-white" />
+      <div className="flex h-screen flex-col bg-slate-950 text-slate-100">
+        <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden bg-slate-900 shadow-2xl">
+          <div className="flex items-center justify-between border-b border-slate-700 bg-slate-900 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500">
+                <Leaf size={14} className="text-white" />
+              </div>
+              <span className="font-latin text-sm font-extrabold text-white">GreenGo</span>
+              <span className="text-xs text-slate-500">· Livreur</span>
             </div>
-            <span className="font-latin text-sm font-extrabold text-white">GreenGo</span>
-            <span className="text-xs text-slate-500">· Livreur</span>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              <span className="text-xs text-slate-400">{name || "Livreur"}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-            <span className="text-xs text-slate-400">{name || "Livreur"}</span>
+
+          <div className="flex-1 overflow-hidden">
+            {appTab === "orders"  && <OrdersView  api={authedFetch} />}
+            {appTab === "gains"   && <GainsView   api={authedFetch} />}
+            {appTab === "profile" && <ProfileView api={authedFetch} onLogout={() => logout()} />}
           </div>
-        </div>
 
-        <div className="flex-1 overflow-hidden">
-          {appTab === "orders"  && <OrdersView  api={authedFetch} />}
-          {appTab === "gains"   && <GainsView   api={authedFetch} />}
-          {appTab === "profile" && <ProfileView api={authedFetch} onLogout={() => logout()} />}
+          <BottomNav tab={appTab} setTab={setAppTab} />
         </div>
-
-        <BottomNav tab={appTab} setTab={setAppTab} />
       </div>
     );
   }
@@ -663,21 +677,23 @@ export default function LivreurPage() {
   // ── Pending view ──
   if (view === "pending") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-900 px-4">
-        <div className="w-full max-w-sm rounded-3xl bg-white p-7 text-center shadow-2xl">
-          <CheckCircle2 size={56} className="mx-auto text-[#2E8B57]" />
-          <h2 className="mt-4 text-lg font-extrabold text-gray-900">Demande envoyée ✅</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Votre code PIN vous sera envoyé par WhatsApp au<br />
-            <strong className="text-gray-900">{registeredPhone}</strong><br />
-            après validation par l'administration.
-          </p>
-          <button
-            onClick={() => { setView("login"); setAuthErr(""); }}
-            className="mt-6 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 transition-colors hover:text-[#2E8B57]"
-          >
-            <ArrowLeft size={13} /> Retour à la connexion
-          </button>
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5">
+          <div className="w-full rounded-3xl border border-slate-700 bg-slate-800 p-8 text-center shadow-2xl">
+            <CheckCircle2 size={56} className="mx-auto text-emerald-400" />
+            <h2 className="mt-4 text-lg font-extrabold text-slate-100">Demande envoyée ✅</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Votre code PIN vous sera envoyé par WhatsApp au<br />
+              <strong className="text-slate-100">{registeredPhone}</strong><br />
+              après validation par l'administration.
+            </p>
+            <button
+              onClick={() => { setView("login"); setAuthErr(""); }}
+              className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-400 transition-colors hover:text-emerald-400"
+            >
+              <ArrowLeft size={13} /> Retour à la connexion
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -686,123 +702,127 @@ export default function LivreurPage() {
   // ── Register view ──
   if (view === "register") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-900 px-4 py-10">
-        <form onSubmit={submitRegistration} className="w-full max-w-sm rounded-3xl bg-white p-7 shadow-2xl">
-          <div className="mb-5 text-center">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2E8B57]/10">
-              <Package size={26} className="text-[#2E8B57]" />
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5 py-10">
+          <form onSubmit={submitRegistration} className="w-full rounded-3xl border border-slate-700 bg-slate-800 p-8 shadow-2xl">
+            <div className="mb-5 text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15">
+                <Package size={26} className="text-emerald-400" />
+              </div>
+              <h1 className="text-xl font-extrabold text-slate-100">Devenir livreur</h1>
+              <p className="mt-1 text-xs text-slate-400">Remplissez le formulaire ci-dessous</p>
             </div>
-            <h1 className="text-xl font-extrabold text-gray-900">Devenir livreur</h1>
-            <p className="mt-1 text-xs text-gray-500">Remplissez le formulaire ci-dessous</p>
-          </div>
 
-          <div className="space-y-3">
-            <input
-              value={reg.name}
-              onChange={e => { setReg(r => ({ ...r, name: e.target.value })); setRegErr(""); }}
-              placeholder="Nom complet"
-              className="w-full rounded-xl border-2 border-gray-200 px-3.5 py-2.5 text-sm outline-none transition focus:border-[#2E8B57]"
-            />
-            <div className="flex items-stretch overflow-hidden rounded-xl border-2 border-gray-200 focus-within:border-[#2E8B57]">
-              <span className="flex items-center bg-gray-50 px-3 text-sm font-semibold text-gray-500">🇲🇦 +212</span>
+            <div className="space-y-3">
               <input
-                value={reg.phone}
-                onChange={e => { setReg(r => ({ ...r, phone: e.target.value.replace(/\D/g, "") })); setRegErr(""); }}
-                inputMode="tel"
-                placeholder="612345678"
-                className="min-w-0 flex-1 px-3 py-2.5 text-sm outline-none font-latin"
+                value={reg.name}
+                onChange={e => { setReg(r => ({ ...r, name: e.target.value })); setRegErr(""); }}
+                placeholder="Nom complet"
+                className="w-full rounded-xl border-2 border-slate-600 bg-slate-700 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500"
+              />
+              <div className="flex items-stretch overflow-hidden rounded-xl border-2 border-slate-600 bg-slate-700 focus-within:border-emerald-500">
+                <span className="flex items-center bg-slate-600/50 px-3 text-sm font-semibold text-slate-300">🇲🇦 +212</span>
+                <input
+                  value={reg.phone}
+                  onChange={e => { setReg(r => ({ ...r, phone: e.target.value.replace(/\D/g, "") })); setRegErr(""); }}
+                  inputMode="tel"
+                  placeholder="612345678"
+                  className="min-w-0 flex-1 bg-transparent px-3 py-2.5 font-latin text-sm text-white placeholder-slate-500 outline-none"
+                />
+              </div>
+              <select
+                value={reg.vehicle_type}
+                onChange={e => setReg(r => ({ ...r, vehicle_type: e.target.value }))}
+                className="w-full rounded-xl border-2 border-slate-600 bg-slate-700 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-emerald-500"
+              >
+                <option value="moto">Moto</option>
+                <option value="vélo">Vélo</option>
+                <option value="voiture">Voiture</option>
+              </select>
+              <input
+                value={reg.cin}
+                onChange={e => { setReg(r => ({ ...r, cin: e.target.value.toUpperCase() })); setRegErr(""); }}
+                placeholder="CIN"
+                className="w-full rounded-xl border-2 border-slate-600 bg-slate-700 px-3.5 py-2.5 font-latin text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500"
               />
             </div>
-            <select
-              value={reg.vehicle_type}
-              onChange={e => setReg(r => ({ ...r, vehicle_type: e.target.value }))}
-              className="w-full rounded-xl border-2 border-gray-200 px-3.5 py-2.5 text-sm outline-none transition focus:border-[#2E8B57]"
+
+            {regErr && (
+              <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-400">
+                <AlertCircle size={14} /> {regErr}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={regBusy}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-base font-extrabold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="moto">Moto</option>
-              <option value="vélo">Vélo</option>
-              <option value="voiture">Voiture</option>
-            </select>
-            <input
-              value={reg.cin}
-              onChange={e => { setReg(r => ({ ...r, cin: e.target.value.toUpperCase() })); setRegErr(""); }}
-              placeholder="CIN"
-              className="w-full rounded-xl border-2 border-gray-200 px-3.5 py-2.5 text-sm outline-none transition focus:border-[#2E8B57] font-latin"
-            />
-          </div>
+              {regBusy ? <><Loader2 size={18} className="animate-spin" /> Envoi…</> : "Envoyer ma demande"}
+            </button>
 
-          {regErr && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-600">
-              <AlertCircle size={14} /> {regErr}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={regBusy}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] py-3 font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {regBusy ? <><Loader2 size={18} className="animate-spin" /> Envoi…</> : "Envoyer ma demande"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { setView("login"); setRegErr(""); }}
-            className="mt-3 inline-flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-gray-400 transition-colors hover:text-[#2E8B57]"
-          >
-            <ArrowLeft size={13} /> Retour à la connexion
-          </button>
-        </form>
+            <button
+              type="button"
+              onClick={() => { setView("login"); setRegErr(""); }}
+              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 text-sm font-semibold text-slate-400 transition-colors hover:text-emerald-400"
+            >
+              <ArrowLeft size={13} /> Retour à la connexion
+            </button>
+          </form>
+        </div>
       </div>
     );
   }
 
   // ── Login view ──
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-900 px-4">
-      <form onSubmit={submitPin} className="w-full max-w-sm rounded-3xl bg-white p-7 shadow-2xl">
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2E8B57]/10">
-            <Package size={26} className="text-[#2E8B57]" />
+    <div className="flex min-h-screen items-center justify-center bg-slate-950">
+      <div className="flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5">
+        <form onSubmit={submitPin} className="w-full rounded-3xl border border-slate-700 bg-slate-800 p-8 shadow-2xl">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15">
+              <Package size={26} className="text-emerald-400" />
+            </div>
+            <h1 className="text-xl font-extrabold text-slate-100">Espace Livreur</h1>
+            <p className="mt-1 text-xs text-slate-400">Entrez votre code PIN</p>
           </div>
-          <h1 className="text-xl font-extrabold text-gray-900">Espace Livreur</h1>
-          <p className="mt-1 text-xs text-gray-500">Entrez votre code PIN</p>
-        </div>
 
-        <input
-          type="password"
-          inputMode="numeric"
-          autoComplete="off"
-          autoFocus
-          value={pin}
-          maxLength={PIN_MAX}
-          onChange={e => { setPin(e.target.value.replace(/\D/g, "")); setAuthErr(""); }}
-          placeholder="••••••"
-          aria-label="Code PIN"
-          className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-center text-2xl font-bold tracking-[0.4em] outline-none transition focus:border-[#2E8B57]"
-        />
+          <input
+            type="password"
+            inputMode="numeric"
+            autoComplete="off"
+            autoFocus
+            value={pin}
+            maxLength={PIN_MAX}
+            onChange={e => { setPin(e.target.value.replace(/\D/g, "")); setAuthErr(""); }}
+            placeholder="••••••"
+            aria-label="Code PIN"
+            className="w-full rounded-2xl border-2 border-slate-600 bg-slate-700 px-4 py-4 text-center text-2xl tracking-[0.5em] text-white placeholder-slate-500 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+          />
 
-        {authErr && (
-          <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-600">
-            <AlertCircle size={14} /> {authErr}
-          </p>
-        )}
+          {authErr && (
+            <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-400">
+              <AlertCircle size={14} /> {authErr}
+            </p>
+          )}
 
-        <button
-          type="submit"
-          disabled={!pinValid || authing}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] py-3 font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {authing ? <><Loader2 size={18} className="animate-spin" /> Connexion…</> : "Se connecter"}
-        </button>
+          <button
+            type="submit"
+            disabled={!pinValid || authing}
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-base font-extrabold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {authing ? <><Loader2 size={18} className="animate-spin" /> Connexion…</> : "Se connecter"}
+          </button>
 
-        <button
-          type="button"
-          onClick={() => { setView("register"); setAuthErr(""); }}
-          className="mt-3 w-full text-center text-xs font-semibold text-gray-400 transition-colors hover:text-[#2E8B57]"
-        >
-          Première fois ? Inscrivez-vous →
-        </button>
-      </form>
+          <button
+            type="button"
+            onClick={() => { setView("register"); setAuthErr(""); }}
+            className="mt-2 w-full text-center text-sm text-slate-400 transition-colors hover:text-emerald-400"
+          >
+            Première fois ? Inscrivez-vous →
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
