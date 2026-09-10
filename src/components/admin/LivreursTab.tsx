@@ -7,7 +7,7 @@
  * driver because PIN-only login cannot disambiguate two drivers sharing one.
  */
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, Loader2, Plus, RefreshCw, Truck } from "lucide-react";
+import { AlertCircle, Check, Eye, Loader2, Plus, RefreshCw, Truck, X } from "lucide-react";
 import { adminHeaders } from "../../services/adminJwt";
 
 const API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
@@ -26,7 +26,11 @@ type Driver = {
   name: string;
   phone: string;
   active: boolean;
+  status: "pending" | "active" | "inactive" | "rejected";
+  vehicle_type: string;
+  cin_masked: string;
   created_at: string | null;
+  activated_at: string | null;
 };
 
 const PIN_MIN = 6;
@@ -43,6 +47,14 @@ export default function LivreursTab() {
   const [creating, setCreating] = useState(false);
   const [busyId,   setBusyId]   = useState<string | null>(null);
 
+  const [toast, setToast] = useState<{ msg: string; tone: "ok" | "warn" | "err" } | null>(null);
+  const [revealedCin, setRevealedCin] = useState<Record<string, string>>({});
+
+  function flash(msg: string, tone: "ok" | "warn" | "err" = "ok") {
+    setToast({ msg, tone });
+    setTimeout(() => setToast(null), 6000);
+  }
+
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -56,6 +68,50 @@ export default function LivreursTab() {
       setLoading(false);
     }
   }, []);
+
+  async function validateDriver(d: Driver) {
+    setBusyId(d.id);
+    setError("");
+    try {
+      const res = await authFetch(`/api/v1/admin/drivers/${d.id}/validate`, { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(body?.detail || "Validation impossible."); return; }
+      if (body.whatsapp_sent) {
+        flash(`✅ PIN envoyé à ${body.driver_name} — Code : ${body.pin}`, "ok");
+      } else {
+        flash(`⚠️ WhatsApp non envoyé — PIN manuel pour ${body.driver_name} : ${body.pin}`, "warn");
+      }
+      await load();
+    } catch {
+      setError("Validation impossible. Vérifiez votre connexion.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function rejectDriver(d: Driver) {
+    if (!window.confirm(`Refuser la demande de ${d.name} ?`)) return;
+    setBusyId(d.id);
+    setError("");
+    try {
+      const res = await authFetch(`/api/v1/admin/drivers/${d.id}/reject`, { method: "PATCH" });
+      if (!res.ok) { setError("Refus impossible."); return; }
+      flash(`Demande de ${d.name} refusée`, "ok");
+      await load();
+    } catch {
+      setError("Refus impossible.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function revealCin(d: Driver) {
+    try {
+      const res = await authFetch(`/api/v1/admin/drivers/${d.id}/cin`);
+      const body = await res.json().catch(() => ({}));
+      if (res.ok) setRevealedCin(prev => ({ ...prev, [d.id]: body.cin || "" }));
+    } catch { /* keep masked */ }
+  }
 
   useEffect(() => { void load(); }, [load]);
 
@@ -111,13 +167,71 @@ export default function LivreursTab() {
     }
   }
 
+  const pendingDrivers = drivers.filter(d => d.status === "pending");
+  const rosterDrivers  = drivers.filter(d => d.status !== "pending" && d.status !== "rejected");
+
   return (
     <div className="space-y-5">
+      {toast && (
+        <div className={
+          "flex items-start gap-2 rounded-xl border p-3 text-xs font-semibold " +
+          (toast.tone === "ok"   ? "border-emerald-200 bg-emerald-50 text-emerald-800" :
+           toast.tone === "warn" ? "border-amber-200 bg-amber-50 text-amber-800" :
+                                   "border-red-200 bg-red-50 text-red-700")
+        }>
+          <span className="break-words">{toast.msg}</span>
+        </div>
+      )}
+
+      {pendingDrivers.length > 0 && (
+        <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/40 p-4">
+          <p className="mb-3 text-xs font-extrabold uppercase tracking-wide text-amber-700">
+            Demandes en attente ({pendingDrivers.length})
+          </p>
+          <div className="space-y-2">
+            {pendingDrivers.map(d => (
+              <div key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-3 ring-1 ring-black/5">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-gray-800">{d.name}</p>
+                  <p className="text-[11px] text-gray-500 font-latin">{d.phone} · {d.vehicle_type}</p>
+                  <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-gray-400 font-latin">
+                    CIN : {revealedCin[d.id] ?? d.cin_masked}
+                    {revealedCin[d.id] === undefined && (
+                      <button onClick={() => void revealCin(d)} className="text-gray-400 hover:text-gray-600" aria-label="Révéler le CIN">
+                        <Eye size={12} />
+                      </button>
+                    )}
+                    {d.created_at && <span className="ml-1">· {new Date(d.created_at).toLocaleDateString("fr-MA")}</span>}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => void validateDriver(d)}
+                    disabled={busyId === d.id}
+                    className="flex items-center gap-1.5 rounded-xl bg-[#2E8B57] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#1F6B40] disabled:opacity-40"
+                  >
+                    {busyId === d.id ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                    Valider &amp; Activer
+                  </button>
+                  <button
+                    onClick={() => void rejectDriver(d)}
+                    disabled={busyId === d.id}
+                    className="flex items-center gap-1.5 rounded-xl border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-40"
+                  >
+                    <X size={13} /> Refuser
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Truck size={16} className="text-[#2E8B57]" />
           <p className="text-sm font-bold text-gray-700">
-            {drivers.length} livreur{drivers.length === 1 ? "" : "s"}
+            {rosterDrivers.length} livreur{rosterDrivers.length === 1 ? "" : "s"}
             <span className="ml-2 text-xs font-semibold text-gray-400">
               {drivers.filter(d => d.active).length} actif{drivers.filter(d => d.active).length === 1 ? "" : "s"}
             </span>
@@ -197,17 +311,19 @@ export default function LivreursTab() {
 
       {/* List */}
       <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-        {drivers.length === 0 && !loading && (
+        {rosterDrivers.length === 0 && !loading && (
           <p className="py-12 text-center text-sm text-gray-400">Aucun livreur enregistré.</p>
         )}
-        {drivers.map((d, i) => (
+        {rosterDrivers.map((d, i) => (
           <div
             key={d.id}
             className={"flex flex-wrap items-center justify-between gap-3 px-4 py-3 " + (i > 0 ? "border-t" : "")}
           >
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-gray-800">{d.name}</p>
-              <p className="text-[11px] text-gray-400">{d.phone}</p>
+              <p className="text-[11px] text-gray-400 font-latin">
+                {d.phone}{d.vehicle_type ? ` · ${d.vehicle_type}` : ""}
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <span

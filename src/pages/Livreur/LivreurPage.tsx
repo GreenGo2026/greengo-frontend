@@ -11,7 +11,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  AlertCircle, CheckCircle2, Loader2, LogOut, MapPin, Package, Phone, RefreshCw,
+  AlertCircle, ArrowLeft, CheckCircle2, Loader2, LogOut, MapPin, Package, Phone, RefreshCw,
 } from "lucide-react";
 
 const API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
@@ -60,6 +60,50 @@ export default function LivreurPage() {
   const [pin,     setPin]     = useState("");
   const [authing, setAuthing] = useState(false);
   const [authErr, setAuthErr] = useState("");
+
+  // Unauthenticated view: "login" | "register" | "pending". Additive to the
+  // existing PIN flow -- a driver with no account registers here and waits for
+  // an admin to approve and WhatsApp them a PIN.
+  const [view, setView] = useState<"login" | "register" | "pending">("login");
+  const [reg, setReg] = useState({ name: "", phone: "", vehicle_type: "moto", cin: "" });
+  const [regBusy, setRegBusy] = useState(false);
+  const [regErr,  setRegErr]  = useState("");
+  const [registeredPhone, setRegisteredPhone] = useState("");
+
+  async function submitRegistration(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (regBusy) return;
+    if (reg.name.trim().length < 2 || reg.phone.trim().length < 6 || reg.cin.trim().length < 4) {
+      setRegErr("Remplissez tous les champs correctement.");
+      return;
+    }
+    setRegBusy(true);
+    setRegErr("");
+    try {
+      const res = await fetch(API + "/api/v1/livreur/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: reg.name.trim(),
+          phone: reg.phone.trim(),
+          vehicle_type: reg.vehicle_type,
+          cin: reg.cin.trim(),
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setRegErr(body?.detail || "Envoi impossible. Réessayez.");
+        return;
+      }
+      setRegisteredPhone(reg.phone.trim());
+      setReg({ name: "", phone: "", vehicle_type: "moto", cin: "" });
+      setView("pending");
+    } catch {
+      setRegErr("Connexion impossible. Vérifiez votre réseau.");
+    } finally {
+      setRegBusy(false);
+    }
+  }
 
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [loading,    setLoading]    = useState(false);
@@ -199,6 +243,103 @@ export default function LivreurPage() {
 
   // ── Login screen ──────────────────────────────────────────────────────────
   if (!token) {
+    // ── Pending view ──
+    if (view === "pending") {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-[#0f172a] px-4">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-7 text-center shadow-2xl">
+            <CheckCircle2 size={56} className="mx-auto text-[#2E8B57]" />
+            <h2 className="mt-4 text-lg font-extrabold text-gray-900">Demande envoyée ✅</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Votre code PIN vous sera envoyé par WhatsApp au<br />
+              <strong className="text-gray-900">{registeredPhone}</strong><br />
+              après validation par l'administration.
+            </p>
+            <button
+              onClick={() => { setView("login"); setAuthErr(""); }}
+              className="mt-6 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-[#2E8B57] transition-colors"
+            >
+              <ArrowLeft size={13} /> Retour à la connexion
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Register view ──
+    if (view === "register") {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-[#0f172a] px-4 py-10">
+          <form onSubmit={submitRegistration} className="w-full max-w-sm rounded-3xl bg-white p-7 shadow-2xl">
+            <div className="mb-5 text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2E8B57]/10">
+                <Package size={26} className="text-[#2E8B57]" />
+              </div>
+              <h1 className="text-xl font-extrabold text-gray-900">Devenir livreur</h1>
+              <p className="mt-1 text-xs text-gray-500">Remplissez le formulaire ci-dessous</p>
+            </div>
+
+            <div className="space-y-3">
+              <input
+                value={reg.name}
+                onChange={e => { setReg(r => ({ ...r, name: e.target.value })); setRegErr(""); }}
+                placeholder="Nom complet"
+                className="w-full rounded-xl border-2 border-gray-200 px-3.5 py-2.5 text-sm outline-none transition focus:border-[#2E8B57]"
+              />
+              <div className="flex items-stretch overflow-hidden rounded-xl border-2 border-gray-200 focus-within:border-[#2E8B57]">
+                <span className="flex items-center bg-gray-50 px-3 text-sm font-semibold text-gray-500">🇲🇦 +212</span>
+                <input
+                  value={reg.phone}
+                  onChange={e => { setReg(r => ({ ...r, phone: e.target.value.replace(/\D/g, "") })); setRegErr(""); }}
+                  inputMode="tel"
+                  placeholder="612345678"
+                  className="min-w-0 flex-1 px-3 py-2.5 text-sm outline-none font-latin"
+                />
+              </div>
+              <select
+                value={reg.vehicle_type}
+                onChange={e => setReg(r => ({ ...r, vehicle_type: e.target.value }))}
+                className="w-full rounded-xl border-2 border-gray-200 px-3.5 py-2.5 text-sm outline-none transition focus:border-[#2E8B57]"
+              >
+                <option value="moto">Moto</option>
+                <option value="vélo">Vélo</option>
+                <option value="voiture">Voiture</option>
+              </select>
+              <input
+                value={reg.cin}
+                onChange={e => { setReg(r => ({ ...r, cin: e.target.value.toUpperCase() })); setRegErr(""); }}
+                placeholder="CIN"
+                className="w-full rounded-xl border-2 border-gray-200 px-3.5 py-2.5 text-sm outline-none transition focus:border-[#2E8B57] font-latin"
+              />
+            </div>
+
+            {regErr && (
+              <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                <AlertCircle size={14} /> {regErr}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={regBusy}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] py-3 font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {regBusy ? <><Loader2 size={18} className="animate-spin" /> Envoi…</> : "Envoyer ma demande"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setView("login"); setRegErr(""); }}
+              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#2E8B57] transition-colors"
+            >
+              <ArrowLeft size={13} /> Retour à la connexion
+            </button>
+          </form>
+        </div>
+      );
+    }
+
+    // ── Login view ──
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0f172a] px-4">
         <form onSubmit={submitPin} className="w-full max-w-sm rounded-3xl bg-white p-7 shadow-2xl">
@@ -235,6 +376,14 @@ export default function LivreurPage() {
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] py-3 font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
           >
             {authing ? <><Loader2 size={18} className="animate-spin" /> Connexion…</> : "Se connecter"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setView("register"); setAuthErr(""); }}
+            className="mt-3 w-full text-center text-xs font-semibold text-gray-400 hover:text-[#2E8B57] transition-colors"
+          >
+            Première fois ? Inscrivez-vous →
           </button>
         </form>
       </div>
