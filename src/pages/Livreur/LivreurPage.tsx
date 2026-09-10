@@ -15,8 +15,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  AlertCircle, ArrowLeft, CheckCircle2, Clock, Leaf, Loader2, LogOut, MapPin,
-  Package, Phone, Shield, ShoppingBag, TrendingUp, Truck, User,
+  AlertCircle, ArrowLeft, CheckCircle2, Clock, Loader2, LogOut, MapPin,
+  Phone, Shield, ShoppingBag, TrendingUp, Truck, User,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
@@ -37,6 +37,44 @@ type OrderTab = "new" | "processing" | "delivered";
  *  Everything in this file works in lowercase snake_case. */
 function normStatus(s: string): string {
   return (s || "").toLowerCase().replace(/ +/g, "_");
+}
+
+type GPSStatus = "idle" | "requesting" | "granted" | "denied" | "unavailable";
+
+interface GPSBundle {
+  gpsStatus: GPSStatus;
+  coords: { lat: number; lng: number } | null;
+  requestGPS: () => Promise<{ lat: number; lng: number } | null>;
+}
+
+/** A driver can only go online (and see the order pool) with a location fix --
+ *  dispatch needs it to route by proximity. Called once at the app-shell level. */
+function useGPS(): GPSBundle {
+  const [gpsStatus, setGPSStatus] = useState<GPSStatus>("idle");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  const requestGPS = useCallback(() => {
+    return new Promise<{ lat: number; lng: number } | null>((resolve) => {
+      if (!navigator.geolocation) {
+        setGPSStatus("unavailable");
+        resolve(null);
+        return;
+      }
+      setGPSStatus("requesting");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setCoords(c);
+          setGPSStatus("granted");
+          resolve(c);
+        },
+        () => { setGPSStatus("denied"); resolve(null); },
+        { timeout: 10000, enableHighAccuracy: true },
+      );
+    });
+  }, []);
+
+  return { gpsStatus, coords, requestGPS };
 }
 
 interface RiderOrder {
@@ -146,7 +184,7 @@ function BottomNav({ tab, setTab }: { tab: AppTab; setTab: (t: AppTab) => void }
 
 // ── Orders view ──────────────────────────────────────────────────────────────
 
-function OrdersView({ api }: { api: AuthedFetch }) {
+function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
   const [orderTab, setOrderTab] = useState<OrderTab>("new");
   const [orders,   setOrders]   = useState<RiderOrder[]>([]);
   const [loading,  setLoading]  = useState(false);
@@ -219,7 +257,7 @@ function OrdersView({ api }: { api: AuthedFetch }) {
           <button key={t} onClick={() => setOrderTab(t)}
             className={"flex-1 border-b-2 py-3 text-xs font-bold uppercase tracking-wider transition-colors " +
               (orderTab === t
-                ? "border-emerald-500 text-emerald-400"
+                ? "border-[#2E8B57] text-[#3CAE6E]"
                 : "border-transparent text-slate-500 hover:text-slate-300")}>
             {t === "new" ? "Nouvelles" : t === "processing" ? "En cours" : "Livrées"}
           </button>
@@ -227,6 +265,20 @@ function OrdersView({ api }: { api: AuthedFetch }) {
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-4 pb-24">
+        {orderTab === "new" && (gps.gpsStatus === "denied" || gps.gpsStatus === "unavailable") ? (
+          <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
+            <MapPin size={36} className="text-amber-400" />
+            <p className="text-sm font-bold text-amber-300">GPS requis</p>
+            <p className="text-xs text-slate-400">
+              Activation du GPS obligatoire pour recevoir les commandes de livraison.
+            </p>
+            <button onClick={() => void gps.requestGPS()}
+              className="rounded-xl bg-[#2E8B57] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#1F6B40]">
+              Autoriser le GPS
+            </button>
+          </div>
+        ) : (
+        <>
         {loading && orders.length === 0 && (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={28} className="animate-spin text-emerald-500" />
@@ -303,7 +355,7 @@ function OrdersView({ api }: { api: AuthedFetch }) {
 
               {orderTab === "new" && (
                 <button onClick={() => handleClaim(order.id)} disabled={claimingId === order.id}
-                  className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:opacity-60">
+                  className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-4 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/25 transition-all hover:bg-[#1F6B40] active:scale-[0.98] disabled:opacity-60">
                   {claimingId === order.id
                     ? <><Loader2 size={16} className="animate-spin" /> Prise en charge…</>
                     : <><Truck size={16} /> Accepter la livraison</>}
@@ -321,7 +373,7 @@ function OrdersView({ api }: { api: AuthedFetch }) {
 
               {orderTab === "processing" && order.status === "out_for_delivery" && (
                 <button onClick={() => handleDeliver(order.id)} disabled={deliveringId === order.id}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:opacity-60">
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/25 transition-all hover:bg-[#1F6B40] active:scale-[0.98] disabled:opacity-60">
                   {deliveringId === order.id
                     ? <><Loader2 size={16} className="animate-spin" /> Confirmation…</>
                     : <><CheckCircle2 size={16} /> Marquer comme livré</>}
@@ -337,6 +389,8 @@ function OrdersView({ api }: { api: AuthedFetch }) {
             </div>
           </div>
         ))}
+        </>
+        )}
       </div>
     </div>
   );
@@ -421,10 +475,11 @@ function GainsView({ api }: { api: AuthedFetch }) {
 
 // ── Profile view ─────────────────────────────────────────────────────────────
 
-function ProfileView({ api, onLogout }: { api: AuthedFetch; onLogout: () => void }) {
+function ProfileView({ api, gps, onLogout }: { api: AuthedFetch; gps: GPSBundle; onLogout: () => void }) {
   const [profile,     setProfile]     = useState<DriverProfile | null>(null);
   const [toggling,    setToggling]    = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
+  const [gpsBlocked,  setGpsBlocked]  = useState(false);
 
   useEffect(() => {
     api("/profile")
@@ -436,14 +491,26 @@ function ProfileView({ api, onLogout }: { api: AuthedFetch; onLogout: () => void
   async function toggleAvailability() {
     if (!profile) return;
     setToggling(true);
-    const next = !isAvailable;
     try {
-      const res = await api("/availability", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_available: next }),
-      });
-      if (res.ok) setIsAvailable(next);
+      if (!isAvailable) {
+        // Going online -- a location fix is mandatory.
+        const c = await gps.requestGPS();
+        if (!c) { setGpsBlocked(true); return; }
+        setGpsBlocked(false);
+        const res = await api("/availability", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_available: true, latitude: c.lat, longitude: c.lng }),
+        });
+        if (res.ok) setIsAvailable(true);
+      } else {
+        const res = await api("/availability", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_available: false }),
+        });
+        if (res.ok) setIsAvailable(false);
+      }
     } catch { /* ignore */ }
     finally { setToggling(false); }
   }
@@ -460,7 +527,7 @@ function ProfileView({ api, onLogout }: { api: AuthedFetch; onLogout: () => void
     <div className="space-y-4 overflow-y-auto p-4 pb-24">
       <div className="rounded-2xl border border-slate-700 bg-slate-800 p-5">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-xl font-extrabold text-white">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#2E8B57] text-xl font-extrabold text-white">
             {profile.name.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1">
@@ -468,17 +535,26 @@ function ProfileView({ api, onLogout }: { api: AuthedFetch; onLogout: () => void
             <p className="font-latin text-sm text-slate-400">{profile.phone}</p>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <button onClick={toggleAvailability} disabled={toggling}
+            <button onClick={toggleAvailability} disabled={toggling || gps.gpsStatus === "requesting"}
               className={"relative h-7 w-12 rounded-full transition-colors " +
-                (isAvailable ? "bg-emerald-500" : "bg-slate-600") + (toggling ? " opacity-60" : "")}>
+                (isAvailable ? "bg-[#2E8B57]" : "bg-slate-600") + (toggling ? " opacity-60" : "")}>
               <span className={"absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform " +
                 (isAvailable ? "translate-x-5" : "translate-x-0.5")} />
             </button>
             <p className={"text-[10px] font-bold " + (isAvailable ? "text-emerald-400" : "text-slate-500")}>
-              {isAvailable ? "En ligne" : "Hors ligne"}
+              {gps.gpsStatus === "requesting" ? "GPS…" : isAvailable ? "En ligne" : "Hors ligne"}
             </p>
           </div>
         </div>
+
+        {gpsBlocked && (
+          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+            <MapPin size={15} className="mt-0.5 shrink-0 text-amber-400" />
+            <p className="text-xs font-semibold text-amber-300">
+              Activation du GPS obligatoire pour recevoir les commandes de livraison.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
@@ -523,6 +599,7 @@ export default function LivreurPage() {
   const [registeredPhone, setRegisteredPhone] = useState("");
 
   const [appTab, setAppTab] = useState<AppTab>("orders");
+  const gps = useGPS();
 
   const logoutTimer = useRef<number | null>(null);
 
@@ -650,11 +727,8 @@ export default function LivreurPage() {
         <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden bg-slate-900 shadow-2xl">
           <div className="flex items-center justify-between border-b border-slate-700 bg-slate-900 px-4 py-3">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500">
-                <Leaf size={14} className="text-white" />
-              </div>
-              <span className="font-latin text-sm font-extrabold text-white">GreenGo</span>
-              <span className="text-xs text-slate-500">· Livreur</span>
+              <img src="/greengo-logo.svg" alt="GreenGo" className="h-5" />
+              <span className="text-xs font-semibold text-slate-500">· Livreur</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
@@ -663,9 +737,9 @@ export default function LivreurPage() {
           </div>
 
           <div className="flex-1 overflow-hidden">
-            {appTab === "orders"  && <OrdersView  api={authedFetch} />}
+            {appTab === "orders"  && <OrdersView  api={authedFetch} gps={gps} />}
             {appTab === "gains"   && <GainsView   api={authedFetch} />}
-            {appTab === "profile" && <ProfileView api={authedFetch} onLogout={() => logout()} />}
+            {appTab === "profile" && <ProfileView api={authedFetch} gps={gps} onLogout={() => logout()} />}
           </div>
 
           <BottomNav tab={appTab} setTab={setAppTab} />
@@ -706,9 +780,7 @@ export default function LivreurPage() {
         <div className="flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5 py-10">
           <form onSubmit={submitRegistration} className="w-full rounded-3xl border border-slate-700 bg-slate-800 p-8 shadow-2xl">
             <div className="mb-5 text-center">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15">
-                <Package size={26} className="text-emerald-400" />
-              </div>
+              <img src="/greengo-logo.svg" alt="GreenGo" className="mx-auto mb-3 h-8" />
               <h1 className="text-xl font-extrabold text-slate-100">Devenir livreur</h1>
               <p className="mt-1 text-xs text-slate-400">Remplissez le formulaire ci-dessous</p>
             </div>
@@ -756,7 +828,7 @@ export default function LivreurPage() {
             <button
               type="submit"
               disabled={regBusy}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-base font-extrabold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-4 text-base font-extrabold text-white shadow-lg shadow-[#2E8B57]/30 transition-all hover:bg-[#1F6B40] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {regBusy ? <><Loader2 size={18} className="animate-spin" /> Envoi…</> : "Envoyer ma demande"}
             </button>
@@ -780,10 +852,8 @@ export default function LivreurPage() {
       <div className="flex min-h-screen w-full max-w-md flex-col items-center justify-center px-5">
         <form onSubmit={submitPin} className="w-full rounded-3xl border border-slate-700 bg-slate-800 p-8 shadow-2xl">
           <div className="mb-6 text-center">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15">
-              <Package size={26} className="text-emerald-400" />
-            </div>
-            <h1 className="text-xl font-extrabold text-slate-100">Espace Livreur</h1>
+            <img src="/greengo-logo.svg" alt="GreenGo" className="mx-auto mb-3 h-9" />
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#3CAE6E]">Espace Livreur</p>
             <p className="mt-1 text-xs text-slate-400">Entrez votre code PIN</p>
           </div>
 
@@ -809,7 +879,7 @@ export default function LivreurPage() {
           <button
             type="submit"
             disabled={!pinValid || authing}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-4 text-base font-extrabold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-4 text-base font-extrabold text-white shadow-lg shadow-[#2E8B57]/30 transition-all hover:bg-[#1F6B40] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {authing ? <><Loader2 size={18} className="animate-spin" /> Connexion…</> : "Se connecter"}
           </button>
