@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle, ArrowLeft, CheckCircle2, Clock, Loader2, LogOut, MapPin,
-  Phone, Shield, ShoppingBag, TrendingUp, Truck, User,
+  Phone, RefreshCw, Shield, ShoppingBag, TrendingUp, Truck, User, X,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
@@ -37,6 +37,42 @@ type OrderTab = "new" | "processing" | "delivered";
  *  Everything in this file works in lowercase snake_case. */
 function normStatus(s: string): string {
   return (s || "").toLowerCase().replace(/ +/g, "_");
+}
+
+// ── New-order alerts ─────────────────────────────────────────────────────────
+
+let _audioCtx: AudioContext | null = null;
+
+function playNewOrderChime(): void {
+  try {
+    if (!_audioCtx) _audioCtx = new AudioContext();
+    const ctx = _audioCtx;
+    const tone = (freq: number, start: number, dur: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + start + 0.02);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    };
+    tone(880, 0, 0.12);
+    tone(1100, 0.15, 0.18);
+  } catch {
+    /* AudioContext blocked until a user gesture -- silent */
+  }
+}
+
+function triggerHaptic(): void {
+  try {
+    if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+  } catch {
+    /* unsupported -- silent */
+  }
 }
 
 type GPSStatus = "idle" | "requesting" | "granted" | "denied" | "unavailable";
@@ -89,6 +125,7 @@ interface RiderOrder {
   status:            string;
   ready_at:          string;
   assigned_at:       string;
+  notes?:            string;
 }
 
 interface EarningsData {
@@ -191,6 +228,10 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
   const [claimingId,   setClaimingId]   = useState<string | null>(null);
   const [deliveringId, setDeliveringId] = useState<string | null>(null);
   const [busyId,       setBusyId]       = useState<string | null>(null);
+  const [refreshing,   setRefreshing]   = useState(false);
+  const [modalOrder,   setModalOrder]   = useState<RiderOrder | null>(null);
+
+  const prevIdsRef = useRef<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -201,19 +242,58 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
       const res = await api(path);
       if (res.ok) {
         const data: RiderOrder[] = await res.json();
-        setOrders(data.map(o => ({ ...o, status: normStatus(o.status) })));
+        const mapped = data.map(o => ({ ...o, status: normStatus(o.status) }));
+        setOrders(mapped);
+
+        // Alert on genuinely new pool entries -- but never on the first load.
+        if (orderTab === "new") {
+          const hasNew = mapped.some(o => !prevIdsRef.current.has(o.id));
+          if (hasNew && prevIdsRef.current.size > 0) {
+            playNewOrderChime();
+            triggerHaptic();
+          }
+          prevIdsRef.current = new Set(mapped.map(o => o.id));
+        }
       }
     } catch { /* authedFetch handles auth errors; ignore transient network */ }
     finally { setLoading(false); }
   }, [api, orderTab]);
 
-  // Poll while the tab is visible: faster on "new" (waiting for work).
+  async function manualRefresh() {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }
+
+  // Poll while the tab is visible; stop the timer entirely when hidden and
+  // resume (with an immediate refresh) on return.
   useEffect(() => {
+    prevIdsRef.current = new Set();  // reset the alert baseline per tab
     void load();
-    const interval = setInterval(() => {
-      if (document.visibilityState !== "hidden") void load();
-    }, orderTab === "new" ? 8000 : 10000);
-    return () => clearInterval(interval);
+
+    const intervalMs = orderTab === "new" ? 8000 : 10000;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const start = () => {
+      if (intervalId) return;
+      intervalId = setInterval(() => {
+        if (document.visibilityState !== "hidden") void load();
+      }, intervalMs);
+    };
+    const stop = () => {
+      if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") stop();
+      else { void load(); start(); }
+    };
+
+    start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [load, orderTab]);
 
   async function handleClaim(orderId: string) {
@@ -279,6 +359,19 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
           </div>
         ) : (
         <>
+        <div className="flex items-center justify-between px-1 pb-2">
+          <p className="text-xs font-semibold text-emerald-800/60">
+            {orders.length > 0
+              ? `${orders.length} commande${orders.length > 1 ? "s" : ""}`
+              : "Aucune commande"}
+          </p>
+          <button onClick={() => void manualRefresh()} disabled={refreshing || loading}
+            className="flex items-center gap-1.5 rounded-xl border border-emerald-900/40 bg-[#08281C] px-3 py-1.5 text-xs font-semibold text-emerald-400 transition-all hover:bg-[#0A3826] active:scale-95 disabled:opacity-40">
+            <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
+            Actualiser
+          </button>
+        </div>
+
         {loading && orders.length === 0 && (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={28} className="animate-spin text-emerald-500" />
@@ -297,16 +390,18 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
 
         {orders.map((order) => (
           <div key={order.id} className="overflow-hidden rounded-2xl border border-emerald-900/40 bg-[#08281C]">
-            <div className="flex items-center justify-between border-b border-emerald-900/40 px-4 py-3">
-              <span className="font-mono text-xs text-slate-500">#{order.id.slice(-6).toUpperCase()}</span>
-              <StatusPill status={order.status} />
-            </div>
-
-            <div className="space-y-3 p-4">
-              <div>
+            <button type="button" onClick={() => setModalOrder(order)} className="w-full text-left">
+              <div className="flex items-center justify-between border-b border-emerald-900/40 px-4 py-3">
+                <span className="font-mono text-xs text-slate-500">#{order.id.slice(-6).toUpperCase()}</span>
+                <StatusPill status={order.status} />
+              </div>
+              <div className="px-4 pt-4">
                 <p className="text-base font-bold text-slate-100">{order.customer_name || "Client"}</p>
                 <p className="mt-0.5 text-sm text-emerald-200/60">{order.address || "Adresse non renseignée"}</p>
               </div>
+            </button>
+
+            <div className="space-y-3 p-4 pt-3">
 
               <div className="flex items-center gap-2">
                 {order.customer_phone && (
@@ -392,6 +487,66 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
         </>
         )}
       </div>
+
+      {modalOrder && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setModalOrder(null)}>
+          <div className="w-full max-w-md rounded-t-3xl border-t border-emerald-900/40 bg-[#041A12] pb-6"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center pb-2 pt-3">
+              <div className="h-1 w-10 rounded-full bg-emerald-900/60" />
+            </div>
+
+            <div className="flex items-center justify-between border-b border-emerald-900/30 px-5 py-3">
+              <div>
+                <p className="text-base font-extrabold text-white">{modalOrder.customer_name || "Client"}</p>
+                <p className="mt-0.5 text-sm text-emerald-700/80">{modalOrder.address || "Adresse non renseignée"}</p>
+              </div>
+              <button onClick={() => setModalOrder(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50">
+                <X size={15} />
+              </button>
+            </div>
+
+            <div className="max-h-64 space-y-2 overflow-y-auto px-5 py-4">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-emerald-700/70">
+                Détail de la commande
+              </p>
+              {modalOrder.items.map((item, i) => (
+                <div key={i} className="flex items-center justify-between rounded-xl bg-[#08281C] px-4 py-3">
+                  <span dir="rtl" className="flex-1 font-arabic text-sm text-white">{item.name}</span>
+                  <span className="ml-3 shrink-0 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-0.5 font-latin text-xs font-bold text-emerald-300">
+                    {item.quantity} {item.unit}
+                  </span>
+                </div>
+              ))}
+              {modalOrder.items.length === 0 && (
+                <p className="py-4 text-center text-sm text-emerald-800/60">Aucun article</p>
+              )}
+            </div>
+
+            {modalOrder.notes && (
+              <div className="mx-5 mb-4 rounded-xl border border-amber-700/30 bg-amber-900/15 px-4 py-3">
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-amber-600/70">Note client</p>
+                <p className="text-sm text-amber-200/80">{modalOrder.notes}</p>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between border-t border-emerald-900/30 px-5 py-4">
+              <div>
+                <p className="text-xs text-emerald-800/60">Commission</p>
+                <p className="font-latin text-xl font-extrabold text-[#10B981]">
+                  {modalOrder.driver_payout_mad.toFixed(0)} MAD
+                </p>
+              </div>
+              <button onClick={() => setModalOrder(null)}
+                className="rounded-2xl border border-emerald-900/40 bg-[#08281C] px-5 py-2.5 text-sm font-semibold text-emerald-400 transition-colors hover:bg-[#0A3826]">
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
