@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle, ArrowLeft, CheckCircle2, Clock, Loader2, LogOut, MapPin,
-  Phone, RefreshCw, Shield, ShoppingBag, TrendingUp, Truck, User, X,
+  Phone, RefreshCw, ShoppingBag, TrendingUp, Truck, User, X,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
@@ -73,6 +73,20 @@ function triggerHaptic(): void {
   } catch {
     /* unsupported -- silent */
   }
+}
+
+const VEHICLE_OPTIONS = [
+  { value: "moto",    label: "Moto / Scooter", icon: "🏍️" },
+  { value: "vélo",    label: "Vélo",            icon: "🚲" },
+  { value: "voiture", label: "Voiture",         icon: "🚗" },
+] as const;
+
+/** Normalize a Moroccan phone to international digits for wa.me links. */
+function toWaPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("212")) return digits;
+  if (digits.startsWith("0")) return "212" + digits.slice(1);
+  return digits;
 }
 
 type GPSStatus = "idle" | "requesting" | "granted" | "denied" | "unavailable";
@@ -141,7 +155,6 @@ interface DriverProfile {
   name:           string;
   phone:          string;
   vehicle_type:   string;
-  cin_masked:     string;
   is_available:   boolean;
   total_earnings: number;
   status:         string;
@@ -418,6 +431,13 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
                   className="flex items-center gap-1.5 rounded-xl border border-emerald-900/50 bg-[#08281C] px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-[#0A3826] hover:text-white">
                   <MapPin size={13} /> Maps
                 </a>
+                {order.customer_phone && (
+                  <a href={"https://wa.me/" + toWaPhone(order.customer_phone)}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-xl border border-[#25D366]/30 bg-[#25D366]/10 px-3 py-2 text-xs font-semibold text-[#25D366] transition-colors hover:bg-[#25D366]/20">
+                    <span className="text-sm leading-none">💬</span> WhatsApp
+                  </a>
+                )}
                 <div className="ml-auto text-right">
                   <p className="font-latin text-lg font-extrabold text-[#10B981]">
                     {order.driver_payout_mad.toFixed(0)} MAD
@@ -539,10 +559,19 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
                   {modalOrder.driver_payout_mad.toFixed(0)} MAD
                 </p>
               </div>
-              <button onClick={() => setModalOrder(null)}
-                className="rounded-2xl border border-emerald-900/40 bg-[#08281C] px-5 py-2.5 text-sm font-semibold text-emerald-400 transition-colors hover:bg-[#0A3826]">
-                Fermer
-              </button>
+              <div className="flex items-center gap-2">
+                {modalOrder.customer_phone && (
+                  <a href={"https://wa.me/" + toWaPhone(modalOrder.customer_phone)}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-xl border border-[#25D366]/30 bg-[#25D366]/10 px-3 py-2.5 text-xs font-semibold text-[#25D366] transition-colors hover:bg-[#25D366]/20">
+                    <span>💬</span> WhatsApp
+                  </a>
+                )}
+                <button onClick={() => setModalOrder(null)}
+                  className="rounded-2xl border border-emerald-900/40 bg-[#08281C] px-5 py-2.5 text-sm font-semibold text-emerald-400 transition-colors hover:bg-[#0A3826]">
+                  Fermer
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -714,8 +743,14 @@ function ProfileView({ api, gps, onLogout }: { api: AuthedFetch; gps: GPSBundle;
 
       <div className="overflow-hidden rounded-2xl border border-emerald-900/40 bg-[#08281C]">
         {[
-          { label: "Type de véhicule", value: profile.vehicle_type || "—", icon: Truck },
-          { label: "CIN",              value: profile.cin_masked || "—",   icon: Shield },
+          {
+            label: "Type de véhicule",
+            value: (() => {
+              const v = VEHICLE_OPTIONS.find(o => o.value === profile.vehicle_type);
+              return v ? `${v.icon} ${v.label}` : (profile.vehicle_type || "—");
+            })(),
+            icon: Truck,
+          },
           { label: "Gains totaux",     value: `${profile.total_earnings.toFixed(0)} MAD`, icon: TrendingUp },
         ].map(({ label, value, icon: Icon }, i, arr) => (
           <div key={label}
@@ -956,15 +991,27 @@ export default function LivreurPage() {
                   className="min-w-0 flex-1 bg-transparent px-4 py-3.5 font-medium text-white outline-none placeholder:text-slate-400"
                 />
               </div>
-              <select
-                value={reg.vehicle_type}
-                onChange={e => setReg(r => ({ ...r, vehicle_type: e.target.value }))}
-                className="w-full appearance-none rounded-xl border border-emerald-500/25 bg-black/25 px-4 py-3.5 font-medium text-white outline-none transition-all focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-              >
-                <option value="moto">Moto / Scooter</option>
-                <option value="vélo">Vélo</option>
-                <option value="voiture">Voiture</option>
-              </select>
+              <div>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-emerald-700/80">
+                  Type de véhicule
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {VEHICLE_OPTIONS.map(({ value, label, icon }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setReg(r => ({ ...r, vehicle_type: value }))}
+                      className={"flex flex-col items-center gap-1.5 rounded-xl border py-3 text-center transition-all " +
+                        (reg.vehicle_type === value
+                          ? "border-emerald-500 bg-emerald-500/15 text-emerald-300"
+                          : "border-emerald-900/30 bg-black/20 text-slate-400 hover:border-emerald-700/40 hover:text-slate-200")}
+                    >
+                      <span className="text-2xl leading-none">{icon}</span>
+                      <span className="text-[10px] font-semibold leading-tight">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {regErr && (

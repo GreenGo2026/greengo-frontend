@@ -7,7 +7,7 @@
  * driver because PIN-only login cannot disambiguate two drivers sharing one.
  */
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, Check, Eye, Loader2, Plus, RefreshCw, Send, Truck, X } from "lucide-react";
+import { AlertCircle, Check, Loader2, Plus, RefreshCw, Send, Truck, X } from "lucide-react";
 import { adminHeaders } from "../../services/adminJwt";
 
 const API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
@@ -28,7 +28,6 @@ type Driver = {
   active: boolean;
   status: "pending" | "active" | "inactive" | "rejected";
   vehicle_type: string;
-  cin_masked: string;
   created_at: string | null;
   activated_at: string | null;
 };
@@ -48,7 +47,6 @@ export default function LivreursTab() {
   const [busyId,   setBusyId]   = useState<string | null>(null);
 
   const [toast, setToast] = useState<{ msg: string; tone: "ok" | "warn" | "err" } | null>(null);
-  const [revealedCin, setRevealedCin] = useState<Record<string, string>>({});
   const [resendingId, setResendingId] = useState<string | null>(null);
 
   function flash(msg: string, tone: "ok" | "warn" | "err" = "ok") {
@@ -123,14 +121,6 @@ export default function LivreursTab() {
     } finally {
       setBusyId(null);
     }
-  }
-
-  async function revealCin(d: Driver) {
-    try {
-      const res = await authFetch(`/api/v1/admin/drivers/${d.id}/cin`);
-      const body = await res.json().catch(() => ({}));
-      if (res.ok) setRevealedCin(prev => ({ ...prev, [d.id]: body.cin || "" }));
-    } catch { /* keep masked */ }
   }
 
   useEffect(() => { void load(); }, [load]);
@@ -214,15 +204,11 @@ export default function LivreursTab() {
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-gray-800">{d.name}</p>
                   <p className="text-[11px] text-gray-500 font-latin">{d.phone} · {d.vehicle_type}</p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-gray-400 font-latin">
-                    CIN : {revealedCin[d.id] ?? d.cin_masked}
-                    {revealedCin[d.id] === undefined && (
-                      <button onClick={() => void revealCin(d)} className="text-gray-400 hover:text-gray-600" aria-label="Révéler le CIN">
-                        <Eye size={12} />
-                      </button>
-                    )}
-                    {d.created_at && <span className="ml-1">· {new Date(d.created_at).toLocaleDateString("fr-MA")}</span>}
-                  </p>
+                  {d.created_at && (
+                    <p className="mt-0.5 text-[11px] text-gray-400 font-latin">
+                      {new Date(d.created_at).toLocaleDateString("fr-MA")}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
