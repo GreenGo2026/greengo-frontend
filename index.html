@@ -56,6 +56,7 @@
       "@context": "https://schema.org",
       "@type": "GroceryStore",
       "name": "GreenGo Market",
+      "alternateName": ["GreenGo", "MyGreenGo"],
       "description": "Épicerie fraîche livrée en 30 minutes à Salé et Rabat. Fruits, légumes, volailles, miel, amlou.",
       "url": "https://www.mygreengoo.com",
       "telephone": "+212664500789",
@@ -80,7 +81,22 @@
       "priceRange": "$$",
       "currenciesAccepted": "MAD",
       "paymentAccepted": "Cash, Card",
-      "areaServed": ["Salé", "Rabat", "Témara"]
+      "areaServed": ["Salé", "Rabat", "Témara"],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Fruits, Légumes et Produits Frais",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Fruits frais" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Légumes frais" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Poulet frais" } }
+        ]
+      },
+      "sameAs": [
+        "https://www.instagram.com/greengoofficiel/",
+        "https://www.facebook.com/people/GreenGo-Market/61570769673419/",
+        "https://www.tiktok.com/@greengofficiel",
+        "https://www.youtube.com/channel/UC4HWgWncCpyCBP7peiR-2Dg"
+      ]
     }
     </script>
     <!-- Google Analytics 4 -->
