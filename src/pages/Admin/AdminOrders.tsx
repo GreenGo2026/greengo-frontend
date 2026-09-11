@@ -34,6 +34,7 @@ interface Order {
   driver_name?: string;
   driver_phone?: string;
   assigned_livreur_id?: string;
+  driver_payout_mad?: number;
 }
 
 interface Driver {
@@ -130,6 +131,72 @@ function getStatusMeta(apiValue: string): StatusMeta {
 // Safe ID extractor — never returns undefined
 function getId(order: Order): string {
   return (order._id ?? order.id ?? "").toString();
+}
+
+// Inline-editable driver commission. Click the pill to open a small editor
+// with quick-pick presets + a custom amount; Enter/checkmark saves, Escape/✕
+// cancels without writing.
+function PayoutEditor({ order, onUpdate }: {
+  order:    Order;
+  onUpdate: (id: string, payout: number) => Promise<void>;
+}) {
+  const current = order.driver_payout_mad ?? 15;
+  const [editing, setEditing] = useState(false);
+  const [value,   setValue]   = useState(String(current));
+  const [saving,  setSaving]  = useState(false);
+
+  const PRESETS = [15, 20, 25, 30];
+
+  async function save() {
+    const n = parseFloat(value);
+    if (isNaN(n) || n <= 0 || n > 500) return;
+    setSaving(true);
+    await onUpdate(getId(order), n);
+    setSaving(false);
+    setEditing(false);
+  }
+
+  if (!editing) {
+    return (
+      <button
+        onClick={() => { setValue(String(current)); setEditing(true); }}
+        className="mt-1.5 flex items-center gap-1.5 rounded-xl border border-[#2E8B57]/20 bg-[#2E8B57]/6 px-2.5 py-1 text-xs font-bold text-[#2E8B57] transition-colors hover:bg-[#2E8B57]/12"
+      >
+        🚚 <span className="font-latin">{current.toFixed(0)} MAD</span>
+        <span className="text-[10px] text-gray-400">✏️</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-1.5 flex items-center gap-1.5 rounded-2xl border border-[#2E8B57]/30 bg-white p-2 shadow-lg">
+      <div className="flex gap-1">
+        {PRESETS.map(p => (
+          <button key={p} onClick={() => setValue(String(p))}
+            className={"rounded-lg px-2 py-1 text-[10px] font-bold transition-colors " +
+              (value === String(p) ? "bg-[#2E8B57] text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200")}>
+            {p}
+          </button>
+        ))}
+      </div>
+      <input
+        type="number" min="1" max="500" step="1"
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        onKeyDown={e => { if (e.key === "Enter") void save(); if (e.key === "Escape") setEditing(false); }}
+        className="w-14 rounded-lg border border-gray-200 px-2 py-1 text-center text-xs font-bold text-gray-700 outline-none focus:border-[#2E8B57]/40"
+      />
+      <span className="text-[10px] text-gray-400">MAD</span>
+      <button onClick={() => void save()} disabled={saving}
+        className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#2E8B57] text-xs text-white disabled:opacity-50">
+        {saving ? "…" : "✓"}
+      </button>
+      <button onClick={() => setEditing(false)}
+        className="flex h-6 w-6 items-center justify-center rounded-lg bg-gray-100 text-xs text-gray-400 hover:bg-gray-200">
+        ✕
+      </button>
+    </div>
+  );
 }
 
 // Driver assignment cell. Dropdown of registered active drivers when any
@@ -453,6 +520,24 @@ export default function AdminOrders() {
   function showToast(msg: string, ok: boolean): void {
     setToast({ msg, ok });
     setTimeout(() => setToast(null), 3500);
+  }
+
+  // ── Driver payout ────────────────────────────────────────────────────────────
+  async function handlePayoutUpdate(id: string, payout: number): Promise<void> {
+    try {
+      const res = await fetch(API_BASE + "/orders/" + id + "/payout", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...adminHeaders() },
+        credentials: "include",
+        body: JSON.stringify({ driver_payout_mad: payout }),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status.toString());
+      setOrders(prev => prev.map(o => (getId(o) === id ? { ...o, driver_payout_mad: payout } : o)));
+      showToast("Commission mise a jour : " + payout + " MAD", true);
+    } catch (err) {
+      console.error("[AdminOrders] handlePayoutUpdate:", err);
+      showToast("Erreur mise a jour commission.", false);
+    }
   }
 
   // ── Driver assignment ──────────────────────────────────────────────────────
@@ -908,6 +993,7 @@ export default function AdminOrders() {
                             onAssign={assignDriver}
                             onToast={showToast}
                           />
+                          <PayoutEditor order={order} onUpdate={handlePayoutUpdate} />
                         </td>
 
                       </tr>
