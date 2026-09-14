@@ -11,6 +11,8 @@ import type { SupportedLanguage } from "../../utils/translations";
 import { getProducts } from "../../services/api";
 import type { DBProduct } from "../../services/api";
 import GlobalSearchBar from "./GlobalSearchBar";
+import { useCustomerAuth } from "../../hooks/useCustomerAuth";
+import OTPLoginModal from "../OTPLoginModal";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const WA_SUPPORT = "https://wa.me/212664500789";
@@ -147,10 +149,14 @@ function itemLabel(item: AccountItem, language: string): string {
 }
 
 // ── Account Dropdown ──────────────────────────────────────────────────────────
-function AccountDropdown({ language, isRTL, onClose }: {
+function AccountDropdown({ language, isRTL, onClose, isLoggedIn, customerName, onLoginClick, onLogoutClick }: {
   language: string;
   isRTL:    boolean;
   onClose:  () => void;
+  isLoggedIn: boolean;
+  customerName?: string;
+  onLoginClick:  () => void;
+  onLogoutClick: () => void;
 }) {
   const font        = language === "ar" ? "font-arabic" : "font-latin";
   const headerLabel = language === "ar" ? "حسابي" : language === "fr" ? "Mon compte" : "My Account";
@@ -166,10 +172,26 @@ function AccountDropdown({ language, isRTL, onClose }: {
             <User size={14} className="text-[#4DB882]" />
           </div>
           <div className={isRTL ? "text-right" : ""}>
-            <p className={"text-xs font-extrabold text-white " + font}>{headerLabel}</p>
+            <p className={"text-xs font-extrabold text-white " + font}>
+              {isLoggedIn ? (customerName || headerLabel) : headerLabel}
+            </p>
             <p className={"text-[10px] text-white/50 " + font}>GreenGo Market</p>
           </div>
         </div>
+      </div>
+
+      <div className="border-b border-white/8 p-3">
+        {isLoggedIn ? (
+          <button onClick={() => { onLogoutClick(); onClose(); }}
+            className={"flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-bold text-white/70 transition-all hover:bg-white/10 hover:text-white " + font}>
+            {language === "ar" ? "تسجيل الخروج" : language === "fr" ? "Se déconnecter" : "Log out"}
+          </button>
+        ) : (
+          <button onClick={() => { onLoginClick(); onClose(); }}
+            className={"flex w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] px-3 py-2.5 text-xs font-bold text-white transition-all hover:bg-[#1F6B40] " + font}>
+            {language === "ar" ? "تسجيل الدخول عبر واتساب" : language === "fr" ? "Se connecter via WhatsApp" : "Log in via WhatsApp"}
+          </button>
+        )}
       </div>
 
       <div className="py-1.5">
@@ -224,6 +246,8 @@ export default function Header() {
   const [accountOpen,     setAccountOpen]     = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [products, setProducts] = useState<DBProduct[]>([]);
+  const { customer, isLoggedIn, login, logout } = useCustomerAuth();
+  const [showLogin, setShowLogin] = useState(false);
 
   const accountRef = useRef<HTMLDivElement>(null);
   const langRef    = useRef<HTMLDivElement>(null);
@@ -392,7 +416,7 @@ export default function Header() {
               <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2E8B57]/30">
                 <User size={11} className="text-[#4DB882]" />
               </div>
-              <span className={font}>{acctLabel}</span>
+              <span className={font}>{isLoggedIn ? (customer?.name || customer?.phone) : acctLabel}</span>
               <ChevronDown size={11} className={"transition-transform duration-200 " + (accountOpen ? "rotate-180" : "")} />
             </button>
             {accountOpen && (
@@ -400,6 +424,10 @@ export default function Header() {
                 language={language}
                 isRTL={isRTL}
                 onClose={() => setAccountOpen(false)}
+                isLoggedIn={isLoggedIn}
+                customerName={customer?.name}
+                onLoginClick={() => setShowLogin(true)}
+                onLogoutClick={logout}
               />
             )}
           </div>
@@ -524,6 +552,13 @@ export default function Header() {
 
           </div>
         </div>
+      )}
+
+      {showLogin && (
+        <OTPLoginModal
+          onSuccess={(t, c) => { login(t, c); setShowLogin(false); }}
+          onClose={() => setShowLogin(false)}
+        />
       )}
 
     </header>

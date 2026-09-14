@@ -13,6 +13,7 @@ import { useReferralStore } from "../store/referralStore";
 import { computeLineTotal } from "../utils/pricing";
 import { getProducts, apiClient } from "../services/api";
 import type { DBProduct } from "../services/api";
+import { useCustomerAuth } from "../hooks/useCustomerAuth";
 import { isValidMoroccanPhone, normalizeForValidation } from "../utils/validation";
 import type { CartItem } from "../store/cartStore";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -457,9 +458,21 @@ export default function CartPage() {
       .catch(() => { /* offline or API hiccup -- keep showing cached prices rather than block the page */ });
   }, []);
 
+  const { token: customerToken, customer: authedCustomer } = useCustomerAuth();
+
   const [name,           setName]           = useState("");
   const [phone,          setPhone]          = useState("");
   const [address,        setAddress]        = useState("");
+
+  // Prefill from a verified customer session -- only into empty fields, and
+  // only once on mount, so it never clobbers what the visitor already typed.
+  useEffect(() => {
+    if (!authedCustomer) return;
+    if (!phone && authedCustomer.phone) setPhone(authedCustomer.phone.replace(/^\+212/, "0"));
+    if (!name && authedCustomer.name) setName(authedCustomer.name);
+    if (!address && authedCustomer.last_address) setAddress(authedCustomer.last_address);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [isReturning,    setIsReturning]    = useState(false);
   const [savedProfile,   setSavedProfile]   = useState<{name:string;address:string} | null>(null);
   const [paymentMethod,  setPaymentMethod]  = useState<"COD">("COD");
@@ -761,7 +774,10 @@ export default function CartPage() {
     try {
       const res = await fetch(API_BASE + "/orders", {
         method:  "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(customerToken ? { Authorization: "Bearer " + customerToken } : {}),
+        },
         body:    JSON.stringify(payload),
       });
       if (!res.ok) {
