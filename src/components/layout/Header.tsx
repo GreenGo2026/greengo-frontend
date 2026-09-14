@@ -550,6 +550,37 @@ export default function Header() {
               </a>
             </div>
 
+            {/* Mobile login/logout — matches desktop AccountDropdown behaviour */}
+            <div className="mt-2 border-t border-white/10 pt-4">
+              {isLoggedIn && customer ? (
+                <div className="space-y-3 px-2">
+                  <div className={"flex items-center gap-3 " + (isRTL ? "flex-row-reverse" : "")}>
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2E8B57]/20">
+                      <span className="text-sm font-extrabold text-[#2E8B57]">
+                        {(customer.name || customer.phone).charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className={isRTL ? "text-right" : ""}>
+                      <p className={"text-sm font-bold text-white " + font}>{customer.name || "Mon Compte"}</p>
+                      <p className="font-latin text-xs text-white/50">{customer.phone}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { logout(); closeAll(); }}
+                    className={"flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-semibold text-white/70 transition-colors hover:bg-white/10 " + font}>
+                    {language === "ar" ? "تسجيل الخروج" : language === "fr" ? "Se déconnecter" : "Log out"}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { closeAll(); setShowLogin(true); }}
+                  className={"flex w-full items-center justify-center gap-2 rounded-xl bg-[#2E8B57] px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/20 transition-colors hover:bg-[#1F6B40] " + font}>
+                  <span>💬</span>
+                  {language === "ar" ? "تسجيل الدخول عبر واتساب" : language === "fr" ? "Se connecter via WhatsApp" : "Log in via WhatsApp"}
+                </button>
+              )}
+            </div>
+
           </div>
         </div>
       )}
