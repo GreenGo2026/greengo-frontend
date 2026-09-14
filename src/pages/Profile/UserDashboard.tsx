@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useCustomerAuth } from "../../hooks/useCustomerAuth";
 import OTPLoginModal from "../../components/OTPLoginModal";
+import SavedBaskets from "../../components/SavedBaskets";
 
 type L = "fr" | "ar" | "en";
 const API = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
@@ -324,7 +325,7 @@ export default function UserDashboard() {
   const [error,     setError]     = useState("");
   const [editName,  setEditName]  = useState(false);
   const [nameVal,   setNameVal]   = useState("");
-  const [activeTab, setActiveTab] = useState<"orders" | "profile">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "baskets" | "profile">("orders");
   const [challenges, setChallenges] = useState<any[]>([]);
   const [challengeStats, setChallengeStats] = useState<{ total_possible_points: number; total_earned_this_week: number } | null>(null);
 
@@ -522,11 +523,13 @@ export default function UserDashboard() {
 
         {/* ── Tabs ── */}
         <div className="flex gap-2 bg-white rounded-2xl p-1.5 border border-gray-100 shadow-sm">
-          {(["orders", "profile"] as const).map(tab => (
+          {(["orders", "baskets", "profile"] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all ${activeTab === tab ? "bg-[#2E8B57] text-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
               {tab === "orders"
                 ? (l === "fr" ? `Commandes${totalOrders > 0 ? ` (${totalOrders})` : ""}` : `الطلبات${totalOrders > 0 ? ` (${totalOrders})` : ""}`)
+                : tab === "baskets"
+                ? (l === "fr" ? "Mes Paniers" : "سلاتي")
                 : (l === "fr" ? "Mon profil" : "ملفي الشخصي")}
             </button>
           ))}
@@ -563,6 +566,9 @@ export default function UserDashboard() {
             )}
           </div>
         )}
+
+        {/* ── Baskets tab ── */}
+        {activeTab === "baskets" && <SavedBaskets />}
 
         {/* ── Profile tab ── */}
         {activeTab === "profile" && (
