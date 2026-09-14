@@ -15,6 +15,7 @@ import { useSeo } from "../hooks/useSeo";
 import { getUrgencySignal, getDiscountedPrice } from "../utils/urgencySignals";
 import { useDeliveryUrgency } from "../hooks/useDeliveryUrgency";
 import { scoreProduct, MIN_RELEVANT_SCORE } from "../utils/normalize";
+import EssentialsCarousel from "../components/EssentialsCarousel";
 
 // ── Niche category definitions ───────────────────────────────────────────────
 export interface NicheCategory {
@@ -1031,6 +1032,10 @@ export default function HomePage() {
         <div className="zellige-border" />
       </div>
       <SocialProofStrip />
+
+      <div className="mx-auto max-w-7xl px-4 pt-4">
+        <EssentialsCarousel />
+      </div>
 
       {/* Breadcrumb — Amazon style, dark theme to match this page's background */}
       <nav dir={dir} className={"max-w-7xl mx-auto px-4 py-2 text-xs text-white/40 flex items-center gap-1.5 " + font + " " + (isRTL ? "flex-row-reverse" : "")}>
