@@ -14,6 +14,7 @@ import CustomersTab from "../components/admin/CustomersTab";
 import NotificationsTab from "../components/admin/NotificationsTab";
 import RecipesTab from "../components/admin/RecipesTab";
 import LivreursTab from "../components/admin/LivreursTab";
+import FlashDealsTab from "../components/admin/FlashDealsTab";
 import {
   updateProductById, updateOrderStatus, getOrders, getProducts, sendCatalogToWhatsApp,
   type DBProduct, type OrderStatus, type Order, type CatalogBroadcastResult,
@@ -34,7 +35,7 @@ function normalizeStatus(raw: string | undefined | null): OrderStatus {
     .replace(/-/g, "_")          // "out-for-delivery" -> "out_for_delivery"
     .trim() as OrderStatus;
 }
-type AdminTab = "orders" | "prices" | "paniers" | "produits" | "whatsapp" | "clients" | "notifications" | "recipes" | "livreurs";
+type AdminTab = "orders" | "prices" | "paniers" | "produits" | "whatsapp" | "clients" | "notifications" | "recipes" | "livreurs" | "flash";
 type Lang     = "fr" | "ar";
 
 interface EditableProduct extends DBProduct {
@@ -535,10 +536,10 @@ export default function AdminPage() {
           <div className={"flex items-center gap-3 "+(lang==="ar"?"flex-row-reverse":"")}>
             <LangToggle lang={lang} setLang={setLang}/>
             <div className="flex items-center gap-0.5 rounded-xl border border-white/10 bg-white/5 p-1">
-              {(["orders","prices","paniers","produits","whatsapp","clients","notifications","recipes","livreurs"]as AdminTab[]).map(tab=>(
+              {(["orders","prices","paniers","produits","whatsapp","clients","notifications","recipes","livreurs","flash"]as AdminTab[]).map(tab=>(
                 <button key={tab} onClick={()=>setActiveTab(tab)} className={"relative flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all "+(activeTab===tab?"bg-[#2E8B57] text-white":"text-white/50 hover:text-white")}>
-                  {tab==="orders"?<ShoppingBag size={12}/>:tab==="prices"?<TrendingUp size={12}/>:tab==="whatsapp"?<MessageCircle size={12}/>:tab==="clients"?<Users size={12}/>:tab==="notifications"?<Bell size={12}/>:tab==="recipes"?<span>🍽️</span>:tab==="livreurs"?<Bike size={12}/>:<Package size={12}/>}
-                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:tab==="paniers"?"Paniers":tab==="whatsapp"?"WhatsApp":tab==="clients"?"Clients":tab==="notifications"?"🔔 Notifications":tab==="recipes"?"🍽️ Recettes":tab==="livreurs"?"Livreurs":"🌿 Produits"}
+                  {tab==="orders"?<ShoppingBag size={12}/>:tab==="prices"?<TrendingUp size={12}/>:tab==="whatsapp"?<MessageCircle size={12}/>:tab==="clients"?<Users size={12}/>:tab==="notifications"?<Bell size={12}/>:tab==="recipes"?<span>🍽️</span>:tab==="livreurs"?<Bike size={12}/>:tab==="flash"?<Zap size={12}/>:<Package size={12}/>}
+                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:tab==="paniers"?"Paniers":tab==="whatsapp"?"WhatsApp":tab==="clients"?"Clients":tab==="notifications"?"🔔 Notifications":tab==="recipes"?"🍽️ Recettes":tab==="livreurs"?"Livreurs":tab==="flash"?"⚡ Flash Deals":"🌿 Produits"}
                   {tab==="orders"&&pendingCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-extrabold text-white">{pendingCount}</span>}
                   {/* Deliveries a driver submitted that still need an admin sign-off. */}
                   {tab==="orders"&&confirmCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-lime-500 px-1 text-[10px] font-extrabold text-white">{confirmCount}</span>}
@@ -594,6 +595,7 @@ export default function AdminPage() {
         {activeTab==="notifications"&&<NotificationsTab/>}
         {activeTab==="recipes"&&<RecipesTab/>}
         {activeTab==="livreurs"&&<LivreursTab/>}
+        {activeTab==="flash"&&<FlashDealsTab/>}
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ import { getUrgencySignal, getDiscountedPrice } from "../utils/urgencySignals";
 import { useDeliveryUrgency } from "../hooks/useDeliveryUrgency";
 import { scoreProduct, MIN_RELEVANT_SCORE } from "../utils/normalize";
 import EssentialsCarousel from "../components/EssentialsCarousel";
+import FlashDealsSection from "../components/FlashDealsSection";
 
 // ── Niche category definitions ───────────────────────────────────────────────
 export interface NicheCategory {
@@ -1035,6 +1036,7 @@ export default function HomePage() {
 
       <div className="mx-auto max-w-7xl px-4 pt-4">
         <EssentialsCarousel />
+        <FlashDealsSection />
       </div>
 
       {/* Breadcrumb — Amazon style, dark theme to match this page's background */}
