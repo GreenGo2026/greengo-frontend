@@ -1,5 +1,7 @@
 // src/pages/Profile/UserDashboard.tsx
-// Phone-based identity — ready for OTP upgrade later
+// Phone-based identity — OTP upgrade: a verified session skips the manual
+// phone-entry gate and auto-loads via the same loadData(phone) path. Logged-
+// out visitors keep the original gate untouched, with a login option above it.
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -8,6 +10,8 @@ import {
   XCircle, Phone, Star, MessageCircle, ShoppingCart,
   RefreshCw, Loader2, LogOut, Edit3, Check, Copy, Gift,
 } from "lucide-react";
+import { useCustomerAuth } from "../../hooks/useCustomerAuth";
+import OTPLoginModal from "../../components/OTPLoginModal";
 
 type L = "fr" | "ar" | "en";
 const API = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
@@ -310,6 +314,9 @@ export default function UserDashboard() {
   const l    = language as L;
   const font = l === "ar" ? "font-arabic" : "font-latin";
 
+  const { customer, isLoggedIn, login } = useCustomerAuth();
+  const [showLogin, setShowLogin] = useState(false);
+
   const [phone,     setPhone]     = useState(() => localStorage.getItem(CACHE_KEY) || "");
   const [profile,   setProfile]   = useState<any>(null);
   const [orders,    setOrders]    = useState<any[]>([]);
@@ -362,6 +369,17 @@ export default function UserDashboard() {
     if (phone) loadData(phone);
   }, []);
 
+  // A verified OTP session skips the manual phone-entry gate entirely --
+  // same loadData(phone) path, just fed from the JWT-backed session instead
+  // of a typed number. Guarded by phone so it doesn't refight the user's own
+  // gate submission or a subsequent logout.
+  useEffect(() => {
+    if (isLoggedIn && customer?.phone && !phone) {
+      handlePhoneSubmit(customer.phone);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, customer?.phone]);
+
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [activeTab]);
 
   function handlePhoneSubmit(ph: string) {
@@ -380,7 +398,24 @@ export default function UserDashboard() {
 
   if (!phone) return (
     <div className={font} dir={isRTL ? "rtl" : "ltr"} style={{ background: "#FAF7F2", minHeight: "100vh" }}>
+      {!isLoggedIn && (
+        <div className="mx-auto max-w-sm px-6 pt-8 text-center">
+          <button onClick={() => setShowLogin(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/20 transition-all hover:bg-[#1F6B40] active:scale-[0.98]">
+            <MessageCircle size={16} /> Se connecter via WhatsApp
+          </button>
+          <p className="mt-3 text-xs text-gray-400">
+            {l === "fr" ? "ou entrez votre numéro ci-dessous" : l === "ar" ? "أو أدخل رقمك أدناه" : "or enter your number below"}
+          </p>
+        </div>
+      )}
       <PhoneEntry onSubmit={handlePhoneSubmit} lang={language} />
+      {showLogin && (
+        <OTPLoginModal
+          onSuccess={(t, c) => { login(t, c); setShowLogin(false); }}
+          onClose={() => setShowLogin(false)}
+        />
+      )}
     </div>
   );
 
