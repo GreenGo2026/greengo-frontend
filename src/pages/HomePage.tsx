@@ -598,6 +598,17 @@ function ProductGalleryModal({
   );
 }
 
+// ── Frequently Bought Together ──────────────────────────────────────────────────
+interface BundleResult {
+  label_fr: string;
+  complements: {
+    id: string; name_ar: string; name_fr: string;
+    price_mad: number; unit: string; image_url: string; in_stock: boolean;
+  }[];
+}
+
+const BUNDLE_API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "") + "/api/v1/products/";
+
 // ── Product Card ──────────────────────────────────────────────────────────────
 // ── Product Card ──────────────────────────────────────────────────────────────
 function ProductCard({ product, rank, compact = false }: { product: DBProduct; rank: number; compact?: boolean }) {
@@ -609,10 +620,28 @@ function ProductCard({ product, rank, compact = false }: { product: DBProduct; r
   const isTop3  = rank < 3;
   const [showModal, setShowModal] = useState(false);
   const [imgError,  setImgError]  = useState(false);
+  const [bundleOpen,    setBundleOpen]    = useState(false);
+  const [bundleData,    setBundleData]    = useState<BundleResult | null>(null);
+  const [bundleLoading, setBundleLoading] = useState(false);
   const add    = useCartStore((s) => s.addToCart);
   const cart   = useCartStore((s) => s.cart);
   const signal = getUrgencySignal(product);
   const deliveryUrgency = useDeliveryUrgency();
+
+  function toggleBundle(): void {
+    if (bundleData) { setBundleOpen((v) => !v); return; }
+    setBundleLoading(true);
+    fetch(BUNDLE_API + product.id + "/bundle")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: BundleResult | []) => {
+        if (data && !Array.isArray(data) && data.complements?.length) {
+          setBundleData(data);
+          setBundleOpen(true);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setBundleLoading(false));
+  }
   // "Rupture de stock" and "Frais du jour" already have dedicated badges on this
   // card (top-right stock pill, bottom-right Maroc/fresh pill) — only surface the
   // discount and low-stock signals here to avoid showing the same thing twice.
@@ -800,8 +829,70 @@ function ProductCard({ product, rank, compact = false }: { product: DBProduct; r
               ? <VariantCardControl product={product} />
               : <QtyControl product={product} />}
           </div>
+          {product.in_stock && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleBundle(); }}
+              className="mt-1 flex w-full items-center justify-center gap-1 py-1 text-[11px] font-semibold text-[#2E8B57]/70 hover:text-[#2E8B57] transition-colors">
+              {bundleLoading
+                ? <Loader2 size={10} className="animate-spin" />
+                : bundleOpen ? "▲ Fermer" : "🛒 Souvent avec →"}
+            </button>
+          )}
         </div>
       </article>
+
+      {/* Frequently Bought Together — inline expansion, breaks out of the grid
+          row via col-span-full since the parent container is CSS Grid. */}
+      {bundleOpen && bundleData && (
+        <div className="col-span-full mt-0 mb-3 rounded-2xl border border-[#2E8B57]/15 bg-[#2E8B57]/4 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-extrabold text-[#2E8B57] uppercase tracking-wider">
+              🛒 {bundleData.label_fr}
+            </p>
+            <button
+              onClick={() => {
+                bundleData.complements
+                  .filter((c) => c.in_stock)
+                  .forEach((c) => add({
+                    name: c.name_ar, price_per_unit: c.price_mad,
+                    unit: c.unit, available: true,
+                  }, getUnitStep(c.unit)));
+                setBundleOpen(false);
+              }}
+              className="rounded-xl bg-[#2E8B57] px-3 py-1.5 text-xs font-extrabold text-white hover:bg-[#1F6B40] active:scale-95 transition-all">
+              Tout ajouter
+            </button>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {bundleData.complements.map((c) => (
+              <button key={c.id}
+                onClick={() => add({
+                  name: c.name_ar, price_per_unit: c.price_mad,
+                  unit: c.unit, available: c.in_stock,
+                }, getUnitStep(c.unit))}
+                disabled={!c.in_stock}
+                className={"flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-all active:scale-95 " +
+                  (c.in_stock
+                    ? "border-[#2E8B57]/20 bg-white hover:border-[#2E8B57]/40"
+                    : "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed")}>
+                {c.image_url && (
+                  <img src={c.image_url} alt={c.name_fr}
+                    className="h-8 w-8 rounded-lg object-cover shrink-0" />
+                )}
+                <div className="text-right">
+                  <p dir="rtl" className="font-bold text-gray-800 font-arabic text-[11px] leading-none">
+                    {c.name_ar}
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-latin mt-0.5">
+                    {c.price_mad.toFixed(2)} MAD
+                  </p>
+                </div>
+                {c.in_stock && <ShoppingCart size={10} className="text-[#2E8B57] shrink-0" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {showModal && (
         <ProductGalleryModal
           product={product}
