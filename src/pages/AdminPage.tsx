@@ -91,6 +91,8 @@ const I: Record<Lang, Record<string,string>> = {
     toast_saved:" prix publi\u00e9s!", toast_no_dirty:"Aucun changement.",
     toast_partial:" sauvegard\u00e9s,", toast_failed:" \u00e9chou\u00e9s.",
     update_failed:"\u00c9chec \u2014 r\u00e9essayez.",
+    update_failed_stale:"\u00c9chec \u2014 la commande a chang\u00e9, actualisation...",
+    session_expired:"Session expir\u00e9e \u2014 veuillez vous reconnecter.",
     price_manager:"Gestionnaire de prix",
     urgent_badge:"Urgent", oldest_badge:"Ancienne",
     completed_note:"Commande termin\u00e9e.", cancelled_note:"Commande refus\u00e9e.",
@@ -134,6 +136,8 @@ const I: Record<Lang, Record<string,string>> = {
     toast_saved:" \u0633\u0639\u0631 \u062a\u0645 \u0646\u0634\u0631\u0647!", toast_no_dirty:"\u0644\u0627 \u062a\u0648\u062c\u062f \u062a\u063a\u064a\u064a\u0631\u0627\u062a.",
     toast_partial:" \u062a\u0645 \u062d\u0641\u0638\u0647\u0627\u060c", toast_failed:" \u0641\u0634\u0644\u062a.",
     update_failed:"\u0641\u0634\u0644 \u2014 \u062d\u0627\u0648\u0644 \u0645\u062c\u062f\u062f\u0627\u064b.",
+    update_failed_stale:"\u0641\u0634\u0644 \u2014 \u062a\u063a\u064a\u0651\u0631\u062a \u062d\u0627\u0644\u0629 \u0627\u0644\u0637\u0644\u0628\u060c \u062c\u0627\u0631\u064d \u0627\u0644\u062a\u062d\u062f\u064a\u062b...",
+    session_expired:"\u0627\u0646\u062a\u0647\u062a \u0627\u0644\u062c\u0644\u0633\u0629 \u2014 \u064a\u0631\u062c\u0649 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0645\u062c\u062f\u062f\u0627\u064b.",
     price_manager:"\u0645\u062f\u064a\u0631 \u0627\u0644\u0623\u0633\u0639\u0627\u0631",
     urgent_badge:"\u0639\u0627\u062c\u0644", oldest_badge:"\u0642\u062f\u064a\u0645\u0629",
     completed_note:"\u0627\u0643\u062a\u0645\u0644 \u0627\u0644\u0637\u0644\u0628.", cancelled_note:"\u062a\u0645 \u0631\u0641\u0636 \u0627\u0644\u0637\u0644\u0628.",
@@ -234,7 +238,12 @@ function OrderCard({order,lang,isOldest,onStatusChange,showToast,onRefresh}:{ord
       else if(s==="delivered"||s==="completed")showToast(L.toast_payment,"success");
       else if(s==="cancelled")showToast(L.toast_rejected,"error");
       onRefresh();
-    }catch{showToast(L.update_failed,"error");}finally{setLoading(null);}
+    }catch(err:unknown){
+      const status=(err as {response?:{status?:number}})?.response?.status;
+      if(status===400){showToast(L.update_failed_stale,"error");onRefresh();}
+      else if(status===401||status===403){showToast(L.session_expired,"error");}
+      else{showToast(L.update_failed,"error");}
+    }finally{setLoading(null);}
   }
   return(
     <div className={"overflow-hidden rounded-2xl border-2 bg-white shadow-sm transition-all duration-300 hover:shadow-lg "+borderCls}>
