@@ -1,9 +1,106 @@
 // src/pages/TrackOrderPage.tsx
 import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { useLanguage } from "../contexts/LanguageContext";
 import { trackOrder } from "../services/api";
 import { useCartStore, getUnitStep } from "../store/cartStore";
+
+// Fix Leaflet's default marker icon (assets resolve relative to leaflet's own
+// package path under Vite/bundlers, not the app's public dir) -- point them
+// at the CDN copies instead of shipping the icon PNGs ourselves.
+delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl:       "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl:     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+const driverIcon = L.divIcon({
+  html: `<div style="width:16px;height:16px;border-radius:50%;background:#10B981;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+  iconSize:   [16, 16],
+  iconAnchor: [8, 8],
+  className:  "",
+});
+
+const deliveryIcon = L.divIcon({
+  html: `<div style="width:14px;height:14px;border-radius:50%;background:#F97316;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+  iconSize:   [14, 14],
+  iconAnchor: [7, 7],
+  className:  "",
+});
+
+// Recenters/refits the map whenever the marker set changes (driver ping
+// arrives, or the address-only fallback is all that's available).
+function FitBounds({ positions }: { positions: [number, number][] }) {
+  const map = useMap();
+  useEffect(() => {
+    if (positions.length >= 2) {
+      map.fitBounds(positions, { padding: [40, 40] });
+    } else if (positions.length === 1) {
+      map.setView(positions[0], 15);
+    }
+  }, [map, positions.map((p) => p.join(",")).join("|")]);
+  return null;
+}
+
+function DeliveryMap({ tracking }: { tracking: TrackingData }) {
+  const [, forceTick] = useState(0);
+  // Re-render every 15s so the "updated Xs ago" label stays live between polls.
+  useEffect(() => {
+    const id = setInterval(() => forceTick((n) => n + 1), 15000);
+    return () => clearInterval(id);
+  }, []);
+
+  const { driver_location, gps_coordinates } = tracking;
+  if (!driver_location && !gps_coordinates) return null;
+
+  const positions: [number, number][] = [
+    ...(driver_location ? [[driver_location.lat, driver_location.lng] as [number, number]] : []),
+    ...(gps_coordinates ? [[gps_coordinates.lat, gps_coordinates.lng] as [number, number]] : []),
+  ];
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-green-800/20 bg-white/[0.04]">
+      <div className="flex items-center gap-2 border-b border-green-800/20 px-4 py-2.5">
+        <span className={"h-2.5 w-2.5 rounded-full " + (driver_location ? "bg-emerald-500 animate-pulse" : "bg-white/20")} />
+        <p className="text-xs font-semibold text-white/60">
+          {driver_location ? "Livreur en direct" : "Localisation en cours..."}
+        </p>
+        {driver_location && (
+          <span className="ml-auto text-[10px] text-white/30">
+            Mis à jour il y a {Math.max(0, Math.floor((Date.now() - new Date(driver_location.recorded_at).getTime()) / 1000))}s
+          </span>
+        )}
+      </div>
+      <MapContainer
+        center={[driver_location?.lat ?? gps_coordinates?.lat ?? 34.03, driver_location?.lng ?? gps_coordinates?.lng ?? -6.78]}
+        zoom={14}
+        style={{ height: "220px", width: "100%" }}
+        zoomControl={false}
+        scrollWheelZoom={false}
+        dragging={true}>
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
+        />
+        <FitBounds positions={positions} />
+        {driver_location && (
+          <Marker position={[driver_location.lat, driver_location.lng]} icon={driverIcon}>
+            <Popup>🛵 Livreur</Popup>
+          </Marker>
+        )}
+        {gps_coordinates && (
+          <Marker position={[gps_coordinates.lat, gps_coordinates.lng]} icon={deliveryIcon}>
+            <Popup>📍 Adresse de livraison</Popup>
+          </Marker>
+        )}
+      </MapContainer>
+    </div>
+  );
+}
 
 type L = "fr" | "ar" | "en";
 
@@ -29,6 +126,8 @@ interface TrackingData {
   created_at:          string;
   status_history:      TrackingHistoryEntry[];
   items:               TrackingOrderItem[];
+  driver_location:     { lat: number; lng: number; recorded_at: string } | null;
+  gps_coordinates:     { lat: number; lng: number } | null;
 }
 
 const T = {
@@ -325,6 +424,8 @@ export default function TrackOrderPage() {
             <div className="bg-white/[0.04] border border-green-800/20 rounded-2xl p-5">
               <StatusTimeline status={order.status} lang={language} history={order.status_history || []} createdAt={order.created_at} />
             </div>
+
+            <DeliveryMap tracking={order} />
 
             {/* Driver info */}
             <div className="bg-white/[0.04] border border-amber-800/20 rounded-2xl p-5">

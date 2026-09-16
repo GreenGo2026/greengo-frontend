@@ -211,6 +211,8 @@ export interface TrackedOrder {
   driver_phone:        string | null;
   estimated_delivery:  string | null;
   status_history:      TrackedOrderHistoryEntry[];
+  driver_location:     { lat: number; lng: number; recorded_at: string } | null;
+  gps_coordinates:     { lat: number; lng: number } | null;
 }
 
 export async function trackOrder(params: { order_ref?: string; phone?: string }): Promise<TrackedOrder[]> {

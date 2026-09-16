@@ -232,6 +232,37 @@ function BottomNav({ tab, setTab }: { tab: AppTab; setTab: (t: AppTab) => void }
   );
 }
 
+// ── Live location ping ──────────────────────────────────────────────────────
+// Mounted per active delivery (out_for_delivery / pending_confirmation).
+// Pings every 15s so the customer tracking page can render a live pin;
+// paused while the tab is hidden, stopped entirely once the order card
+// unmounts (status moved to a terminal state, or the order left this tab).
+function DeliveryPingEffect({ orderId, api }: { orderId: string; api: AuthedFetch }) {
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          api("/location", {
+            method:  "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({
+              latitude:  pos.coords.latitude,
+              longitude: pos.coords.longitude,
+              order_id:  orderId,
+            }),
+          }).catch(() => { /* fire-and-forget, never block the driver's UI */ });
+        },
+        () => { /* GPS denied/unavailable mid-delivery — skip this tick */ },
+        { timeout: 8000, enableHighAccuracy: true },
+      );
+    }, 15000);
+    return () => clearInterval(id);
+  }, [orderId, api]);
+  return null;
+}
+
 // ── Orders view ──────────────────────────────────────────────────────────────
 
 function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
@@ -400,6 +431,10 @@ function OrdersView({ api, gps }: { api: AuthedFetch; gps: GPSBundle }) {
             </p>
           </div>
         )}
+
+        {orders
+          .filter((o) => o.status === "out_for_delivery" || o.status === "pending_confirmation")
+          .map((o) => <DeliveryPingEffect key={o.id} orderId={o.id} api={api} />)}
 
         {orders.map((order) => (
           <div key={order.id} className="overflow-hidden rounded-2xl border border-emerald-900/40 bg-[#08281C]">
