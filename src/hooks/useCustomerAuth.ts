@@ -14,6 +14,7 @@ export interface CustomerProfile {
   total_points:  number;
   total_orders:  number;
   referral_code: string;
+  tier?:         "consumer" | "b2b";
 }
 
 function safeGet(key: string): string | null {

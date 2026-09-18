@@ -63,6 +63,8 @@ export interface DBProduct {
   step?: 0.25 | 0.5 | 1;
   stock_qty?: number | null;
   variants?: ProductVariant[] | null;
+  avg_rating?:   number | null;
+  review_count?: number;
 }
 
 export interface DBProductUpdate {

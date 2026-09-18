@@ -765,7 +765,17 @@ function ProductCard({ product, rank, compact = false }: { product: DBProduct; r
                 {product.name_fr}
               </p>
             )}
-            {product.image_url && (
+            {product.avg_rating && product.review_count && product.review_count > 0 ? (
+              <div className="flex items-center gap-1 mt-1">
+                <span className="text-xs text-amber-400 leading-none">
+                  {"★".repeat(Math.round(product.avg_rating))}
+                  {"☆".repeat(5 - Math.round(product.avg_rating))}
+                </span>
+                <span className="text-[10px] text-gray-400 font-latin">
+                  {product.avg_rating.toFixed(1)} ({product.review_count})
+                </span>
+              </div>
+            ) : product.image_url && (
               <div className="flex items-center gap-0.5 mt-1" title={language === "ar" ? "علامة جودة GreenGo — ليست تقييمات عملاء" : language === "fr" ? "Repère qualité GreenGo — pas des avis clients" : "GreenGo quality mark — not a customer review"}>
                 {[1, 2, 3, 4, 5].map((i) => (
                   <span key={i} className="text-yellow-400 text-xs leading-none">★</span>
