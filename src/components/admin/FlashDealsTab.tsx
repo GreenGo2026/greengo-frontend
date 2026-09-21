@@ -107,12 +107,12 @@ export default function FlashDealsTab() {
           <Zap size={15} className="text-orange-500" /> Créer une Offre Express
         </h3>
         <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2">
+          <div className="col-span-2 min-w-0">
             <label className="mb-1 block text-xs font-semibold text-gray-500">Nom du produit (name_ar exact)</label>
             <input value={form.product_name_ar}
               onChange={(e) => setForm((f) => ({ ...f, product_name_ar: e.target.value }))}
               dir="rtl" placeholder="طماطم"
-              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 font-arabic text-sm outline-none focus:border-orange-400" />
+              className="w-full min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2.5 font-arabic text-sm outline-none overflow-hidden text-ellipsis focus:border-orange-400" />
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-gray-500">Remise (%)</label>
