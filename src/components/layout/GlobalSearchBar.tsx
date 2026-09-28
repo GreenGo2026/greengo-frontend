@@ -8,6 +8,7 @@ import { Search, X } from "lucide-react";
 import { scoreProduct, MIN_RELEVANT_SCORE } from "../../utils/normalize";
 import { useLanguage } from "../../contexts/LanguageContext";
 import type { DBProduct } from "../../services/api";
+import VoiceSearchButton from "../VoiceSearchButton";
 
 const _API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 function resolveImg(url: string | null | undefined): string {
@@ -185,6 +186,11 @@ export default function GlobalSearchBar({ products = [] }: Props) {
           aria-label={language === "ar" ? "ابحث عن منتج" : language === "fr" ? "Rechercher un produit" : "Search a product"}
           aria-expanded={open}
           aria-autocomplete="list"
+        />
+        <VoiceSearchButton
+          variant="light"
+          onTranscript={(text) => { setQuery(text); handleSubmit(text); }}
+          className="mx-1"
         />
         {query && (
           <button onClick={clearSearch} className="px-3 text-gray-400 hover:text-gray-600 flex-shrink-0">
