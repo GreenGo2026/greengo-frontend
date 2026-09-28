@@ -17,6 +17,7 @@ import { useDeliveryUrgency } from "../hooks/useDeliveryUrgency";
 import { scoreProduct, MIN_RELEVANT_SCORE } from "../utils/normalize";
 import EssentialsCarousel from "../components/EssentialsCarousel";
 import FlashDealsSection from "../components/FlashDealsSection";
+import VoiceSearchButton from "../components/VoiceSearchButton";
 
 // ── Niche category definitions ───────────────────────────────────────────────
 export interface NicheCategory {
@@ -1400,7 +1401,11 @@ export default function HomePage() {
                 onChange={(e) => handleSearchChange(e.target.value)}
                 dir={dir}
                 placeholder={language === "ar" ? "ابحث عن منتج…" : language === "fr" ? "Rechercher un produit…" : "Search products…"}
-                className={"w-full rounded-2xl border border-white/10 bg-white/8 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:bg-white/12 shadow-sm " + (isRTL ? "pr-10 pl-4" : "pl-10 pr-4") + " " + font}
+                className={"w-full rounded-2xl border border-white/10 bg-white/8 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:bg-white/12 shadow-sm " + (isRTL ? "pr-10 pl-10" : "pl-10 pr-10") + " " + font}
+              />
+              <VoiceSearchButton
+                onTranscript={(text) => handleSearchChange(text)}
+                className={"absolute top-1/2 -translate-y-1/2 " + (isRTL ? "left-1" : "right-1")}
               />
             </div>
 
