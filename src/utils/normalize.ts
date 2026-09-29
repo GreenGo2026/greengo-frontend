@@ -61,7 +61,7 @@ export function normalizeStr(str: string): string {
     .trim();
 }
 
-function levenshtein(a: string, b: string): number {
+export function levenshtein(a: string, b: string): number {
   const m = a.length;
   const n = b.length;
   const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
@@ -139,7 +139,7 @@ export function expandQuery(query: string): string[] {
   return Array.from(terms);
 }
 
-interface ScorableProduct {
+export interface ScorableProduct {
   name_fr?: string | null;
   name_ar?: string | null;
   category?: string | null;

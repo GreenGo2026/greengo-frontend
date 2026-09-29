@@ -14,8 +14,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useSeo } from "../hooks/useSeo";
 import { getUrgencySignal, getDiscountedPrice } from "../utils/urgencySignals";
 import { useDeliveryUrgency } from "../hooks/useDeliveryUrgency";
-import { scoreProduct, MIN_RELEVANT_SCORE } from "../utils/normalize";
-import { expandDarijaTerms } from "../utils/darija";
+import { searchProducts } from "../utils/darija";
 import EssentialsCarousel from "../components/EssentialsCarousel";
 import FlashDealsSection from "../components/FlashDealsSection";
 import VoiceSearchButton from "../components/VoiceSearchButton";
@@ -1034,14 +1033,6 @@ export default function HomePage() {
     }, { replace: true });
   }
 
-  // Computed once per search change, not once per product -- expandDarijaTerms
-  // does synonym lookups per token, and there are 203 products x Levenshtein
-  // scoring inside scoreProduct, so this must not run inside the map below.
-  const candidates = useMemo(() => {
-    const q = search.trim();
-    return q ? [...new Set([q, ...expandDarijaTerms(q)])] : [];
-  }, [search]);
-
   const filtered = useMemo(() => {
     let list = [...products];
 
@@ -1063,17 +1054,13 @@ export default function HomePage() {
 
     const q = search.trim();
     if (q) {
-      // Scored, ranked, typo-tolerant, cross-language (AR/FR) search —
-      // relevance ranking takes priority over sortKey while a query is active.
-      // Darija candidates (original query, filler-stripped core, synonym
-      // matches) are each scored the same way via scoreProduct — the best
-      // score across all candidates wins, so ranking/typo-tolerance/
-      // description-matching are unchanged from the single-query path.
-      list = list
-        .map((p) => ({ p, score: Math.max(...candidates.map((c) => scoreProduct(p, c))) }))
-        .filter(({ score }) => score >= MIN_RELEVANT_SCORE)
-        .sort((a, b) => b.score - a.score)
-        .map(({ p }) => p);
+      // Scored, ranked, typo-tolerant, cross-language (AR/FR) search with
+      // Darija synonym expansion — the single shared pipeline (searchProducts,
+      // src/utils/darija.ts) also used by GlobalSearchBar's header
+      // autocomplete, so neither surface ever matches against a raw,
+      // unexpanded query. Relevance ranking takes priority over sortKey
+      // while a query is active.
+      list = searchProducts(list, q).map(({ p }) => p);
     } else {
       // Sort — always in-stock first
       list.sort((a, b) => (b.in_stock ? 1 : 0) - (a.in_stock ? 1 : 0));
@@ -1083,7 +1070,7 @@ export default function HomePage() {
     }
 
     return list;
-  }, [products, activeKey, search, candidates, inStockOnly, onSaleOnly, sortKey]);
+  }, [products, activeKey, search, inStockOnly, onSaleOnly, sortKey]);
 
   const bestSellers = useMemo(() => {
     if (!products.length) return [];
