@@ -1418,6 +1418,7 @@ export default function HomePage() {
               />
               <VoiceSearchButton
                 onTranscript={(text) => handleSearchChange(text)}
+                onInterim={(text) => setSearchInput(text)}
                 overlay
                 className={"top-1/2 -translate-y-1/2 " + (isRTL ? "left-1" : "right-1")}
               />

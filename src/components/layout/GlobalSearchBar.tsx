@@ -190,6 +190,7 @@ export default function GlobalSearchBar({ products = [] }: Props) {
         <VoiceSearchButton
           variant="light"
           onTranscript={(text) => { setQuery(text); handleSubmit(text); }}
+          onInterim={(text) => setQuery(text)}
           className="mx-1"
         />
         {query && (
