@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useSeo } from "../hooks/useSeo";
 import { getProducts } from "../services/api";
 import type { DBProduct } from "../services/api";
+import { searchProducts } from "../utils/darija";
 import QRCode from "qrcode";
 
 type L = "fr" | "ar" | "en";
@@ -263,11 +264,7 @@ export default function MenuPage() {
   const filtered = useMemo(() => {
     let list = activeCat === "all" ? products : products.filter(p => p.category === activeCat);
     if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(p =>
-        (p.name_fr || "").toLowerCase().includes(q) ||
-        (p.name_ar || "").includes(search)
-      );
+      list = searchProducts(list, search).map(({ p }) => p);
     }
     return [...list].sort((a, b) => (b.in_stock ? 1 : 0) - (a.in_stock ? 1 : 0));
   }, [products, activeCat, search]);

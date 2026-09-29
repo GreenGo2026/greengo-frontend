@@ -82,6 +82,7 @@ const RAW_SYNONYMS: Record<string, string[]> = {
   "فلفل":    ["فلفل أخضر", "فلفلة حمراء", "فلفل حار"],
   "فليفلة":  ["فلفل أخضر", "فلفلة حمراء", "فلفل حار"],
   "فلفلا":   ["فلفل أخضر", "فلفلة حمراء", "فلفل حار"],
+  "سودانية": ["فلفل أخضر", "فلفلة حمراء", "فلفل حار"],
   "حرور":    ["فلفل حار"],
   "كزبرة":   ["قوزبر"],
   "قزبور":   ["قوزبر"],
@@ -90,15 +91,23 @@ const RAW_SYNONYMS: Record<string, string[]> = {
   "ليمون":   ["الحامض"],
   "حامض":    ["الحامض"],
   "بصلة":    ["بصل أحمر", "بصل أصفر"],
+  "البصل":   ["بصل أحمر", "بصل أصفر"],
+  "بصلات":   ["بصل أحمر", "بصل أصفر"],
   "خيزو":    ["جزر"],
+  "زرودية":  ["جزر"],
+  "لفيت":    ["لفت"],
   "لوبيا":   ["فاصوليا خضراء"],
   "بنان":    ["موز", "بنان كبير"],
+  "موزة":    ["موز", "بنان كبير"],
   "دلاح":    ["دلاح طبيعي", "الدّلاح"],
+  "دلاحة":   ["دلاح طبيعي", "الدّلاح"],
   "فريز":    ["فراولة"],
   "لحم":     ["شرائح لحم بقري", "لحم الإنتركوت البقري"],
   "دجاجة":   ["دجاج كامل"],
   "فروج":    ["دجاج كامل"],
+  "بولة":    ["دجاج كامل", "صدر الدجاج"],
   "بيض":     ["بيض بلدي", "بلاطو 12 البيضة"],
+  "بيضة":    ["بيض بلدي", "بلاطو 12 البيضة"],
   "زيت":     ["زيت زيتون"],
   "عسل":     ["عسل الأزهار 500غ"],
   // French -> Arabic bridges
@@ -146,12 +155,13 @@ function lookupSynonyms(normalizedToken: string): string[] | undefined {
 interface DarijaExpansion {
   normalized: string;
   core:       string;
+  coreTokens: string[];
   candidates: string[];
 }
 
 function expandDarijaTermsVerbose(raw: string): DarijaExpansion {
   const original = raw.trim();
-  if (!original) return { normalized: "", core: "", candidates: [] };
+  if (!original) return { normalized: "", core: "", coreTokens: [], candidates: [] };
 
   const normalized = normalizeDarija(original);
   const rawTokens = original.split(/\s+/);
@@ -168,7 +178,7 @@ function expandDarijaTermsVerbose(raw: string): DarijaExpansion {
     lookupSynonyms(normalizeDarija(t))?.forEach((m) => candidates.add(m));
   }
 
-  return { normalized, core, candidates: [...candidates].slice(0, MAX_CANDIDATES) };
+  return { normalized, core, coreTokens, candidates: [...candidates].slice(0, MAX_CANDIDATES) };
 }
 
 /**
@@ -189,6 +199,27 @@ export interface ScoredProduct<T> {
   score: number;
 }
 
+const TOKEN_BONUS = 5;
+
+/**
+ * Tiebreak refinement: +5 per non-stopword query token that literally
+ * appears in the product's own name (Arabic-variant-normalized comparison,
+ * self-contained to this function -- doesn't touch scoreProduct's own
+ * matching). Lets a multi-word query like "فلفلة حمرا" rank the one product
+ * containing both words ("فلفلة حمراء") above same-base-score siblings that
+ * only match via the single-word synonym expansion (e.g. "فلفل أخضر").
+ */
+function tokenBonus<T extends ScorableProduct>(p: T, coreTokens: string[]): number {
+  if (coreTokens.length === 0) return 0;
+  const haystack = normalizeDarija(`${p.name_ar || ""} ${p.name_fr || ""}`);
+  let bonus = 0;
+  for (const t of coreTokens) {
+    const nt = normalizeDarija(t);
+    if (nt && haystack.includes(nt)) bonus += TOKEN_BONUS;
+  }
+  return bonus;
+}
+
 /**
  * The one search pipeline -- both HomePage's catalog filter and
  * GlobalSearchBar's header autocomplete must call this, not scoreProduct()
@@ -200,9 +231,12 @@ export function searchProducts<T extends ScorableProduct>(products: T[], rawQuer
   const q = rawQuery.trim();
   if (!q) return [];
 
-  const { normalized, core, candidates } = expandDarijaTermsVerbose(q);
+  const { normalized, core, coreTokens, candidates } = expandDarijaTermsVerbose(q);
   const scored = products
-    .map((p) => ({ p, score: Math.max(...candidates.map((c) => scoreProduct(p, c))) }))
+    .map((p) => ({
+      p,
+      score: Math.max(...candidates.map((c) => scoreProduct(p, c))) + tokenBonus(p, coreTokens),
+    }))
     .filter(({ score }) => score >= MIN_RELEVANT_SCORE)
     .sort((a, b) => b.score - a.score);
 
