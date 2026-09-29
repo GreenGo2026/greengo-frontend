@@ -458,7 +458,7 @@ export default function CartPage() {
       .catch(() => { /* offline or API hiccup -- keep showing cached prices rather than block the page */ });
   }, []);
 
-  const { token: customerToken, customer: authedCustomer } = useCustomerAuth();
+  const { token: customerToken, customer: authedCustomer, isB2B, paymentTerms, creditAvailable } = useCustomerAuth();
 
   const [name,           setName]           = useState("");
   const [phone,          setPhone]          = useState("");
@@ -476,6 +476,7 @@ export default function CartPage() {
   const [isReturning,    setIsReturning]    = useState(false);
   const [savedProfile,   setSavedProfile]   = useState<{name:string;address:string} | null>(null);
   const [paymentMethod,  setPaymentMethod]  = useState<"COD">("COD");
+  const [paymentTermsRequested, setPaymentTermsRequested] = useState<"cod" | "net7">("cod");
   const [customerPoints, setCustomerPoints] = useState<number>(0);
   const [usePoints,      setUsePoints]      = useState(false);
   const [location,       setLocation]       = useState<GPS | null>(null);
@@ -510,7 +511,13 @@ export default function CartPage() {
   const total       = totalWithDelivery();
   const itemCount   = cart.length;
   const phoneValid = phone.trim() !== "" && isValidMoroccanPhone(normalizeForValidation(phone));
-  const isValid   = itemCount > 0 && name.trim().length > 1 && phoneValid && address.trim().length > 5 && !!paymentMethod;
+  // B2B minimum order value -- mirrors the backend's own B2B_MOV_MAD (500).
+  // UX gate only; the server re-validates independently and is the actual
+  // authority (see _create_order_internal).
+  const B2B_MOV_MAD = 500;
+  const movMet = !isB2B || total >= B2B_MOV_MAD;
+  const netCreditOk = total <= creditAvailable;
+  const isValid   = itemCount > 0 && name.trim().length > 1 && phoneValid && address.trim().length > 5 && !!paymentMethod && movMet;
 
   // Referral discount -- optimistic display only. isReturning (set once the
   // customer types a phone that matches an existing account, see
@@ -769,6 +776,7 @@ export default function CartPage() {
       points_used:    usePoints && pointsToRedeem > 0 ? pointsToRedeem : 0,
       referral_code:  referralActive ? referralCode : undefined,
       welcome_discount: welcomeActive ? welcomeDiscountAmt : 0,
+      payment_terms_requested: isB2B ? paymentTermsRequested : "cod",
     };
 
     try {
@@ -1395,6 +1403,71 @@ export default function CartPage() {
                         </p>
                       </div>
                     )}
+                  </div>
+                )}
+                {/* B2B checkout block -- MOV progress + payment terms. Retail
+                    shoppers (isB2B false) see none of this. */}
+                {isB2B && (
+                  <div className={"rounded-2xl border border-[#2E8B57]/20 bg-[#2E8B57]/5 p-4 space-y-3 " + font}>
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-bold text-[#1F6B40]">
+                        <span>
+                          {language === "ar" ? "الحد الأدنى للطلب B2B" : language === "fr" ? "Minimum de commande B2B" : "B2B order minimum"}
+                        </span>
+                        <span>{Math.min(total, B2B_MOV_MAD).toFixed(0)} / {B2B_MOV_MAD} MAD</span>
+                      </div>
+                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-white">
+                        <div
+                          className={"h-full rounded-full transition-all " + (movMet ? "bg-[#2E8B57]" : "bg-orange-400")}
+                          style={{ width: Math.min(100, (total / B2B_MOV_MAD) * 100) + "%" }}
+                        />
+                      </div>
+                      {!movMet && (
+                        <p className="mt-1 text-[11px] font-semibold text-orange-500">
+                          {language === "ar"
+                            ? `أضف ${(B2B_MOV_MAD - total).toFixed(2)} درهم للوصول إلى الحد الأدنى`
+                            : language === "fr"
+                            ? `Ajoutez ${(B2B_MOV_MAD - total).toFixed(2)} MAD pour atteindre le minimum`
+                            : `Add ${(B2B_MOV_MAD - total).toFixed(2)} MAD to reach the minimum`}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-bold text-[#1F6B40]">
+                        {language === "ar" ? "شروط الدفع" : language === "fr" ? "Modalités de paiement" : "Payment terms"}
+                      </p>
+                      <label className="flex items-center gap-2 text-xs text-gray-700">
+                        <input type="radio" name="paymentTermsRequested" checked={paymentTermsRequested === "cod"}
+                          onChange={() => setPaymentTermsRequested("cod")} />
+                        {language === "ar" ? "الدفع عند التسليم" : language === "fr" ? "Paiement à la livraison" : "Cash on delivery"}
+                      </label>
+                      <label className={"flex items-center gap-2 text-xs " + (paymentTerms === "net7" && netCreditOk ? "text-gray-700" : "text-gray-400")}>
+                        <input type="radio" name="paymentTermsRequested" checked={paymentTermsRequested === "net7"}
+                          disabled={paymentTerms !== "net7" || !netCreditOk}
+                          onChange={() => setPaymentTermsRequested("net7")} />
+                        {language === "ar" ? "NET-7 — التسوية خلال 7 أيام" : language === "fr" ? "NET-7 — règlement sous 7 jours" : "NET-7 — payment due in 7 days"}
+                      </label>
+                      {paymentTerms !== "net7" && (
+                        <p className="text-[10px] text-gray-400">
+                          {language === "ar" ? "NET-7 غير مفعل لهذا الحساب" : language === "fr" ? "NET-7 non activé pour ce compte" : "NET-7 not enabled for this account"}
+                        </p>
+                      )}
+                      {paymentTerms === "net7" && !netCreditOk && (
+                        <p className="text-[10px] font-semibold text-red-500">
+                          {language === "ar"
+                            ? `رصيد غير كافٍ (متاح: ${creditAvailable.toFixed(2)} درهم)`
+                            : language === "fr"
+                            ? `Crédit disponible insuffisant (${creditAvailable.toFixed(2)} MAD)`
+                            : `Insufficient available credit (${creditAvailable.toFixed(2)} MAD)`}
+                        </p>
+                      )}
+                      {paymentTerms === "net7" && (
+                        <p className="text-[10px] text-gray-400">
+                          {language === "ar" ? "الرصيد المتاح" : language === "fr" ? "Crédit disponible" : "Available credit"}: {creditAvailable.toFixed(2)} MAD
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
                 {/* Submit */}

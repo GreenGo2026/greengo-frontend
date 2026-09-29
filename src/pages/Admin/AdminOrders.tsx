@@ -35,6 +35,10 @@ interface Order {
   driver_phone?: string;
   assigned_livreur_id?: string;
   driver_payout_mad?: number;
+  order_tier?:        "consumer" | "b2b";
+  payment_status?:    "pending" | "paid" | null;
+  payment_due_date?:  string | null;
+  payment_terms?:     "cod" | "net7" | null;
 }
 
 interface Driver {
@@ -415,6 +419,7 @@ export default function AdminOrders() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [toast, setToast]       = useState<{ msg: string; ok: boolean } | null>(null);
   const [search, setSearch]     = useState("");
+  const [b2bOnly, setB2bOnly]   = useState(false);
 
   // ── Driver assignment ──────────────────────────────────────────────────────
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -594,8 +599,27 @@ export default function AdminOrders() {
     }
   }
 
+  // ── Mark a B2B NET-7 order as paid ────────────────────────────────────────
+  async function markPaid(orderId: string): Promise<void> {
+    try {
+      const res = await fetch(API_BASE + "/orders/" + orderId + "/mark-paid", {
+        method: "PATCH", headers: adminHeaders(), credentials: "include",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(String(body?.detail ?? "HTTP " + res.status.toString()));
+      }
+      setOrders((prev) => prev.map((o) => getId(o) === orderId ? { ...o, payment_status: "paid" } : o));
+      showToast("Commande marquée payée", true);
+    } catch (err) {
+      console.error("[AdminOrders] markPaid:", err);
+      showToast(err instanceof Error ? err.message : "Erreur.", false);
+    }
+  }
+
   // ── Derived / filtered data ────────────────────────────────────────────────
   const filtered = orders.filter((o) => {
+    if (b2bOnly && o.order_tier !== "b2b") return false;
     if (!search.trim()) return true;
     const q = search.toLowerCase();
     return (
@@ -604,6 +628,11 @@ export default function AdminOrders() {
       getId(o).toLowerCase().includes(q)
     );
   });
+
+  function isOverdue(o: Order): boolean {
+    if (o.order_tier !== "b2b" || o.payment_status !== "pending" || !o.payment_due_date) return false;
+    return new Date(o.payment_due_date).getTime() < Date.now();
+  }
 
   const revenue    = orders.reduce((sum, o) => sum + (o.total_price ?? 0), 0);
   const pending    = orders.filter((o) => o.status === "pending").length;
@@ -685,6 +714,14 @@ export default function AdminOrders() {
               />
               <span className="absolute left-3 top-2.5 text-green-200 text-sm">🔍</span>
             </div>
+
+            <button
+              onClick={() => setB2bOnly((v) => !v)}
+              className={"flex items-center gap-1.5 text-sm font-bold px-3 py-2 rounded-xl transition border " +
+                (b2bOnly ? "bg-white text-[#0c3228] border-white" : "bg-white/15 hover:bg-white/25 text-white border-white/20")}
+            >
+              🏢 B2B
+            </button>
 
             <button
               onClick={fetchOrders}
@@ -812,6 +849,7 @@ export default function AdminOrders() {
                     <th className="px-6 py-3 text-left font-semibold">Modifier</th>
                     <th className="px-6 py-3 text-center font-semibold">GPS</th>
                     <th className="px-6 py-3 text-center font-semibold">Facture</th>
+                    <th className="px-6 py-3 text-center font-semibold">B2B</th>
                     <th className="px-6 py-3 text-left font-semibold">Livreur</th>
                   </tr>
                 </thead>
@@ -980,6 +1018,40 @@ export default function AdminOrders() {
                               </svg>
                               Facture
                             </button>
+                          ) : (
+                            <span className="text-xs text-gray-300">-</span>
+                          )}
+                        </td>
+
+                        {/* ── B2B badge / payment pill / mark-paid ── */}
+                        <td className="px-4 py-4 text-center">
+                          {order.order_tier === "b2b" ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="inline-flex items-center rounded-full bg-[#0c3228] px-2 py-0.5 text-[10px] font-bold text-white">
+                                🏢 B2B
+                              </span>
+                              {isOverdue(order) ? (
+                                <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600">
+                                  En retard
+                                </span>
+                              ) : order.payment_status === "paid" ? (
+                                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                                  Payé
+                                </span>
+                              ) : order.payment_terms === "net7" ? (
+                                <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                  NET-7
+                                </span>
+                              ) : null}
+                              {order.payment_status === "pending" && orderId.length > 0 && (
+                                <button
+                                  onClick={() => markPaid(orderId)}
+                                  className="mt-0.5 text-[10px] font-semibold text-[#2E8B57] underline hover:text-[#1F6B40]"
+                                >
+                                  Marquer payé
+                                </button>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-xs text-gray-300">-</span>
                           )}
