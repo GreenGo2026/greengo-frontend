@@ -1,5 +1,6 @@
 // src/pages/AdminPage.tsx
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Save, AlertCircle, CheckCircle, Loader2, Lock,
   ToggleLeft, ToggleRight, ShoppingBag, Clock, XCircle,
@@ -15,7 +16,9 @@ import NotificationsTab from "../components/admin/NotificationsTab";
 import RecipesTab from "../components/admin/RecipesTab";
 import LivreursTab from "../components/admin/LivreursTab";
 import FlashDealsTab from "../components/admin/FlashDealsTab";
+import B2BAccountsTab from "../components/admin/B2BAccountsTab";
 import {
+  apiClient,
   updateProductById, updateOrderStatus, getOrders, getProducts, sendCatalogToWhatsApp,
   type DBProduct, type OrderStatus, type Order, type CatalogBroadcastResult,
 } from "../services/api";
@@ -35,7 +38,8 @@ function normalizeStatus(raw: string | undefined | null): OrderStatus {
     .replace(/-/g, "_")          // "out-for-delivery" -> "out_for_delivery"
     .trim() as OrderStatus;
 }
-type AdminTab = "orders" | "prices" | "paniers" | "produits" | "whatsapp" | "clients" | "notifications" | "recipes" | "livreurs" | "flash";
+type AdminTab = "orders" | "prices" | "paniers" | "produits" | "whatsapp" | "clients" | "notifications" | "recipes" | "livreurs" | "flash" | "b2b";
+const ADMIN_TABS: AdminTab[] = ["orders","prices","paniers","produits","whatsapp","clients","notifications","recipes","livreurs","flash","b2b"];
 type Lang     = "fr" | "ar";
 
 interface EditableProduct extends DBProduct {
@@ -435,7 +439,24 @@ export default function AdminPage() {
   const [lang,setLang]           = useState<Lang>("ar");
   // Auto-unlock if a valid JWT is already in sessionStorage from this session
   const [unlocked,setUnlocked]   = useState(isAdminLoggedIn);
-  const [activeTab,setActiveTab] = useState<AdminTab>("orders");
+  const [searchParams,setSearchParams] = useSearchParams();
+  // Deep link: /gestion?tab=b2b opens directly on that tab. Invalid or
+  // missing values fall back to "orders" (the existing default).
+  const initialTab = searchParams.get("tab");
+  const [activeTab,setActiveTabState] = useState<AdminTab>(
+    (initialTab && (ADMIN_TABS as string[]).includes(initialTab)) ? (initialTab as AdminTab) : "orders"
+  );
+  // Wraps setActiveTab so every tab switch (button click or deep link) keeps
+  // the URL in sync -- replace, not push, so tabbing around the dashboard
+  // doesn't pile up browser history entries.
+  function setActiveTab(tab: AdminTab): void {
+    setActiveTabState(tab);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("tab", tab);
+      return next;
+    }, { replace: true });
+  }
   const [orders,setOrders]                   = useState<Order[]>([]);
   const [ordersLoading,setOrdersLoading]     = useState(false);
   const [ordersError,setOrdersError]         = useState("");
@@ -471,6 +492,19 @@ export default function AdminPage() {
 
   useEffect(()=>{if(unlocked&&activeTab==="orders")fetchOrders();},[unlocked,activeTab,fetchOrders]);
   useEffect(()=>{if(unlocked&&(activeTab==="prices"||activeTab==="paniers"))fetchProducts();},[unlocked,activeTab,fetchProducts]);
+
+  // B2B overdue badge -- fetched once unlocked so it's visible from any tab,
+  // not just while "b2b" is active.
+  const [b2bOverdueCount,setB2bOverdueCount] = useState(0);
+  useEffect(()=>{
+    if(!unlocked) return;
+    apiClient.get("/admin/b2b/accounts")
+      .then(res=>{
+        const accounts:{overdue_count?:number}[] = res.data||[];
+        setB2bOverdueCount(accounts.reduce((sum,a)=>sum+(a.overdue_count||0),0));
+      })
+      .catch(()=>{});
+  },[unlocked]);
 
   async function handleStatusChange(id:string,status:OrderStatus){await updateOrderStatus(id,status);setOrders(prev=>prev.map(o=>o.id===id?{...o,status}:o));}
   function handlePriceChange(id:string,val:number){setProducts(prev=>prev.map(p=>p.id===id?{...p,edited_price:val,isDirty:val!==p.price_mad||p.edited_in_stock!==p.in_stock||p.edited_on_sale!==((p as any).on_sale??false)||p.edited_discount!==((p as any).discount_pct??0),saveStatus:"idle"}:p));}
@@ -545,14 +579,16 @@ export default function AdminPage() {
           <div className={"flex items-center gap-3 "+(lang==="ar"?"flex-row-reverse":"")}>
             <LangToggle lang={lang} setLang={setLang}/>
             <div className="flex items-center gap-0.5 rounded-xl border border-white/10 bg-white/5 p-1">
-              {(["orders","prices","paniers","produits","whatsapp","clients","notifications","recipes","livreurs","flash"]as AdminTab[]).map(tab=>(
+              {ADMIN_TABS.map(tab=>(
                 <button key={tab} onClick={()=>setActiveTab(tab)} className={"relative flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all "+(activeTab===tab?"bg-[#2E8B57] text-white":"text-white/50 hover:text-white")}>
-                  {tab==="orders"?<ShoppingBag size={12}/>:tab==="prices"?<TrendingUp size={12}/>:tab==="whatsapp"?<MessageCircle size={12}/>:tab==="clients"?<Users size={12}/>:tab==="notifications"?<Bell size={12}/>:tab==="recipes"?<span>🍽️</span>:tab==="livreurs"?<Bike size={12}/>:tab==="flash"?<Zap size={12}/>:<Package size={12}/>}
-                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:tab==="paniers"?"Paniers":tab==="whatsapp"?"WhatsApp":tab==="clients"?"Clients":tab==="notifications"?"🔔 Notifications":tab==="recipes"?"🍽️ Recettes":tab==="livreurs"?"Livreurs":tab==="flash"?"⚡ Flash Deals":"🌿 Produits"}
+                  {tab==="orders"?<ShoppingBag size={12}/>:tab==="prices"?<TrendingUp size={12}/>:tab==="whatsapp"?<MessageCircle size={12}/>:tab==="clients"?<Users size={12}/>:tab==="notifications"?<Bell size={12}/>:tab==="recipes"?<span>🍽️</span>:tab==="livreurs"?<Bike size={12}/>:tab==="flash"?<Zap size={12}/>:tab==="b2b"?<span>💼</span>:<Package size={12}/>}
+                  {tab==="orders"?L.tab_orders:tab==="prices"?L.tab_prices:tab==="paniers"?"Paniers":tab==="whatsapp"?"WhatsApp":tab==="clients"?"Clients":tab==="notifications"?"🔔 Notifications":tab==="recipes"?"🍽️ Recettes":tab==="livreurs"?"Livreurs":tab==="flash"?"⚡ Flash Deals":tab==="b2b"?(lang==="ar"?"حسابات B2B":"💼 B2B"):"🌿 Produits"}
                   {tab==="orders"&&pendingCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-extrabold text-white">{pendingCount}</span>}
                   {/* Deliveries a driver submitted that still need an admin sign-off. */}
                   {tab==="orders"&&confirmCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-lime-500 px-1 text-[10px] font-extrabold text-white">{confirmCount}</span>}
                   {tab==="prices"&&dirtyCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-orange-400 px-1 text-[10px] font-extrabold text-white">{dirtyCount}</span>}
+                  {/* Visible from anywhere in the dashboard, not just while the B2B tab is active. */}
+                  {tab==="b2b"&&b2bOverdueCount>0&&<span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-extrabold text-white">{b2bOverdueCount}</span>}
                 </button>
               ))}
             </div>
@@ -605,6 +641,7 @@ export default function AdminPage() {
         {activeTab==="recipes"&&<RecipesTab/>}
         {activeTab==="livreurs"&&<LivreursTab/>}
         {activeTab==="flash"&&<FlashDealsTab/>}
+        {activeTab==="b2b"&&<B2BAccountsTab/>}
       </div>
     </div>
   );
