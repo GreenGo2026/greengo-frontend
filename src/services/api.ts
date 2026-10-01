@@ -115,6 +115,8 @@ export interface CheckoutOrderResponse {
   order_id:    string;
   status:      string;
   total_price: number;
+  signed_invoice_url?:  string;
+  signed_tracking_url?: string;
 }
 
 export type OrderStatus =
@@ -215,14 +217,29 @@ export interface TrackedOrder {
   status_history:      TrackedOrderHistoryEntry[];
   driver_location:     { lat: number; lng: number; recorded_at: string } | null;
   gps_coordinates:     { lat: number; lng: number } | null;
+  signed_invoice_url?: string;
 }
 
-export async function trackOrder(params: { order_ref?: string; phone?: string }): Promise<TrackedOrder[]> {
+// Backend now requires either a signed link token (t) OR both order_ref AND
+// phone together -- phone-alone lookups were removed (Sprint 1 security).
+export async function trackOrder(params: { order_ref?: string; phone?: string; t?: string }): Promise<TrackedOrder[]> {
   const r = await apiClient.get<unknown>("/orders/track", { params });
   return toArray<TrackedOrder>(r.data);
 }
 
 // ── Newsletter ───────────────────────────────────────────────────────────────
+// Boolean-only returning-customer check for anonymous checkout -- replaces
+// the old unauthenticated /customers/{phone}/public autofill (Sprint 1
+// security: that endpoint now requires an admin or own-phone credential).
+export async function customerExists(phone: string): Promise<boolean> {
+  try {
+    const r = await apiClient.get<{ returning: boolean }>(`/customers/${encodeURIComponent(phone)}/exists`);
+    return r.data.returning;
+  } catch {
+    return false;
+  }
+}
+
 export async function subscribeNewsletter(email: string, source = "website"): Promise<{ status: string }> {
   const r = await apiClient.post<{ status: string }>("/newsletter", { email, source });
   return r.data;

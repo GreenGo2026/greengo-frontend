@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { useLanguage } from "../contexts/LanguageContext";
 import { trackOrder } from "../services/api";
 import { useCartStore, getUnitStep } from "../store/cartStore";
+import { useCustomerAuth } from "../hooks/useCustomerAuth";
 
 // Fix Leaflet's default marker icon (assets resolve relative to leaflet's own
 // package path under Vite/bundlers, not the app's public dir) -- point them
@@ -133,7 +134,8 @@ interface TrackingData {
 const T = {
   title:     { fr: "Suivi de commande",           ar: "تتبع الطلبية",              en: "Order Tracking"              },
   subtitle:  { fr: "Entrez votre référence de commande ou votre téléphone pour suivre en temps réel.", ar: "أدخل رقم طلبيتك أو هاتفك لمتابعتها.", en: "Enter your order reference or phone number to track in real time." },
-  input_ph:  { fr: "Référence WhatsApp (ex: 369627) ou téléphone", ar: "رقم الطلبية من واتساب أو الهاتف", en: "Order reference from WhatsApp or phone"  },
+  ref_ph:    { fr: "Référence WhatsApp (ex: 369627)",  ar: "رقم الطلبية من واتساب",     en: "Order reference from WhatsApp"  },
+  phone_ph:  { fr: "Téléphone (ex: 06XXXXXXXX)",        ar: "رقم الهاتف",                 en: "Phone number"  },
   track_btn: { fr: "Suivre ma commande",           ar: "تتبع طلبيتي",               en: "Track my order"              },
   not_found: { fr: "Commande introuvable. Vérifiez la référence ou le téléphone.", ar: "طلبية غير موجودة. تحقق من الرقم.", en: "Order not found. Check the reference or phone number." },
   loading:   { fr: "Recherche en cours...",        ar: "جارٍ البحث...",             en: "Searching..."                },
@@ -251,6 +253,19 @@ function StatusTimeline({ status, lang, history, createdAt }: { status: string; 
   );
 }
 
+function normalizeTrackPhone(p: string): string {
+  const d = p.trim().replace(/[\s-]/g, "");
+  if (d.startsWith("+212")) return d;
+  if (d.startsWith("212")) return "+" + d;
+  if (d.startsWith("0") && d.length === 10) return "+212" + d.slice(1);
+  return d;
+}
+
+// What a successful lookup resolved from -- re-run verbatim on each poll
+// tick, independent of whatever the customer has since typed into the
+// input boxes.
+type LookupParams = { t: string } | { ref: string; phone: string };
+
 export default function TrackOrderPage() {
   const { language, isRTL } = useLanguage();
   const l = language as L;
@@ -258,8 +273,19 @@ export default function TrackOrderPage() {
   const [searchParams]       = useSearchParams();
   const navigate              = useNavigate();
   const addToCart             = useCartStore((s) => s.addToCart);
+  const { customer, isLoggedIn } = useCustomerAuth();
 
-  const [orderId, setOrderId] = useState(paramId || searchParams.get("id") || "");
+  // Backend no longer accepts a phone-alone lookup (Sprint 1 security) --
+  // every manual lookup needs the order reference AND a phone, unless a
+  // signed link token (?t=) is present, in which case neither is needed.
+  const urlToken = searchParams.get("t") || "";
+  const urlRef   = searchParams.get("ref") || searchParams.get("id") || paramId || "";
+  // A raw Mongo _id (24 hex chars) in the URL/path -- normalize to the
+  // short #ref customers actually recognize.
+  const initialRef = /^[0-9a-fA-F]{24}$/.test(urlRef) ? urlRef.slice(-6) : urlRef;
+
+  const [refInput,   setRefInput]   = useState(initialRef);
+  const [phoneInput, setPhoneInput] = useState("");
   const [order,   setOrder]   = useState<TrackingData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
@@ -283,44 +309,55 @@ export default function TrackOrderPage() {
     setTimeout(() => navigate("/cart"), 800);
   }
 
-  // Three possible inputs, all funneled through the same lookup:
-  //  - the raw Mongo _id (24 hex chars) -- e.g. the direct link from the
-  //    post-checkout success screen (CartPage.tsx: `/track/${orderId}`)
-  //  - the short #{ref} (last 6 chars) customers receive via WhatsApp
-  //  - a phone number, typed manually on a later visit
-  async function lookupOrder(value: string): Promise<TrackingData> {
-    const isFullMongoId = /^[0-9a-fA-F]{24}$/.test(value);
-    const isPhone = !isFullMongoId && /^[0-9+]{8,}$/.test(value.replace(/\s/g, ""));
-    const ref = isFullMongoId ? value.slice(-6) : value;
-    const results = await trackOrder(isPhone ? { phone: value } : { order_ref: ref });
+  async function lookupOrder(params: LookupParams): Promise<TrackingData> {
+    const results = "t" in params
+      ? await trackOrder({ t: params.t })
+      : await trackOrder({ order_ref: params.ref, phone: params.phone });
     if (results.length === 0) throw new Error("not found");
     return results[0];
   }
 
-  // The identifier that last resolved, so polling can re-run the same lookup
-  // without depending on the input box (which the customer may have edited).
-  const polledId = useRef<string>("");
+  // The params that last resolved, so polling can re-run the exact same
+  // lookup without depending on the input boxes (which the customer may
+  // have since edited).
+  const polledParams = useRef<LookupParams | null>(null);
 
-  async function fetchOrder(id: string) {
-    const value = id.trim();
-    if (!value) return;
+  async function fetchOrder(params: LookupParams) {
     setLoading(true); setError(""); setOrder(null);
     try {
-      const found = await lookupOrder(value);
+      const found = await lookupOrder(params);
       setOrder(found);
-      polledId.current = value;
+      polledParams.current = params;
     } catch {
       setError(T.not_found[l]);
-      polledId.current = "";
+      polledParams.current = null;
     } finally {
       setLoading(false);
     }
   }
 
+  // Signed link token -> fetch immediately, no phone needed at all.
   useEffect(() => {
-    if (paramId) fetchOrder(paramId);
+    if (urlToken) fetchOrder({ t: urlToken });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramId]);
+  }, [urlToken]);
+
+  // A logged-in session's own phone can resolve a ref-only link (no token)
+  // without asking the customer to type anything.
+  useEffect(() => {
+    if (!urlToken && initialRef && isLoggedIn && customer?.phone) {
+      setPhoneInput(customer.phone);
+      fetchOrder({ ref: initialRef, phone: customer.phone });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlToken, initialRef, isLoggedIn, customer?.phone]);
+
+  // Prefill the phone box from an active session even when there's no ref
+  // in the URL yet, so a logged-in customer only has to type the reference.
+  useEffect(() => {
+    if (isLoggedIn && customer?.phone && !phoneInput) setPhoneInput(customer.phone);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, customer?.phone]);
 
   // Live status polling. Deliberately silent: no spinner and no clearing of
   // the current order, so a background refresh can't flash the timeline or
@@ -328,13 +365,14 @@ export default function TrackOrderPage() {
   // known state and tries again.
   useEffect(() => {
     const status = order?.status;
-    if (!status || !polledId.current) return;
+    if (!status || !polledParams.current) return;
     if (TERMINAL_STATUSES.includes(status)) return;
 
     let cancelled = false;
+    const params = polledParams.current;
     const timer = window.setInterval(async () => {
       try {
-        const fresh = await lookupOrder(polledId.current);
+        const fresh = await lookupOrder(params);
         if (!cancelled) setOrder(fresh);
       } catch {
         // Keep the last known state and retry on the next tick.
@@ -349,10 +387,15 @@ export default function TrackOrderPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    fetchOrder(orderId);
+    const ref = refInput.trim();
+    const isFullMongoId = /^[0-9a-fA-F]{24}$/.test(ref);
+    const shortRef = isFullMongoId ? ref.slice(-6) : ref;
+    const phone = normalizeTrackPhone(phoneInput);
+    if (!shortRef || !phone) return;
+    fetchOrder({ ref: shortRef, phone });
   }
 
-  const shortId = order ? order.order_ref : orderId.slice(-6).toUpperCase();
+  const shortId = order ? order.order_ref : refInput.slice(-6).toUpperCase();
 
   return (
     <div
@@ -375,23 +418,34 @@ export default function TrackOrderPage() {
           <p className="text-white/45 text-sm max-w-sm mx-auto leading-relaxed">{T.subtitle[l]}</p>
         </section>
 
-        {/* Search */}
-        <form onSubmit={handleSubmit} className="flex gap-2 mb-8">
+        {/* Search -- reference and phone are both required (backend no
+            longer accepts a phone-alone lookup, Sprint 1 security) */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 mb-8">
           <input
             type="text"
-            value={orderId}
-            onChange={e => setOrderId(e.target.value)}
-            placeholder={T.input_ph[l]}
+            value={refInput}
+            onChange={e => setRefInput(e.target.value)}
+            placeholder={T.ref_ph[l]}
             dir="ltr"
-            className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-green-500/50 focus:ring-2 focus:ring-green-500/15 font-latin"
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-green-500/50 focus:ring-2 focus:ring-green-500/15 font-latin"
           />
-          <button
-            type="submit"
-            disabled={loading || !orderId.trim()}
-            className="px-5 py-3 bg-gradient-to-r from-green-700 to-green-900 border border-green-600/50 rounded-xl text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
-          >
-            {loading ? "..." : T.track_btn[l]}
-          </button>
+          <div className="flex gap-2">
+            <input
+              type="tel"
+              value={phoneInput}
+              onChange={e => setPhoneInput(e.target.value)}
+              placeholder={T.phone_ph[l]}
+              dir="ltr"
+              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-green-500/50 focus:ring-2 focus:ring-green-500/15 font-latin"
+            />
+            <button
+              type="submit"
+              disabled={loading || !refInput.trim() || !phoneInput.trim()}
+              className="px-5 py-3 bg-gradient-to-r from-green-700 to-green-900 border border-green-600/50 rounded-xl text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+            >
+              {loading ? "..." : T.track_btn[l]}
+            </button>
+          </div>
         </form>
 
         {/* Loading */}

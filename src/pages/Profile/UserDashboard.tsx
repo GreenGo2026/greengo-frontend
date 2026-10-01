@@ -1,7 +1,10 @@
 // src/pages/Profile/UserDashboard.tsx
-// Phone-based identity — OTP upgrade: a verified session skips the manual
-// phone-entry gate and auto-loads via the same loadData(phone) path. Logged-
-// out visitors keep the original gate untouched, with a login option above it.
+// OTP-login-only (Sprint 1 security): /customers/{phone}/public and
+// /orders/by-phone/{phone} now require either an admin credential or a
+// customer JWT whose own phone matches the one requested. A free-typed
+// phone number can no longer unlock someone else's data, so the manual
+// phone-entry gate is gone -- this dashboard only loads once a verified
+// OTP session exists, and every call carries that session's Bearer token.
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -16,7 +19,6 @@ import SavedBaskets from "../../components/SavedBaskets";
 
 type L = "fr" | "ar" | "en";
 const API = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
-const CACHE_KEY = "gg_dashboard_phone";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function normalizePhone(p: string): string {
@@ -268,10 +270,9 @@ function OrderCard({ order, lang }: { order: any; lang: string }) {
   );
 }
 
-// ── Phone entry screen ────────────────────────────────────────────────────────
-function PhoneEntry({ onSubmit, lang }: { onSubmit: (p: string) => void; lang: string }) {
+// ── Logged-out screen ─────────────────────────────────────────────────────────
+function LoginGate({ onLogin, lang }: { onLogin: () => void; lang: string }) {
   const l = lang as L;
-  const [val, setVal] = useState("");
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-6">
       <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg,#0d3b36,#2E8B57)" }}>
@@ -283,27 +284,18 @@ function PhoneEntry({ onSubmit, lang }: { onSubmit: (p: string) => void; lang: s
         </h2>
         <p className="text-gray-500 text-sm mt-2 max-w-xs mx-auto">
           {l === "fr"
-            ? "Entrez votre numéro de téléphone pour accéder à vos commandes et points de fidélité."
+            ? "Connectez-vous avec votre numéro de téléphone pour accéder à vos commandes et points de fidélité."
             : l === "ar"
-            ? "أدخل رقم هاتفك للوصول إلى طلباتك ونقاط ولائك."
-            : "Enter your phone number to access your orders and loyalty points."}
+            ? "سجل الدخول برقم هاتفك للوصول إلى طلباتك ونقاط ولائك."
+            : "Log in with your phone number to access your orders and loyalty points."}
         </p>
       </div>
-      <div className="w-full max-w-sm space-y-3">
-        <input type="tel" value={val} onChange={e => setVal(e.target.value)}
-          placeholder={l === "fr" ? "06 XX XX XX XX" : "06 XX XX XX XX"}
-          className="w-full rounded-2xl border-2 border-gray-200 px-4 py-3.5 text-center text-lg font-bold font-latin text-gray-800 outline-none focus:border-[#2E8B57] focus:ring-2 focus:ring-[#2E8B57]/15 transition-all"
-          dir="ltr" onKeyDown={e => e.key === "Enter" && val.trim().length >= 9 && onSubmit(val)} />
-        <button onClick={() => onSubmit(val)} disabled={val.trim().length < 9}
-          className="w-full rounded-2xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98] disabled:opacity-40"
+      <div className="w-full max-w-sm">
+        <button onClick={onLogin}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98]"
           style={{ background: "linear-gradient(135deg,#2E8B57,#1a5c4a)", boxShadow: "0 4px 16px rgba(46,139,87,0.25)" }}>
-          {l === "fr" ? "Accéder à mon compte" : l === "ar" ? "الوصول إلى حسابي" : "Access my account"}
+          <MessageCircle size={16} /> {l === "fr" ? "Se connecter via WhatsApp" : l === "ar" ? "تسجيل الدخول عبر واتساب" : "Log in via WhatsApp"}
         </button>
-        <p className="text-[10px] text-gray-400">
-          {l === "fr"
-            ? "Votre numéro est utilisé uniquement pour retrouver vos commandes."
-            : "رقمك يُستخدم فقط للعثور على طلباتك."}
-        </p>
       </div>
     </div>
   );
@@ -315,10 +307,9 @@ export default function UserDashboard() {
   const l    = language as L;
   const font = l === "ar" ? "font-arabic" : "font-latin";
 
-  const { customer, isLoggedIn, login } = useCustomerAuth();
+  const { token, customer, isLoggedIn, login, logout } = useCustomerAuth();
   const [showLogin, setShowLogin] = useState(false);
 
-  const [phone,     setPhone]     = useState(() => localStorage.getItem(CACHE_KEY) || "");
   const [profile,   setProfile]   = useState<any>(null);
   const [orders,    setOrders]    = useState<any[]>([]);
   const [loading,   setLoading]   = useState(false);
@@ -329,28 +320,31 @@ export default function UserDashboard() {
   const [challenges, setChallenges] = useState<any[]>([]);
   const [challengeStats, setChallengeStats] = useState<{ total_possible_points: number; total_earned_this_week: number } | null>(null);
 
-  const loadData = useCallback(async (ph: string) => {
+  const loadData = useCallback(async (ph: string, jwt: string) => {
     const normalized = normalizePhone(ph);
     setLoading(true);
     setError("");
     try {
-      // Load customer profile -- public, safe-fields-only endpoint (the
-      // plain /customers/{phone} route requires admin auth and returns
-      // admin CRM fields like notes; it 401s for a real customer here).
-      const pr = await fetch(`${API}/api/v1/customers/${encodeURIComponent(normalized)}/public`);
+      // Sprint 1 security: /public and /by-phone now require either an
+      // admin credential or a customer JWT whose own phone matches the one
+      // requested -- a free-typed number can no longer read someone else's
+      // data, so every call here carries this session's Bearer token.
+      const authHeaders = { Authorization: `Bearer ${jwt}` };
+      const pr = await fetch(`${API}/api/v1/customers/${encodeURIComponent(normalized)}/public`, { headers: authHeaders });
       if (pr.ok) {
         const data = await pr.json();
         setProfile(data);
         setNameVal(data.name || "");
       }
-      // Load orders by phone -- public endpoint, same rationale.
-      const or = await fetch(`${API}/api/v1/orders/by-phone/${encodeURIComponent(normalized)}?limit=20`);
+      const or = await fetch(`${API}/api/v1/orders/by-phone/${encodeURIComponent(normalized)}?limit=20`, { headers: authHeaders });
       if (or.ok) {
         const data = await or.json();
         setOrders(Array.isArray(data?.orders) ? data.orders : []);
       }
       // Weekly challenges -- best-effort, page still works if this fails.
-      fetch(`${API}/api/v1/challenges?phone=${encodeURIComponent(normalized)}`)
+      // Sprint 1 security: /challenges is now gated the same as /public and
+      // /by-phone (own phone or admin), so it needs the Bearer token too.
+      fetch(`${API}/api/v1/challenges?phone=${encodeURIComponent(normalized)}`, { headers: authHeaders })
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (data) {
@@ -367,50 +361,23 @@ export default function UserDashboard() {
   }, [l]);
 
   useEffect(() => {
-    if (phone) loadData(phone);
-  }, []);
-
-  // A verified OTP session skips the manual phone-entry gate entirely --
-  // same loadData(phone) path, just fed from the JWT-backed session instead
-  // of a typed number. Guarded by phone so it doesn't refight the user's own
-  // gate submission or a subsequent logout.
-  useEffect(() => {
-    if (isLoggedIn && customer?.phone && !phone) {
-      handlePhoneSubmit(customer.phone);
+    if (isLoggedIn && customer?.phone && token) {
+      loadData(customer.phone, token);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, customer?.phone]);
+  }, [isLoggedIn, customer?.phone, token]);
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [activeTab]);
 
-  function handlePhoneSubmit(ph: string) {
-    const normalized = normalizePhone(ph);
-    localStorage.setItem(CACHE_KEY, normalized);
-    setPhone(normalized);
-    loadData(normalized);
-  }
-
   function handleLogout() {
-    localStorage.removeItem(CACHE_KEY);
-    setPhone("");
+    logout();
     setProfile(null);
     setOrders([]);
   }
 
-  if (!phone) return (
+  if (!isLoggedIn || !customer?.phone || !token) return (
     <div className={font} dir={isRTL ? "rtl" : "ltr"} style={{ background: "#FAF7F2", minHeight: "100vh" }}>
-      {!isLoggedIn && (
-        <div className="mx-auto max-w-sm px-6 pt-8 text-center">
-          <button onClick={() => setShowLogin(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E8B57] py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2E8B57]/20 transition-all hover:bg-[#1F6B40] active:scale-[0.98]">
-            <MessageCircle size={16} /> Se connecter via WhatsApp
-          </button>
-          <p className="mt-3 text-xs text-gray-400">
-            {l === "fr" ? "ou entrez votre numéro ci-dessous" : l === "ar" ? "أو أدخل رقمك أدناه" : "or enter your number below"}
-          </p>
-        </div>
-      )}
-      <PhoneEntry onSubmit={handlePhoneSubmit} lang={language} />
+      <LoginGate onLogin={() => setShowLogin(true)} lang={language} />
       {showLogin && (
         <OTPLoginModal
           onSuccess={(t, c) => { login(t, c); setShowLogin(false); }}
@@ -423,7 +390,7 @@ export default function UserDashboard() {
   const points      = profile?.total_points ?? 0;
   const totalOrders = orders.length;
   const totalSpent  = orders.reduce((s: number, o: any) => s + Number(o.total_price || 0), 0);
-  const shortPhone  = phone.replace("+212", "0");
+  const shortPhone  = customer.phone.replace("+212", "0");
 
   return (
     <div className={font} dir={isRTL ? "rtl" : "ltr"} style={{ background: "#FAF7F2", minHeight: "100vh" }}>
@@ -546,7 +513,7 @@ export default function UserDashboard() {
             ) : error ? (
               <div className="flex flex-col items-center gap-3 py-10 text-center">
                 <p className="text-gray-500 text-sm">{error}</p>
-                <button onClick={() => loadData(phone)} className="text-xs font-bold text-[#2E8B57] underline">
+                <button onClick={() => loadData(customer.phone, token)} className="text-xs font-bold text-[#2E8B57] underline">
                   {l === "fr" ? "Réessayer" : "إعادة المحاولة"}
                 </button>
               </div>
@@ -597,13 +564,13 @@ export default function UserDashboard() {
             <div className="pt-2 border-t border-gray-100">
               <p className="text-[10px] text-gray-400 leading-relaxed">
                 {l === "fr"
-                  ? "Votre compte est identifié par votre numéro de téléphone. Une vérification renforcée (OTP) sera disponible prochainement."
-                  : "يتم التعرف على حسابك برقم هاتفك. سيتوفر التحقق المعزز (OTP) قريباً."}
+                  ? "Votre compte est identifié par votre numéro de téléphone, vérifié par code WhatsApp (OTP)."
+                  : "يتم التعرف على حسابك برقم هاتفك، الموثّق برمز واتساب (OTP)."}
               </p>
             </div>
             <button onClick={handleLogout}
               className="w-full rounded-xl py-2.5 text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors border border-red-100">
-              {l === "fr" ? "Changer de numéro" : "تغيير الرقم"}
+              {l === "fr" ? "Se déconnecter" : "تسجيل الخروج"}
             </button>
           </div>
         )}

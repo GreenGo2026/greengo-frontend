@@ -11,7 +11,7 @@ import { useCartStore, getUnitStep, formatQuantity, DELIVERY_FEES } from "../sto
 import type { DeliveryZone } from "../store/cartStore";
 import { useReferralStore } from "../store/referralStore";
 import { computeLineTotal } from "../utils/pricing";
-import { getProducts, apiClient } from "../services/api";
+import { getProducts, apiClient, customerExists } from "../services/api";
 import type { DBProduct } from "../services/api";
 import { useCustomerAuth } from "../hooks/useCustomerAuth";
 import { isValidMoroccanPhone, normalizeForValidation } from "../utils/validation";
@@ -291,7 +291,7 @@ function GPSCapture({ status, onRequest, language }: {
 // ── CartPage ──────────────────────────────────────────────────────────────────
 
 // ── Success screen ────────────────────────────────────────────────────────────
-function SuccessScreen({ orderId, lastCart, customerPhone }: { orderId: string; lastCart: any[]; customerPhone?: string }) {
+function SuccessScreen({ orderId, lastCart, customerPhone, signedInvoiceUrl, signedTrackingUrl }: { orderId: string; lastCart: any[]; customerPhone?: string; signedInvoiceUrl?: string; signedTrackingUrl?: string }) {
   const shortId = orderId.slice(-6).toUpperCase();
   const [dlLoading, setDlLoading] = useState(false);
   const [dlError,   setDlError]   = useState("");
@@ -334,7 +334,13 @@ function SuccessScreen({ orderId, lastCart, customerPhone }: { orderId: string; 
     setDlLoading(true);
     setDlError("");
     try {
-      const res = await fetch(`${API}/api/v1/orders/${orderId}/invoice?lang=fr`);
+      // The bare /invoice endpoint now requires an admin/own-phone credential
+      // (Sprint 1 security) -- anonymous checkout must use the signed link
+      // returned by order creation instead.
+      const fetchUrl = signedInvoiceUrl
+        ? `${API}${signedInvoiceUrl}`
+        : `${API}/api/v1/orders/${orderId}/invoice?lang=fr`;
+      const res = await fetch(fetchUrl);
       if (!res.ok) throw new Error("HTTP " + res.status);
       const blob = await res.blob();
       const url  = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
@@ -371,7 +377,7 @@ function SuccessScreen({ orderId, lastCart, customerPhone }: { orderId: string; 
         </p>
       </div>
 
-      <a href={"/track/" + orderId}
+      <a href={signedTrackingUrl || "/track/" + orderId}
         className="flex items-center gap-2.5 rounded-2xl bg-[#2E8B57] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg transition-all hover:bg-[#1F6B40] active:scale-95">
         Suivre ma commande #{shortId}
       </a>
@@ -485,6 +491,8 @@ export default function CartPage() {
   const [submitError,    setSubmitError]    = useState("");
   const [phoneError,     setPhoneError]     = useState("");
   const [orderId,        setOrderId]        = useState("");
+  const [signedInvoiceUrl, setSignedInvoiceUrl] = useState<string | undefined>(undefined);
+  const [signedTrackingUrl, setSignedTrackingUrl] = useState<string | undefined>(undefined);
   const [sharing,        setSharing]        = useState(false);
   const [shareUrl,       setShareUrl]       = useState<string | null>(null);
   const [shareCopied,    setShareCopied]    = useState(false);
@@ -688,7 +696,20 @@ export default function CartPage() {
         ? trimmed
         : "+212" + trimmed.replace(/^0/, "");
 
-      // 1. Check localStorage cache first
+      // Logged-in customers: autofill from their own /me profile (already
+      // fetched by useCustomerAuth), never from a lookup keyed on the typed
+      // phone -- a logged-in session's own data is all this path is allowed
+      // to use (Sprint 1 security: /public now requires own-phone or admin).
+      if (customerToken && authedCustomer) {
+        const profile = { name: authedCustomer.name, address: authedCustomer.last_address || "" };
+        setSavedProfile(profile);
+        setIsReturning(true);
+        setCustomerPoints(authedCustomer.total_points || 0);
+        return;
+      }
+
+      // 1. Check localStorage cache first (the customer's own browser, their
+      // own prior order on this device -- not a cross-session PII lookup).
       try {
         const cached = localStorage.getItem("gg_customer_" + normalized);
         if (cached) {
@@ -700,28 +721,13 @@ export default function CartPage() {
         }
       } catch { /* ignore */ }
 
-      // 2. Backend lookup
-      const API_URL = (import.meta.env.VITE_API_URL || "").replace(/[/]+$/, "");
-      fetch(API_URL + "/api/v1/customers/" + encodeURIComponent(normalized) + "/public")
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data && data.name) {
-            const profile = { name: data.name, address: data.last_address || "" };
-            setSavedProfile(profile);
-            setIsReturning(true);
-            if (data.total_points) setCustomerPoints(data.total_points);
-            try {
-              localStorage.setItem("gg_customer_" + normalized, JSON.stringify({
-                ...profile,
-                total_points: data.total_points,
-                total_orders: data.total_orders,
-              }));
-            } catch { /* ignore */ }
-          } else {
-            setIsReturning(false);
-            setSavedProfile(null);
-            setCustomerPoints(0);
-          }
+      // 2. Anonymous: boolean-only check, no PII returned (Sprint 1 security
+      // -- /public was dropped for anonymous callers, /exists replaces it).
+      customerExists(normalized)
+        .then(returning => {
+          setIsReturning(returning);
+          setSavedProfile(null);
+          setCustomerPoints(0);
         })
         .catch(() => {
           setIsReturning(false);
@@ -817,6 +823,8 @@ export default function CartPage() {
       // Order saved — show success screen (no auto WhatsApp redirect)
       clearCart();
       setOrderId(id);
+      setSignedInvoiceUrl(data.signed_invoice_url || undefined);
+      setSignedTrackingUrl(data.signed_tracking_url || undefined);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Requête échouée. Le serveur est-il démarré ?");
     } finally {
@@ -860,7 +868,7 @@ export default function CartPage() {
     return (
       <>
         <CartHeroStrip />
-        <SuccessScreen orderId={orderId} lastCart={cart} customerPhone={phone} />
+        <SuccessScreen orderId={orderId} lastCart={cart} customerPhone={phone} signedInvoiceUrl={signedInvoiceUrl} signedTrackingUrl={signedTrackingUrl} />
       </>
     );
   }
